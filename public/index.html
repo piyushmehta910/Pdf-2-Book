@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pdf2book — Knowledge Book Studio</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #171a21; --panel2: #1d212b; --border: #2a2f3a;
+    --text: #e6e9ef; --muted: #8b93a3; --accent: #6c8cff; --accent2: #4c6ef5;
+    --ok: #3fb96f; --warn: #e5a13a; --err: #e05661;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+  }
+  header {
+    display: flex; align-items: center; gap: 12px; padding: 14px 22px;
+    border-bottom: 1px solid var(--border); background: var(--panel);
+  }
+  header h1 { font-size: 18px; margin: 0; letter-spacing: .3px; }
+  header h1 span { color: var(--accent); }
+  .badge {
+    font-size: 11px; padding: 3px 10px; border-radius: 999px;
+    border: 1px solid var(--border); color: var(--muted);
+  }
+  .layout { display: grid; grid-template-columns: 250px 1fr; min-height: calc(100vh - 55px); }
+  aside { border-right: 1px solid var(--border); background: var(--panel); padding: 16px; }
+  main { padding: 22px; max-width: 900px; }
+  h2 { font-size: 15px; margin: 0 0 12px; }
+  h3 { font-size: 13px; margin: 18px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  input[type=text], textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 9px 11px; font: inherit; outline: none;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 110px; }
+  button {
+    background: var(--accent2); color: #fff; border: 0; border-radius: 8px;
+    padding: 8px 14px; font: inherit; cursor: pointer;
+  }
+  button:hover { filter: brightness(1.12); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.ghost { background: var(--panel2); border: 1px solid var(--border); color: var(--text); }
+  button.danger { background: transparent; border: 1px solid var(--err); color: var(--err); padding: 4px 9px; font-size: 12px; }
+  button.small { padding: 5px 10px; font-size: 12px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .stack { display: flex; flex-direction: column; gap: 8px; }
+  ul.list { list-style: none; margin: 0; padding: 0; }
+  ul.list li {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    padding: 9px 11px; border-radius: 8px; margin-bottom: 6px; background: var(--panel2);
+    border: 1px solid var(--border); cursor: pointer;
+  }
+  ul.list li.active { border-color: var(--accent); }
+  ul.list li.static { cursor: default; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); }
+  .pill.ok { color: var(--ok); border-color: var(--ok); }
+  .pill.pending { color: var(--warn); border-color: var(--warn); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+  .stat { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  .stat b { display: block; font-size: 22px; }
+  .stat span { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+  .bar { height: 8px; background: var(--panel2); border-radius: 999px; overflow: hidden; border: 1px solid var(--border); }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--ok)); }
+  .banner {
+    display: none; position: fixed; bottom: 18px; right: 18px; z-index: 50;
+    background: var(--panel2); border: 1px solid var(--err); color: var(--text);
+    padding: 12px 16px; border-radius: 10px; max-width: 420px;
+  }
+  .chapter { border-bottom: 1px solid var(--border); padding: 14px 0; }
+  .chapter:last-child { border-bottom: 0; }
+  .chapter h4 { margin: 0 0 8px; font-size: 14px; }
+  pre.book {
+    white-space: pre-wrap; word-wrap: break-word; font-family: Georgia, serif;
+    line-height: 1.65; margin: 0; font-size: 15px;
+  }
+  a.btn {
+    display: inline-block; background: var(--panel2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 7px 13px; text-decoration: none; font: inherit;
+  }
+  a.btn:hover { border-color: var(--accent); }
+  .empty { color: var(--muted); padding: 20px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>pdf<span>2</span>book</h1>
+  <span class="badge" id="provider">checking…</span>
+</header>
+<div class="layout">
+  <aside>
+    <div class="stack">
+      <button id="newBtn">+ New project</button>
+      <input type="text" id="projTitle" placeholder="Project title">
+      <div style="height:6px"></div>
+      <ul class="list" id="projects"></ul>
+    </div>
+  </aside>
+  <main>
+    <div id="noProject" class="empty">Create or select a project to begin.</div>
+    <div id="workspace" style="display:none">
+
+      <section class="card">
+        <h2>Sources</h2>
+        <div class="stack">
+          <input type="text" id="noteTitle" placeholder="Title for pasted notes (optional)">
+          <textarea id="noteText" placeholder="Paste research notes, summaries, or paper excerpts here…"></textarea>
+          <div class="row">
+            <label class="btn ghost"><input type="file" id="files" accept=".pdf,.txt" multiple hidden>
+              <button type="button" class="ghost" onclick="document.getElementById('files').click()">Choose PDF / TXT files…</button></label>
+            <span class="muted" id="fileCount"></span>
+            <span style="flex:1"></span>
+            <button id="addSrc">Add sources</button>
+          </div>
+        </div>
+        <div style="height:12px"></div>
+        <ul class="list" id="sources"></ul>
+      </section>
+
+      <section class="card">
+        <div class="row">
+          <h2 style="flex:1;margin:0">Knowledge analysis</h2>
+          <button id="analyzeBtn">Run analysis</button>
+        </div>
+        <div style="height:12px"></div>
+        <div class="stats" id="stats" style="display:none">
+          <div class="stat"><b id="sTopics">–</b><span>Topics</span></div>
+          <div class="stat"><b id="sChapters">–</b><span>Outline chapters</span></div>
+          <div class="stat"><b id="sDupes">–</b><span>Duplicate groups</span></div>
+          <div class="stat"><b id="sConflicts">–</b><span>Conflicts</span></div>
+          <div class="stat"><b id="sCov">–</b><span>Coverage</span></div>
+        </div>
+        <div id="covBar" class="bar" style="display:none;margin-top:10px"><i style="width:0%"></i></div>
+        <p class="muted" id="covNote" style="margin:8px 0 0"></p>
+      </section>
+
+      <section class="card">
+        <div class="row">
+          <h2 style="flex:1;margin:0">Book</h2>
+          <button id="genBtn">Generate book</button>
+        </div>
+        <div style="height:8px"></div>
+        <div class="row" id="exports" style="display:none">
+          <span class="muted">Export:</span>
+          <a class="btn" id="expMd" target="_blank">Markdown</a>
+          <a class="btn" id="expHtml" target="_blank">HTML</a>
+          <a class="btn" id="expJson" target="_blank">JSON</a>
+        </div>
+        <div style="height:8px"></div>
+        <div id="chapters"></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+<div class="banner" id="banner"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let projectId = null;
+
+function fail(err) {
+  const b = $('banner');
+  b.textContent = 'Error: ' + err.message;
+  b.style.display = 'block';
+  clearTimeout(fail._t);
+  fail._t = setTimeout(() => { b.style.display = 'none'; }, 6000);
+}
+
+async function api(path, opts) {
+  const res = await fetch(path, opts && Object.keys(opts).length ? {
+    headers: opts.body instanceof FormData ? undefined : { 'Content-Type': 'application/json' },
+    ...opts
+  } : undefined);
+  if (!res.ok) {
+    let msg = res.status + ' ' + res.statusText;
+    try { msg = (await res.json()).error || msg; } catch (_e) {}
+    throw new Error(msg);
+  }
+  return res.status === 204 ? null : res.json();
+}
+const json = (body) => ({ method: 'POST', body: JSON.stringify(body) });
+
+async function loadHealth() {
+  try {
+    const h = await api('/health');
+    $('provider').textContent = 'AI: ' + h.aiProvider;
+  } catch (_e) { $('provider').textContent = 'offline'; }
+}
+
+async function loadProjects() {
+  const projects = await api('/api/projects');
+  const ul = $('projects');
+  ul.innerHTML = '';
+  for (const p of projects) {
+    const li = document.createElement('li');
+    li.className = p.id === projectId ? 'active' : '';
+    li.onclick = () => selectProject(p.id);
+    const name = document.createElement('span'); name.textContent = p.title;
+    const del = document.createElement('button');
+    del.className = 'danger'; del.textContent = '✕';
+    del.onclick = async (e) => {
+      e.stopPropagation();
+      if (!confirm('Delete project "' + p.title + '"?')) return;
+      await api('/api/projects/' + p.id, { method: 'DELETE' });
+      if (projectId === p.id) projectId = null;
+      await refresh();
+    };
+    li.append(name, del);
+    ul.appendChild(li);
+  }
+}
+
+$('newBtn').onclick = async () => {
+  try {
+    const title = $('projTitle').value.trim() || 'Untitled Project';
+    const p = await api('/api/projects', json({ title }));
+    $('projTitle').value = '';
+    await loadProjects();
+    selectProject(p.id);
+  } catch (e) { fail(e); }
+};
+
+async function selectProject(id) {
+  projectId = id;
+  $('noProject').style.display = 'none';
+  $('workspace').style.display = 'block';
+  document.querySelectorAll('#projects li').forEach((li) => li.classList.remove('active'));
+  const lis = document.querySelectorAll('#projects li');
+  const idx = [...lis].findIndex((li) => li.textContent.replace('✕','').trim() === id || true);
+  if (idx >= 0) lis[idx] && lis[idx].classList.add('active');
+  $('stats').style.display = 'none'; $('covBar').style.display = 'none';
+  $('covNote').textContent = ''; $('chapters').innerHTML = ''; $('exports').style.display = 'none';
+  await Promise.all([loadSources(), loadBook()]);
+}
+
+async function loadSources() {
+  const sources = await api('/api/projects/' + projectId + '/sources');
+  const ul = $('sources');
+  ul.innerHTML = '';
+  if (!sources.length) {
+    const li = document.createElement('li'); li.className = 'static';
+    li.innerHTML = '<span class="muted">No sources yet — paste notes or upload PDFs above.</span>';
+    ul.appendChild(li); return;
+  }
+  for (const s of sources) {
+    const li = document.createElement('li'); li.className = 'static';
+    const left = document.createElement('div');
+    const t = document.createElement('div'); t.textContent = s.title;
+    const meta = document.createElement('span'); meta.className = 'muted';
+    meta.textContent = s.type.toUpperCase() + (s.pageCount ? ' · ' + s.pageCount + ' pages' : '');
+    left.append(t, meta);
+    const right = document.createElement('div');
+    const pill = document.createElement('span');
+    pill.className = 'pill ' + (s.status === 'processed' ? 'ok' : 'pending');
+    pill.textContent = s.status === 'processed' ? 'processed · ' + (s.chunkCount || '?') + ' chunks' : s.status;
+    right.appendChild(pill);
+    if (s.status !== 'processed') {
+      const btn = document.createElement('button');
+      btn.className = 'small'; btn.textContent = 'Process';
+      btn.onclick = () => processSource(s.id, btn);
+      right.appendChild(btn);
+    }
+    li.append(left, right);
+    ul.appendChild(li);
+  }
+}
+
+$('files').onchange = () => {
+  $('fileCount').textContent = $('files').files.length ? $('files').files.length + ' file(s) selected' : '';
+};
+
+$('addSrc').onclick = async () => {
+  try {
+    const fd = new FormData();
+    const text = $('noteText').value.trim();
+    if (text) {
+      fd.append('text', text);
+      fd.append('title', $('noteTitle').value.trim());
+    }
+    for (const f of $('files').files) fd.append('files', f);
+    if (!text && !$('files').files.length) throw new Error('Add notes or choose files first');
+    await api('/api/projects/' + projectId + '/sources', { method: 'POST', body: fd });
+    $('noteText').value = ''; $('noteTitle').value = ''; $('files').value = ''; $('fileCount').textContent = '';
+    await loadSources();
+  } catch (e) { fail(e); }
+};
+
+async function processSource(sid, btn) {
+  btn.disabled = true; btn.textContent = 'Processing…';
+  try {
+    const r = await api('/api/projects/' + projectId + '/sources/' + sid + '/process', { method: 'POST' });
+    btn.textContent = r.pages + 'p / ' + r.chunks + ' chunks ✓';
+  } catch (e) { fail(e); btn.disabled = false; btn.textContent = 'Retry'; }
+}
+
+$('analyzeBtn').onclick = async () => {
+  const btn = $('analyzeBtn'); btn.disabled = true; btn.textContent = 'Analyzing…';
+  try {
+    const r = await api('/api/knowledge/' + projectId + '/analyze', { method: 'POST' });
+    $('stats').style.display = 'grid';
+    $('sTopics').textContent = r.topicCount;
+    $('sChapters').textContent = r.chapterCount;
+    $('sDupes').textContent = r.duplicateGroups;
+    $('sConflicts').textContent = r.conflictCount;
+    const cov = r.coverage || {};
+    $('sCov').textContent = cov.score != null ? cov.score + '%' : '–';
+    if (cov.score != null) {
+      $('covBar').style.display = 'block';
+      $('covBar').querySelector('i').style.width = Math.min(100, cov.score) + '%';
+    }
+    $('covNote').textContent = cov.insufficient
+      ? '⚠ Coverage below threshold — add more sources on weak topics before generating.'
+      : (r.conflictCount ? 'Note: conflicts detected — review before generating.' : 'Ready to generate.');
+  } catch (e) { fail(e); }
+  btn.disabled = false; btn.textContent = 'Run analysis';
+};
+
+$('genBtn').onclick = async () => {
+  const btn = $('genBtn'); btn.disabled = true; btn.textContent = 'Generating…';
+  try {
+    await api('/api/projects/' + projectId + '/book/generate', { method: 'POST' });
+    await loadBook();
+  } catch (e) { fail(e); }
+  btn.disabled = false; btn.textContent = 'Generate book';
+};
+
+async function loadBook() {
+  let book;
+  try { book = await api('/api/projects/' + projectId + '/book'); } catch (_e) { return; }
+  const wrap = $('chapters');
+  wrap.innerHTML = '';
+  if (book.chapters.length) {
+    $('exports').style.display = 'flex';
+    const base = '/api/projects/' + projectId + '/export/';
+    $('expMd').href = base + 'markdown';
+    $('expHtml').href = base + 'html';
+    $('expJson').href = base + 'json';
+  }
+  book.chapters.forEach((ch, i) => {
+    const div = document.createElement('div');
+    div.className = 'chapter';
+    const h = document.createElement('h4'); h.textContent = ch.title;
+    const ta = document.createElement('textarea');
+    ta.value = ch.content; ta.style.minHeight = '140px'; ta.readOnly = true;
+    const row = document.createElement('div'); row.className = 'row'; row.style.marginTop = '8px';
+    const edit = document.createElement('button'); edit.className = 'ghost small'; edit.textContent = 'Edit';
+    edit.onclick = () => { ta.readOnly = false; save.style.display = 'inline-block'; edit.style.display = 'none'; ta.focus(); };
+    const save = document.createElement('button'); save.className = 'small'; save.textContent = 'Save';
+    save.style.display = 'none';
+    save.onclick = async () => {
+      save.disabled = true;
+      try {
+        await api('/api/projects/' + projectId + '/book/chapters/' + ch.id, {
+          method: 'PUT', body: JSON.stringify({ content: ta.value })
+        });
+        save.textContent = 'Saved ✓';
+      } catch (e) { fail(e); save.disabled = false; }
+    };
+    row.append(edit, save);
+    div.append(h, ta, row);
+    wrap.appendChild(div);
+  });
+  if (!book.chapters.length) {
+    const d = document.createElement('div'); d.className = 'empty';
+    d.textContent = 'No chapters yet — run analysis, then generate.';
+    wrap.appendChild(d);
+  }
+}
+
+async function refresh() {
+  await loadProjects();
+  $('noProject').style.display = projectId ? 'none' : 'block';
+  $('workspace').style.display = projectId ? 'block' : 'none';
+}
+
+loadHealth();
+refresh().catch(fail);
+</script>
+</body>
+</html>
