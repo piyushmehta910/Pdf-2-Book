@@ -1,0 +1,42 @@
+{
+  "name": "pdf2book",
+  "version": "0.1.0",
+  "description": "AI research paper to knowledge book studio - local-first synthesis engine",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --runInBand",
+    "lint": "eslint src tests"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "pdf",
+    "book",
+    "knowledge-engine",
+    "ai",
+    "synthesis"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "multer": "^2.2.0",
+    "openai": "^7.5.0",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^2.4.5",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.1",
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
+  }
+}
