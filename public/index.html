@@ -4,101 +4,154 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>pdf2book — Knowledge Book Studio</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0b0d12; --bg2: #0f1219; --panel: #141824; --panel2: #1a1f2e; --panel3: #212739;
-    --border: #262c3d; --border2: #333b52;
-    --text: #e8ebf3; --text2: #b8bfd0; --muted: #7e8798;
-    --accent: #7c93ff; --accent-dim: #5a6fd6; --glow: rgba(124,147,255,.14);
-    --ok: #4ade80; --warn: #fbbf24; --err: #f87171;
-    --radius: 12px;
+    --bg: #07080d;
+    --bg2: #0b0d14;
+    --panel: #10131c;
+    --panel2: #161a26;
+    --panel3: #1d2231;
+    --border: #222839;
+    --border2: #2f3850;
+    --text: #eaedf5;
+    --text2: #b9c0d2;
+    --muted: #7c8598;
+    --accent: #7d92ff;
+    --accent2: #9a6bff;
+    --accent-dim: #5a6fd6;
+    --glow: rgba(125,146,255,.13);
+    --ok: #34d399;
+    --warn: #fbbf24;
+    --err: #f87171;
+    --grad: linear-gradient(135deg, #6d7cff, #9a6bff);
+    --shadow-lg: 0 18px 50px rgba(0,0,0,.5);
+    --shadow-sm: 0 4px 16px rgba(0,0,0,.35);
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    margin: 0; background:
-      radial-gradient(1200px 500px at 80% -10%, rgba(90,111,214,.10), transparent 60%),
-      radial-gradient(900px 400px at -10% 110%, rgba(74,222,128,.05), transparent 60%),
+    margin: 0;
+    background:
+      radial-gradient(1100px 520px at 85% -12%, rgba(122,102,255,.12), transparent 62%),
+      radial-gradient(900px 420px at -10% 108%, rgba(52,211,153,.06), transparent 60%),
       var(--bg);
     color: var(--text);
-    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
-    font-size: 14.5px; line-height: 1.5;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 14.5px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
   }
   ::selection { background: var(--accent); color: #fff; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--panel3); border-radius: 999px; border: 2px solid var(--bg); }
+  ::-webkit-scrollbar-track { background: transparent; }
 
   /* ---------- header ---------- */
   header {
     position: sticky; top: 0; z-index: 40;
     display: flex; align-items: center; gap: 14px;
-    padding: 13px 26px;
-    background: rgba(15,18,25,.85); backdrop-filter: blur(12px);
+    padding: 14px 28px;
+    background: rgba(9,11,17,.78); backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border);
   }
-  .logo { display: flex; align-items: baseline; gap: 2px; font-weight: 700; font-size: 19px; letter-spacing: .2px; }
-  .logo b { color: var(--accent); }
-  .logo small { font-weight: 400; color: var(--muted); margin-left: 8px; font-size: 11.5px; letter-spacing: .6px; text-transform: uppercase; }
+  .logo {
+    font-weight: 800; font-size: 20px; letter-spacing: .2px;
+    background: linear-gradient(90deg, #fff, #b9c0ff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    display: flex; align-items: baseline;
+  }
+  .logo b { background: var(--grad); -webkit-background-clip: text; background-clip: text; }
+  .logo small {
+    font-weight: 500; color: var(--muted); margin-left: 10px;
+    font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase;
+  }
   header .spacer { flex: 1; }
   .badge {
-    font-size: 11.5px; padding: 4px 12px; border-radius: 999px;
+    font-size: 11.5px; padding: 5px 13px; border-radius: 999px;
     border: 1px solid var(--border2); background: var(--panel); color: var(--text2);
-    display: inline-flex; align-items: center; gap: 6px;
+    display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
   }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); }
-  .dot.ok { background: var(--ok); box-shadow: 0 0 8px rgba(74,222,128,.7); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); flex: none; }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 9px rgba(52,211,153,.8); }
 
   /* ---------- layout ---------- */
-  .layout { display: grid; grid-template-columns: 272px minmax(0,1fr); min-height: calc(100vh - 55px); }
+  .layout { display: grid; grid-template-columns: 280px minmax(0,1fr); min-height: calc(100vh - 57px); }
   aside {
     border-right: 1px solid var(--border); background: var(--bg2);
-    padding: 20px 16px; position: sticky; top: 55px; height: calc(100vh - 55px);
+    padding: 22px 16px; position: sticky; top: 57px; height: calc(100vh - 57px);
     overflow-y: auto;
   }
-  main { padding: 30px 40px 80px; max-width: 960px; }
+  main { padding: 34px 44px 90px; max-width: 980px; }
+  @media (max-width: 960px) {
+    .layout { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+    main { padding: 24px 18px 80px; }
+  }
 
   /* ---------- controls ---------- */
-  input[type=text], textarea {
-    width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
-    border-radius: 9px; padding: 10px 13px; font: inherit; outline: none;
+  input[type=text], input[type=password], textarea {
+    width: 100%; background: rgba(0,0,0,.25); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 10px 14px; font: inherit; outline: none;
     transition: border-color .15s, box-shadow .15s;
   }
   input::placeholder, textarea::placeholder { color: var(--muted); }
   input:focus-visible, textarea:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
-  textarea { resize: vertical; line-height: 1.55; }
+  textarea { resize: vertical; line-height: 1.6; }
+
   button {
-    background: linear-gradient(180deg, var(--accent), var(--accent-dim)); color: #fff;
-    border: 0; border-radius: 9px; padding: 9px 16px; font: inherit; font-weight: 600;
-    cursor: pointer; transition: filter .15s, transform .05s;
-    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--grad); color: #fff; border: 0; border-radius: 10px;
+    padding: 9px 17px; font: inherit; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 6px 20px rgba(109,124,255,.25), inset 0 1px 0 rgba(255,255,255,.18);
+    transition: filter .15s, transform .05s;
   }
-  button:hover:not(:disabled) { filter: brightness(1.1); }
+  button:hover:not(:disabled) { filter: brightness(1.12); }
   button:active:not(:disabled) { transform: translateY(1px); }
   button:disabled { opacity: .45; cursor: default; }
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  button.ghost { background: var(--panel2); border: 1px solid var(--border2); color: var(--text); font-weight: 500; }
-  button.small { padding: 5px 12px; font-size: 12.5px; }
-  button.danger { background: transparent; border: 1px solid transparent; color: var(--muted); font-weight: 400; }
-  button.danger:hover { color: var(--err); border-color: var(--err); }
+  button.ghost {
+    background: var(--panel2); border: 1px solid var(--border2); color: var(--text);
+    font-weight: 550; box-shadow: none;
+  }
+  button.ghost:hover:not(:disabled) { border-color: var(--accent); filter: none; }
+  button.small { padding: 6px 13px; font-size: 12.5px; border-radius: 8px; }
+  button.danger { background: transparent; border: 0; box-shadow: none; color: var(--muted); font-weight: 450; }
+  button.danger:hover:not(:disabled) { color: var(--err); }
+
   a.btn {
     display: inline-flex; align-items: center; gap: 7px;
     background: var(--panel2); border: 1px solid var(--border2); color: var(--text2);
-    border-radius: 9px; padding: 8px 15px; text-decoration: none; font-weight: 500;
-    transition: border-color .15s, color .15s;
+    border-radius: 10px; padding: 8px 15px; text-decoration: none; font-weight: 550; font-size: 13.5px;
+    transition: border-color .15s, color .15s, transform .05s;
   }
   a.btn:hover { border-color: var(--accent); color: var(--text); }
-  label.filebtn { cursor: pointer; }
+  a.btn:active { transform: translateY(1px); }
 
-  /* ---------- cards & sections ---------- */
+  /* ---------- cards ---------- */
   .card {
-    background: linear-gradient(180deg, var(--panel), var(--bg2));
-    border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin-bottom: 20px;
+    position: relative;
+    background: linear-gradient(180deg, var(--panel), rgba(16,19,28,.6));
+    border: 1px solid var(--border); border-radius: 18px;
+    padding: 24px; margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
   }
-  .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .card::before {
+    content: ""; position: absolute; inset: 0 0 auto; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(125,146,255,.35), transparent);
+    border-radius: 18px 18px 0 0; pointer-events: none;
+  }
+  .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .card-head h2 { flex: 1; }
-  h2 { font-size: 16.5px; margin: 0; font-weight: 650; display: flex; align-items: center; gap: 9px; }
+  h2 { font-size: 16.5px; margin: 0; font-weight: 700; letter-spacing: .1px; display: flex; align-items: center; gap: 10px; }
   .step-num {
-    width: 24px; height: 24px; border-radius: 8px; background: var(--panel3); color: var(--accent);
-    display: inline-flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700;
-    border: 1px solid var(--border2);
+    width: 26px; height: 26px; flex: none; border-radius: 9px;
+    background: var(--grad); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 800;
+    box-shadow: 0 4px 14px rgba(109,124,255,.35);
   }
   .hint { color: var(--muted); font-size: 12.5px; }
   .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -106,171 +159,243 @@
   hr.sep { border: 0; border-top: 1px solid var(--border); margin: 18px 0; }
 
   /* ---------- sidebar ---------- */
-  aside h3 { font-size: 11px; margin: 0 0 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  aside h3 {
+    font-size: 10.5px; margin: 0 0 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1.6px; font-weight: 700;
+  }
   ul.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
   ul.list li {
+    position: relative;
     display: flex; justify-content: space-between; align-items: center; gap: 8px;
-    padding: 10px 12px; border-radius: 10px; background: var(--panel);
-    border: 1px solid var(--border); cursor: pointer;
+    padding: 11px 13px; border-radius: 12px; background: var(--panel);
+    border: 1px solid var(--border); cursor: pointer; overflow: hidden;
     transition: border-color .15s, background .15s;
   }
+  ul.list li::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--grad); opacity: 0; transition: opacity .15s;
+  }
   ul.list li:hover { border-color: var(--border2); background: var(--panel2); }
-  ul.list li.active { border-color: var(--accent); background: linear-gradient(90deg, var(--glow), transparent 70%), var(--panel2); }
+  ul.list li.active { border-color: rgba(125,146,255,.55); background: linear-gradient(90deg, var(--glow), transparent 65%), var(--panel2); }
+  ul.list li.active::before { opacity: 1; }
   ul.list li.static { cursor: default; }
   ul.list li.static:hover { background: var(--panel); border-color: var(--border); }
-  .li-title { font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  ul.list li.static:hover::before { opacity: 0; }
+  .li-title { font-weight: 600; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .li-sub { font-size: 11.5px; color: var(--muted); }
 
-  /* ---------- pills / status ---------- */
-  .pill { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border2); color: var(--muted); white-space: nowrap; }
-  .pill.ok { color: var(--ok); border-color: rgba(74,222,128,.4); background: rgba(74,222,128,.08); }
+  /* ---------- pills ---------- */
+  .pill {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border2); color: var(--muted); white-space: nowrap;
+  }
+  .pill.ok { color: var(--ok); border-color: rgba(52,211,153,.4); background: rgba(52,211,153,.08); }
   .pill.pending { color: var(--warn); border-color: rgba(251,191,36,.4); background: rgba(251,191,36,.07); }
 
   /* ---------- stats ---------- */
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
   .stat {
-    background: var(--panel2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
-    position: relative; overflow: hidden;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px; transition: transform .15s, border-color .15s;
   }
-  .stat b { display: block; font-size: 26px; font-weight: 700; line-height: 1.2; }
-  .stat span { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .8px; }
-  .stat.warn b { color: var(--warn); } .stat.bad b { color: var(--err); } .stat.good b { color: var(--ok); }
+  .stat:hover { transform: translateY(-2px); border-color: var(--border2); }
+  .stat b { display: block; font-size: 27px; font-weight: 800; line-height: 1.15; letter-spacing: -.5px; }
+  .stat span { color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+  .stat.warn b { color: var(--warn); } 
+  .stat.bad b { color: var(--err); } 
+  .stat.good b { color: var(--ok); }
 
-  .bar { height: 9px; background: var(--panel3); border-radius: 999px; overflow: hidden; }
+  .bar { height: 10px; background: var(--panel3); border-radius: 999px; overflow: hidden; border: 1px solid var(--border); }
   .bar i {
     display: block; height: 100%; width: 0%;
     background: linear-gradient(90deg, var(--accent), var(--ok));
-    border-radius: 999px; transition: width .8s cubic-bezier(.2,.8,.2,1);
+    border-radius: 999px; transition: width .9s cubic-bezier(.2,.8,.2,1);
+    box-shadow: 0 0 12px rgba(52,211,153,.35);
   }
 
   .notice {
-    display: none; margin-top: 14px; padding: 11px 14px; border-radius: 10px; font-size: 13px;
-    border: 1px solid rgba(251,191,36,.35); background: rgba(251,191,36,.07); color: #ffd479;
+    display: none; margin-top: 14px; padding: 12px 15px; border-radius: 12px; font-size: 13px; font-weight: 500;
+    border: 1px solid rgba(251,191,36,.35); background: rgba(251,191,36,.06); color: #ffd479;
   }
   .notice.show { display: block; }
-  .notice.good { border-color: rgba(74,222,128,.35); background: rgba(74,222,128,.06); color: var(--ok); }
+  .notice.good { border-color: rgba(52,211,153,.35); background: rgba(52,211,153,.05); color: var(--ok); }
   .notice.bad  { border-color: rgba(248,113,113,.35); background: rgba(248,113,113,.06); color: var(--err); }
 
-  /* ---------- drop zone ---------- */
+  /* ---------- dropzone & file chips ---------- */
   .dropzone {
-    border: 1.5px dashed var(--border2); border-radius: 12px; padding: 22px;
+    border: 1.5px dashed var(--border2); border-radius: 14px; padding: 26px;
     text-align: center; color: var(--muted); cursor: pointer;
-    transition: border-color .15s, background .15s;
+    transition: border-color .15s, background .15s, transform .15s;
   }
   .dropzone:hover, .dropzone.over { border-color: var(--accent); background: var(--glow); color: var(--text2); }
-  .dz-icon { font-size: 26px; margin-bottom: 6px; }
+  .dropzone.over { transform: scale(1.01); }
+  .dz-icon { font-size: 28px; margin-bottom: 8px; filter: drop-shadow(0 4px 10px rgba(0,0,0,.4)); }
+
+  .filechips { display: flex; flex-direction: column; gap: 6px; }
+  .filechip {
+    display: flex; align-items: center; gap: 11px;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 11px;
+    padding: 9px 13px; animation: fadein .2s ease;
+  }
+  @keyframes fadein { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .filechip .ficon { font-size: 18px; }
+  .filechip .fname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 500; }
+  .filechip .fsize { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
+  .filechip button { background: transparent; border: 0; box-shadow: none; color: var(--muted); cursor: pointer; padding: 2px 7px; font-size: 14px; border-radius: 6px; }
+  .filechip button:hover { color: var(--err); background: rgba(248,113,113,.08); }
 
   /* ---------- chapters ---------- */
   .chapter {
-    border: 1px solid var(--border); border-radius: 12px; background: var(--panel2);
-    padding: 18px 20px; margin-bottom: 12px;
+    border: 1px solid var(--border); border-radius: 14px;
+    background: linear-gradient(180deg, var(--panel2), var(--panel));
+    padding: 20px 22px; margin-bottom: 12px;
   }
-  .chapter-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-  .chapter-head h4 { flex: 1; margin: 0; font-size: 14.5px; font-weight: 650; }
+  .chapter-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .chapter-head h4 { flex: 1; margin: 0; font-size: 14.5px; font-weight: 700; }
   .reader {
-    font-family: Georgia, "Times New Roman", serif; font-size: 16.5px; line-height: 1.75;
-    color: #dfe3ec; max-width: 68ch;
+    font-family: Georgia, "Times New Roman", serif; font-size: 16.5px; line-height: 1.8;
+    color: #e3e7f0; max-width: 68ch;
   }
-  .reader h1 { font-size: 23px; margin: 18px 0 10px; } 
+  .reader h1 { font-size: 23px; margin: 18px 0 10px; letter-spacing: -.2px; }
   .reader h2 { font-size: 18px; margin: 16px 0 8px; }
+  .reader h3 { font-size: 15.5px; margin: 14px 0 6px; }
   .reader p { margin: 10px 0; }
   .reader ul { padding-left: 24px; margin: 8px 0; }
   .reader strong { color: #fff; }
 
-  /* ---------- toasts ---------- */
-  #toasts { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; max-width: 420px; }
-  .toast {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--panel3); border: 1px solid var(--border2); border-left: 3px solid var(--accent);
-    padding: 12px 16px; border-radius: 11px; font-size: 13.5px;
-    animation: slidein .25s cubic-bezier(.2,.8,.2,1);
-    box-shadow: 0 10px 30px rgba(0,0,0,.45);
-  }
-  .toast.err { border-left-color: var(--err); }
-  .toast.ok { border-left-color: var(--ok); }
-  @keyframes slidein { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
-
   /* ---------- empty state ---------- */
   .empty {
     color: var(--muted); text-align: center; border: 1.5px dashed var(--border2);
-    border-radius: 14px; padding: 44px 24px;
+    border-radius: 16px; padding: 48px 26px;
   }
-  .empty .big { font-size: 34px; margin-bottom: 10px; }
-  .empty b { color: var(--text2); display: block; margin-bottom: 6px; font-size: 15px; }
+  .empty .big { font-size: 36px; margin-bottom: 12px; }
+  .empty b { color: var(--text2); display: block; margin-bottom: 6px; font-size: 15px; font-weight: 650; }
 
   /* ---------- skeleton ---------- */
-  .skel { border-radius: 10px; background: linear-gradient(90deg, var(--panel2) 25%, var(--panel3) 45%, var(--panel2) 65%); background-size: 200% 100%; animation: shimmer 1.3s infinite; }
+  .skel {
+    border-radius: 14px;
+    background: linear-gradient(90deg, var(--panel2) 25%, var(--panel3) 45%, var(--panel2) 65%);
+    background-size: 200% 100%; animation: shimmer 1.3s infinite;
+  }
   @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
-  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: rot .7s linear infinite; }
+  .spin {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
+    border-radius: 50%; animation: rot .7s linear infinite;
+  }
   @keyframes rot { to { transform: rotate(360deg); } }
 
-  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 26px 0 34px; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 28px 0 10px; }
+
+  /* ---------- toasts ---------- */
+  #toasts { position: fixed; bottom: 22px; right: 22px; z-index: 100; display: flex; flex-direction: column; gap: 10px; max-width: 430px; }
+  .toast {
+    background: rgba(29,34,49,.92); backdrop-filter: blur(10px);
+    border: 1px solid var(--border2); border-left: 3px solid var(--accent);
+    padding: 13px 17px; border-radius: 12px; font-size: 13.5px; font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    animation: slidein .28s cubic-bezier(.2,.8,.2,1);
+    transition: opacity .35s;
+  }
+  .toast.err { border-left-color: var(--err); }
+  .toast.ok { border-left-color: var(--ok); }
+  @keyframes slidein { from { opacity: 0; transform: translateX(36px); } to { opacity: 1; transform: none; } }
 
   /* ---------- settings modal ---------- */
   .modal-backdrop {
     display: none; position: fixed; inset: 0; z-index: 90;
-    background: rgba(5,7,12,.66); backdrop-filter: blur(4px);
+    background: rgba(4,6,10,.7); backdrop-filter: blur(6px);
     align-items: center; justify-content: center; padding: 20px;
   }
   .modal-backdrop.open { display: flex; }
   .modal {
-    background: var(--panel); border: 1px solid var(--border2); border-radius: 16px;
-    width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto;
-    box-shadow: 0 24px 80px rgba(0,0,0,.55);
-    animation: pop .18s cubic-bezier(.2,.8,.2,1);
+    background: var(--panel); border: 1px solid var(--border2); border-radius: 20px;
+    width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: pop .2s cubic-bezier(.2,.8,.2,1);
   }
-  @keyframes pop { from { opacity: 0; transform: scale(.96) translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes pop { from { opacity: 0; transform: scale(.95) translateY(10px); } to { opacity: 1; transform: none; } }
   .modal-head {
     display: flex; align-items: center; gap: 10px;
-    padding: 18px 22px; border-bottom: 1px solid var(--border);
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--panel); z-index: 2;
   }
-  .modal-head h2 { flex: 1; }
-  .modal-body { padding: 20px 22px; }
-  .modal-foot { padding: 16px 22px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
-  .field { margin-bottom: 15px; }
-  .field > label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
-  select {
-    width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border);
-    border-radius: 9px; padding: 10px 12px; font: inherit; outline: none;
+  .modal-head h2 { flex: 1; font-size: 17px; }
+  .modal-body { padding: 22px 24px; }
+  .modal-foot {
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    display: flex; gap: 10px; align-items: center;
+    position: sticky; bottom: 0; background: var(--panel);
   }
-  select:focus-visible, input:focus-visible, textarea:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+  .field { margin-bottom: 18px; }
+  .field > label {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 12.5px; font-weight: 700; color: var(--text2);
+    margin-bottom: 8px; text-transform: uppercase; letter-spacing: .8px;
+  }
+  .field .labelhint { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); font-size: 11.5px; }
+
+  .provgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .provcard {
+    position: relative; text-align: left;
+    background: var(--panel2); border: 1px solid var(--border);
+    border-radius: 13px; padding: 13px; cursor: pointer;
+    display: flex; gap: 11px; align-items: center; width: 100%;
+    box-shadow: none; transition: border-color .15s, background .15s;
+  }
+  .provcard:hover { border-color: var(--border2); filter: none; }
+  .provcard.active {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(125,146,255,.12), rgba(154,107,255,.05)), var(--panel2);
+  }
+  .picon {
+    width: 38px; height: 38px; flex: none; border-radius: 10px;
+    background: var(--panel3); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .pname { font-weight: 650; font-size: 13.5px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .psub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .ptag {
+    font-size: 9.5px; font-weight: 800; letter-spacing: .6px;
+    color: var(--ok); background: rgba(52,211,153,.09);
+    border: 1px solid rgba(52,211,153,.35); border-radius: 999px; padding: 1px 7px;
+  }
+  .pcheck {
+    position: absolute; top: 9px; right: 11px;
+    color: var(--accent); font-weight: 800; font-size: 13px; opacity: 0; transition: opacity .15s;
+  }
+  .provcard.active .pcheck { opacity: 1; }
+
   .keywrap { position: relative; }
-  .keywrap input { padding-right: 64px; }
+  .keywrap input { padding-right: 66px; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13px; }
   .keytoggle {
     position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-    background: transparent; border: 0; color: var(--muted); font-size: 12px; cursor: pointer; padding: 4px 8px;
+    background: var(--panel3); border: 1px solid var(--border); color: var(--muted);
+    font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 10px; border-radius: 7px; box-shadow: none;
   }
-  .keytoggle:hover { color: var(--text); }
-  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .seg button.segbtn {
+  .keytoggle:hover { color: var(--text); border-color: var(--border2); }
+
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+  .segbtn {
     background: var(--panel2); border: 1px solid var(--border); color: var(--text2);
-    font-weight: 500; font-size: 13px; padding: 9px 6px; justify-content: center;
+    font-weight: 600; font-size: 13px; padding: 10px 6px; border-radius: 11px; box-shadow: none;
+    display: flex; flex-direction: column; gap: 2px; align-items: center;
   }
-  .seg button.segbtn.active { background: var(--glow); border-color: var(--accent); color: var(--text); }
-  .ctxinfo { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
-  .provlink { color: var(--accent); text-decoration: none; font-size: 12.5px; }
+  .segbtn small { font-weight: 450; font-size: 10.5px; color: var(--muted); }
+  .segbtn.active { background: linear-gradient(135deg, rgba(125,146,255,.16), rgba(154,107,255,.08)), var(--panel2); border-color: var(--accent); color: var(--text); }
+
+  .ctxinfo { font-size: 11.5px; color: var(--muted); margin-top: 7px; line-height: 1.5; }
+  .provlink { color: var(--accent); text-decoration: none; font-size: 12px; font-weight: 600; }
   .provlink:hover { text-decoration: underline; }
-  .testline { display: flex; gap: 10px; align-items: center; margin-top: 4px; min-height: 30px; }
-  .testresult { font-size: 12.5px; }
-  .testresult.ok { color: var(--ok); } .testresult.err { color: var(--err); }
+  .testline { display: flex; gap: 12px; align-items: center; min-height: 32px; }
+  .testresult { font-size: 13px; font-weight: 550; }
+  .testresult.ok { color: var(--ok); } 
+  .testresult.err { color: var(--err); }
 
-  .filechips { display: flex; flex-direction: column; gap: 6px; }
-  .filechip {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--panel2); border: 1px solid var(--border); border-radius: 9px;
-    padding: 8px 12px;
-  }
-  .filechip .ficon { font-size: 17px; }
-  .filechip .fname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
-  .filechip .fsize { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
-  .filechip button { background: transparent; border: 0; color: var(--muted); cursor: pointer; padding: 2px 6px; font-size: 14px; }
-  .filechip button:hover { color: var(--err); }
-
-  @media (max-width: 900px) {
-    .layout { grid-template-columns: 1fr; }
-    aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
-    main { padding: 22px 18px 70px; }
+  select {
+    width: 100%; background: rgba(0,0,0,.25); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; font: inherit; outline: none;
   }
 </style>
 </head>
@@ -280,16 +405,16 @@
   <div class="logo">pdf<b>2</b>book <small>Knowledge Book Studio</small></div>
   <div class="spacer"></div>
   <span class="badge" id="aiBadge"><span class="dot" id="provDot"></span><span id="provider">connecting…</span></span>
-  <button class="ghost small" onclick="openSettings()">⚙ AI settings</button>
+  <button class="ghost small" onclick="openSettings()">⚙&nbsp;AI settings</button>
 </header>
 
 <div class="layout">
   <aside>
     <h3>Projects</h3>
-    <div class="stack" style="margin-bottom:16px">
+    <div class="stack" style="margin-bottom:18px">
       <input type="text" id="projTitle" placeholder="New project title…" maxlength="120"
              onkeydown="if(event.key==='Enter')document.getElementById('newBtn').click()">
-      <button id="newBtn">✦&nbsp; Create project</button>
+      <button id="newBtn"><span aria-hidden="true">✦</span>&nbsp; Create project</button>
     </div>
     <ul class="list" id="projects"></ul>
   </aside>
@@ -303,14 +428,14 @@
     </div>
 
     <div id="workspace" style="display:none">
-      <div style="margin-bottom:18px">
-        <h2 id="projHeading" style="font-size:21px;margin-bottom:4px"></h2>
+      <div style="margin-bottom:20px">
+        <h2 id="projHeading" style="font-size:22px;margin-bottom:4px"></h2>
         <div class="hint" id="projMeta"></div>
       </div>
 
-      <!-- STEP 1 — SOURCES -->
+      <!-- STEP 1 -->
       <section class="card">
-        <div class="card-head"><h2><span class="step-num">1</span> Add sources</h2></div>
+        <div class="card-head"><h2><span class="step-num">1</span>Add sources</h2></div>
         <div class="stack">
           <input type="text" id="noteTitle" placeholder="Title for pasted notes (optional)">
           <textarea id="noteText" rows="4" placeholder="Paste research notes, paper excerpts, summaries…"></textarea>
@@ -327,25 +452,25 @@
             <span class="hint" id="fileCount"></span>
             <span style="flex:1"></span>
             <button class="ghost small" id="clearFiles" style="display:none">Clear files</button>
-            <button id="addSrc">＋ Add sources</button>
+            <button id="addSrc">＋&nbsp;Add sources</button>
           </div>
         </div>
         <hr class="sep">
         <ul class="list" id="sources"></ul>
         <div class="row" id="processAllRow" style="display:none;margin-top:12px">
           <span class="hint" style="flex:1">Process all pending sources at once.</span>
-          <button class="ghost" id="processAllBtn">▶ Process all</button>
+          <button class="ghost" id="processAllBtn">▶&nbsp;Process all</button>
         </div>
       </section>
 
-      <!-- STEP 2 — ANALYSIS -->
+      <!-- STEP 2 -->
       <section class="card">
         <div class="card-head">
-          <h2><span class="step-num">2</span> Analyze knowledge</h2>
-          <button id="analyzeBtn">⚡ Run analysis</button>
+          <h2><span class="step-num">2</span>Analyze knowledge</h2>
+          <button id="analyzeBtn">⚡&nbsp;Run analysis</button>
         </div>
-        <p class="hint">Detects topics across sources, merges duplicates, flags contradictions, and checks coverage so no topic is left behind.</p>
-        <div class="stats skel" id="statsSkel" style="height:76px;display:none"></div>
+        <p class="hint" style="margin-top:0">Detects topics across sources, merges duplicates, flags contradictions, and checks coverage so no topic is left behind.</p>
+        <div class="stats skel" id="statsSkel" style="height:84px;display:none"></div>
         <div class="stats" id="stats" style="display:none">
           <div class="stat good"><b id="sTopics">–</b><span>Topics</span></div>
           <div class="stat"><b id="sChapters">–</b><span>Outline chapters</span></div>
@@ -357,18 +482,18 @@
         <div class="notice" id="covNote"></div>
       </section>
 
-            <!-- STEP 3 — BOOK -->
+      <!-- STEP 3 -->
       <section class="card">
         <div class="card-head">
-          <h2><span class="step-num">3</span> Generate your book</h2>
-          <button class="ghost" onclick="openSettings()" title="AI provider settings">⚙</button>
-          <button id="genBtn">📖 Generate book</button>
+          <h2><span class="step-num">3</span>Generate your book</h2>
+          <button class="ghost small" onclick="openSettings()" title="AI provider settings">⚙&nbsp;AI</button>
+          <button id="genBtn">📖&nbsp;Generate book</button>
         </div>
         <div class="row" id="exports" style="display:none;margin-bottom:16px">
           <span class="hint">Export:</span>
-          <a class="btn" id="expMd" target="_blank" rel="noopener">⬇ Markdown</a>
-          <a class="btn" id="expHtml" target="_blank" rel="noopener">⬇ HTML</a>
-          <a class="btn" id="expJson" target="_blank" rel="noopener">⬇ JSON</a>
+          <a class="btn" id="expMd" target="_blank" rel="noopener">⬇&nbsp;Markdown</a>
+          <a class="btn" id="expHtml" target="_blank" rel="noopener">⬇&nbsp;HTML</a>
+          <a class="btn" id="expJson" target="_blank" rel="noopener">⬇&nbsp;JSON</a>
         </div>
         <div id="chapters"><div class="empty">Run the analysis first, then generate your book.</div></div>
       </section>
@@ -378,53 +503,54 @@
   </main>
 </div>
 
+<!-- SETTINGS MODAL -->
 <div class="modal-backdrop" id="settingsModal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <div class="modal-head">
-      <h2 id="setTitle">⚙ AI settings</h2>
+      <h2 id="setTitle">⚙&nbsp;AI settings</h2>
       <button class="danger small" onclick="closeSettings()">✕</button>
     </div>
     <div class="modal-body">
+
       <div class="field">
-        <label for="setProvider">Provider</label>
-        <select id="setProvider"></select>
+        <label>Provider</label>
+        <div class="provgrid" id="provGrid"></div>
       </div>
 
-      <div class="field" id="keyField">
-        <label for="setKey">API key
-          <a class="provlink" id="keyLink" target="_blank" rel="noopener" style="float:right">Get a free key ↗</a>
+      <div class="field" id="keyField" style="display:none">
+        <label>API key
+          <a class="provlink" id="keyLink" target="_blank" rel="noopener" style="margin-left:auto">Get free key ↗</a>
         </label>
         <div class="keywrap">
           <input type="password" id="setKey" placeholder="Paste your API key…" autocomplete="off" spellcheck="false">
-          <button type="button" class="keytoggle" id="showKey">show</button>
+          <button type="button" class="keytoggle" id="showKey">SHOW</button>
         </div>
-        <div class="ctxinfo">Stored only in this browser (localStorage) — sent per request to generate your book, never saved on the server.</div>
+        <div class="ctxinfo">🔑 Stored only in this browser (localStorage) — sent per request when generating, never saved on the server.</div>
       </div>
 
-      <div class="field">
-        <label for="setModel">Model</label>
+      <div class="field" id="modelField" style="display:none">
+        <label>Model <span class="labelhint">free picks pre-listed · custom IDs allowed</span></label>
         <input type="text" id="setModel" list="modelList" placeholder="" autocomplete="off" spellcheck="false">
         <datalist id="modelList"></datalist>
-        <div class="ctxinfo">Free models are pre-listed; you can type any model ID your account supports.</div>
       </div>
 
-      <div class="field">
-        <label>Context budget per chapter topic</label>
+      <div class="field" id="ctxField">
+        <label>Context budget <span class="labelhint">source material packed into each topic</span></label>
         <div class="seg" id="ctxSeg">
-          <button type="button" class="segbtn" data-budget="6000">Compact<br><span style="font-weight:400;font-size:10.5px;color:var(--muted)">~6k chars</span></button>
-          <button type="button" class="segbtn active" data-budget="12000">Balanced<br><span style="font-weight:400;font-size:10.5px;color:var(--muted)">~12k chars</span></button>
-          <button type="button" class="segbtn" data-budget="24000">Extended<br><span style="font-weight:400;font-size:10.5px;color:var(--muted)">~24k chars</span></button>
+          <button type="button" class="segbtn" data-budget="6000">Compact<small>~6k chars</small></button>
+          <button type="button" class="segbtn" data-budget="12000">Balanced<small>~12k chars</small></button>
+          <button type="button" class="segbtn" data-budget="24000">Extended<small>~24k chars</small></button>
         </div>
-        <div class="ctxinfo">Controls how much source material is packed into each AI request. Larger budgets give richer chapters but cost more tokens.</div>
+        <div class="ctxinfo">Bigger budgets give richer chapters but consume more tokens.</div>
       </div>
 
-      <div class="testline">
+      <div class="testline" id="testLine" style="display:none">
         <button class="ghost small" id="testBtn">Test connection</button>
         <span class="testresult" id="testResult"></span>
       </div>
     </div>
     <div class="modal-foot">
-      <span class="hint" style="flex:1;align-self:center">Changes apply immediately.</span>
+      <span class="hint" style="flex:1">Changes apply immediately after saving.</span>
       <button class="ghost" onclick="closeSettings()">Cancel</button>
       <button id="saveSettings">Save settings</button>
     </div>
@@ -438,7 +564,7 @@
 const $ = (id) => document.getElementById(id);
 let projectId = null;
 
-/* ---------- helpers ---------- */
+/* ================= helpers ================= */
 window.onerror = function (msg) {
   try { toast('UI error: ' + msg, 'err'); } catch (_e) {}
 };
@@ -448,7 +574,7 @@ function toast(msg, kind) {
   t.className = 'toast' + (kind ? ' ' + kind : '');
   t.textContent = msg;
   $('toasts').appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; }, 3800);
+  setTimeout(() => { t.style.opacity = '0'; }, 3800);
   setTimeout(() => t.remove(), 4200);
 }
 
@@ -467,24 +593,21 @@ const json = (body) => ({ method: 'POST', body: JSON.stringify(body) });
 
 function busy(btn, on, labelBusy, labelIdle) {
   btn.disabled = on;
-  btn.innerHTML = on
-    ? '<span class="spin"></span>&nbsp; ' + labelBusy
-    : labelIdle;
+  btn.innerHTML = on ? '<span class="spin"></span>&nbsp; ' + labelBusy : labelIdle;
 }
 
-/* ---------- AI provider settings ---------- */
+/* ================= AI provider settings ================= */
 const CFG_KEY = 'pdf2book.aiConfig';
 let aiCfg = { provider: 'local', apiKey: '', model: '', contextBudget: 12000 };
 let providerMeta = [];
+const keysByProvider = {};
 
 try {
   const saved = JSON.parse(localStorage.getItem(CFG_KEY) || 'null');
   if (saved && typeof saved === 'object') aiCfg = { ...aiCfg, ...saved };
 } catch (_e) {}
 
-function saveAiCfg() {
-  localStorage.setItem(CFG_KEY, JSON.stringify(aiCfg));
-}
+function saveAiCfg() { localStorage.setItem(CFG_KEY, JSON.stringify(aiCfg)); }
 
 function aiRequestHeaders() {
   if (aiCfg.provider === 'local' || !aiCfg.apiKey) return null;
@@ -496,28 +619,67 @@ function aiRequestHeaders() {
   }) };
 }
 
+const PROV_ICONS = { local: '🛠️', openai: '✳️', zen: '🌀', nvidia: '🟩' };
+
 async function loadProviders() {
   const data = await api('/api/providers');
   providerMeta = data.providers;
-  const sel = $('setProvider');
-  sel.innerHTML = '';
+  const grid = $('provGrid');
+  grid.innerHTML = '';
   for (const p of providerMeta) {
-    const opt = document.createElement('option');
-    opt.value = p.id;
-    opt.textContent = p.label + (p.id === 'zen' ? ' — free models' : p.id === 'nvidia' ? ' — free tier' : '');
-    sel.appendChild(opt);
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'provcard';
+    card.dataset.id = p.id;
+
+    const icon = document.createElement('div'); icon.className = 'picon'; icon.textContent = PROV_ICONS[p.id] || '🔌';
+    const info = document.createElement('div'); info.style.minWidth = '0';
+    const name = document.createElement('div'); name.className = 'pname';
+    name.append(document.createTextNode(p.label));
+    if (p.id === 'zen' || p.id === 'nvidia') {
+      const tag = document.createElement('span'); tag.className = 'ptag'; tag.textContent = 'FREE';
+      name.appendChild(tag);
+    }
+    const sub = document.createElement('div'); sub.className = 'psub';
+    sub.textContent = p.id === 'local' ? 'No API key needed'
+      : p.id === 'zen' ? ((p.models || []).length + ' free models')
+      : p.id === 'nvidia' ? 'Free tier credits'
+      : 'Pay-per-use';
+    info.append(name, sub);
+
+    const check = document.createElement('span'); check.className = 'pcheck'; check.textContent = '✓';
+
+    card.addEventListener('click', () => selectProvider(p.id));
+    card.append(icon, info, check);
+    grid.appendChild(card);
   }
 }
 
 function currentProviderMeta() {
-  return providerMeta.find((p) => p.id === aiCfg.provider) || providerMeta[0];
+  return providerMeta.find((p) => p.id === aiCfg.provider);
+}
+
+function selectProvider(id) {
+  if (id === aiCfg.provider) return;
+  keysByProvider[aiCfg.provider] = $('setKey').value.trim();
+  aiCfg.provider = id;
+  aiCfg.model = '';
+  $('setKey').value = keysByProvider[id] || '';
+  $('testResult').textContent = ''; $('testResult').className = 'testresult';
+  renderSettings();
 }
 
 function renderSettings() {
   const meta = currentProviderMeta();
-  if (meta) {
-    $('setProvider').value = meta.id;
-    $('keyField').style.display = meta.baseUrl ? 'block' : 'none';
+  document.querySelectorAll('.provcard').forEach((c) =>
+    c.classList.toggle('active', c.dataset.id === aiCfg.provider));
+
+  const hasKeyField = meta && meta.baseUrl;
+  $('keyField').style.display = hasKeyField ? 'block' : 'none';
+  $('modelField').style.display = hasKeyField ? 'block' : 'none';
+  $('testLine').style.display = hasKeyField ? 'flex' : 'none';
+
+  if (hasKeyField) {
     $('keyLink').href = meta.keyUrl || '#';
     const dl = $('modelList');
     dl.innerHTML = '';
@@ -525,7 +687,9 @@ function renderSettings() {
       const o = document.createElement('option'); o.value = m; dl.appendChild(o);
     }
     if (!$('setModel').value.trim()) $('setModel').value = meta.defaultModel || '';
+    $('setModel').placeholder = meta.defaultModel || 'model-id';
   }
+
   [...$('ctxSeg').children].forEach((b) =>
     b.classList.toggle('active', Number(b.dataset.budget) === Number(aiCfg.contextBudget)));
 }
@@ -540,37 +704,31 @@ function closeSettings() { $('settingsModal').classList.remove('open'); }
 $('settingsModal').addEventListener('click', (e) => {
   if (e.target === $('settingsModal')) closeSettings();
 });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSettings(); });
 
-const keysByProvider = {};
-$('setProvider').addEventListener('change', () => {
-  keysByProvider[aiCfg.provider] = $('setKey').value.trim();
-  aiCfg.provider = $('setProvider').value;
-  aiCfg.model = '';
-  $('setKey').value = keysByProvider[aiCfg.provider] || '';
-  renderSettings();
-});
 $('showKey').onclick = () => {
   const inp = $('setKey');
   inp.type = inp.type === 'password' ? 'text' : 'password';
-  $('showKey').textContent = inp.type === 'password' ? 'show' : 'hide';
+  $('showKey').textContent = inp.type === 'password' ? 'SHOW' : 'HIDE';
 };
+
 $('ctxSeg').addEventListener('click', (e) => {
   const btn = e.target.closest('.segbtn');
   if (!btn) return;
   aiCfg.contextBudget = Number(btn.dataset.budget);
   renderSettings();
 });
+
 $('testBtn').onclick = async () => {
   const resEl = $('testResult');
-  const cfg = {
-    provider: $('setProvider').value,
-    apiKey: $('setKey').value.trim(),
-    model: $('setModel').value.trim()
-  };
   busy($('testBtn'), true, 'Testing…', 'Test connection');
   resEl.className = 'testresult'; resEl.textContent = '';
   try {
-    const r = await api('/api/providers/test', json(cfg));
+    const r = await api('/api/providers/test', json({
+      provider: aiCfg.provider,
+      apiKey: $('setKey').value.trim(),
+      model: $('setModel').value.trim()
+    }));
     resEl.className = 'testresult ok';
     resEl.textContent = '✓ Connected' + (r.model ? ' — ' + r.model : '');
   } catch (e) {
@@ -578,40 +736,30 @@ $('testBtn').onclick = async () => {
     resEl.textContent = '✗ ' + e.message;
   } finally { busy($('testBtn'), false, '', 'Test connection'); }
 };
+
 $('saveSettings').onclick = () => {
-  aiCfg.provider = $('setProvider').value;
   aiCfg.apiKey = $('setKey').value.trim();
   aiCfg.model = $('setModel').value.trim();
+  keysByProvider[aiCfg.provider] = aiCfg.apiKey;
   saveAiCfg();
   closeSettings();
   refreshBadge();
   toast(aiCfg.provider === 'local'
     ? 'Using local heuristic mode (no AI)'
-    : 'AI set to ' + (currentProviderMeta()?.label || aiCfg.provider) + (aiCfg.model ? ' · ' + aiCfg.model : ''), 'ok');
+    : 'AI set to ' + (currentProviderMeta()?.label || aiCfg.provider) +
+      (aiCfg.model ? ' · ' + aiCfg.model : ''), 'ok');
 };
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSettings(); });
 
 function refreshBadge() {
   const el = $('provider');
   if (aiCfg.provider !== 'local' && aiCfg.apiKey) {
-    const meta = currentProviderMeta();
-    el.textContent = 'AI: ' + (meta?.label || aiCfg.provider) + (aiCfg.model ? ' · ' + aiCfg.model : '');
+    el.textContent = 'AI: ' + (currentProviderMeta()?.label || aiCfg.provider) +
+      (aiCfg.model ? ' · ' + aiCfg.model : '');
     $('provDot').classList.add('ok');
   }
 }
 
-/* ---------- health ---------- */
-(async () => {
-  try {
-    const h = await api('/health');
-    if (!(aiCfg.provider !== 'local' && aiCfg.apiKey)) {
-      $('provider').textContent = 'AI: ' + (h.aiProvider === 'openai' ? 'OpenAI' : 'Local heuristic mode');
-      $('provDot').classList.add(h.aiProvider === 'openai' ? 'ok' : '');
-    }
-  } catch (_e) { $('provider').textContent = 'offline'; }
-})();
-
-/* ---------- projects ---------- */
+/* ================= projects ================= */
 async function loadProjects() {
   const projects = await api('/api/projects');
   const ul = $('projects');
@@ -623,12 +771,12 @@ async function loadProjects() {
   }
   for (const p of projects) {
     const li = document.createElement('li');
-    if (p.id === projectId) li.className = 'active';
+    if (p.id === projectId) li.classList.add('active');
     li.onclick = () => selectProject(p.id, p.title);
-    const name = document.createElement('div');
-    name.style.minWidth = '0';
+    const name = document.createElement('div'); name.style.minWidth = '0';
     const t = document.createElement('div'); t.className = 'li-title'; t.textContent = p.title;
-    const s = document.createElement('div'); s.className = 'li-sub'; s.textContent = new Date(p.createdAt).toLocaleDateString();
+    const s = document.createElement('div'); s.className = 'li-sub';
+    s.textContent = new Date(p.createdAt).toLocaleDateString();
     name.append(t, s);
     const del = document.createElement('button');
     del.className = 'danger small'; del.textContent = 'Delete';
@@ -666,21 +814,23 @@ function showWorkspace(on) {
 async function selectProject(id, title) {
   projectId = id;
   $('projHeading').textContent = title || id;
+  $('projMeta').textContent = 'Sources → analysis → book · everything stays on your machine/server';
   showWorkspace(true);
   document.querySelectorAll('#projects li').forEach((li) => li.classList.remove('active'));
-  [...document.querySelectorAll('#projects li')]
-    .find((li) => li.querySelector('.li-title') && li.querySelector('.li-title').textContent === (title || id))
-    ?.classList.add('active');
+  const match = [...document.querySelectorAll('#projects li')]
+    .find((li) => li.querySelector('.li-title') && li.querySelector('.li-title').textContent === (title || id));
+  if (match) match.classList.add('active');
 
-  $('stats').style.display = 'none'; $('covBar').style.display = 'none';
-  $('covNote').className = 'notice'; $('chapters').innerHTML =
-    '<div class="empty">Run the analysis first, then generate your book.</div>';
+  $('stats').style.display = 'none'; $('statsSkel').style.display = 'none';
+  $('covBar').style.display = 'none';
+  $('covNote').className = 'notice';
+  $('chapters').innerHTML = '<div class="empty">Run the analysis first, then generate your book.</div>';
   $('exports').style.display = 'none';
 
   await Promise.all([loadSources(), loadBook()]);
 }
 
-/* ---------- sources ---------- */
+/* ================= sources ================= */
 const dz = $('dropzone'), fileInput = $('files');
 let pickedFiles = [];
 
@@ -701,7 +851,7 @@ function renderFileChips() {
     const icon = document.createElement('span'); icon.className = 'ficon'; icon.textContent = fileIcon(f.name);
     const name = document.createElement('span'); name.className = 'fname'; name.textContent = f.name;
     const size = document.createElement('span'); size.className = 'fsize'; size.textContent = fmtSize(f.size);
-    const rm = document.createElement('button'); rm.textContent = '✕'; rm.title = 'Remove';
+    const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = '✕'; rm.title = 'Remove';
     rm.onclick = () => { pickedFiles.splice(i, 1); syncInputFiles(); renderFileChips(); };
     chip.append(icon, name, size, rm);
     wrap.appendChild(chip);
@@ -754,21 +904,21 @@ async function loadSources() {
   let pending = 0;
   if (!sources.length) {
     const li = document.createElement('li'); li.className = 'static';
-    li.innerHTML = '<span class="li-sub">No sources yet — add notes or upload PDFs above.</span>';
+    li.innerHTML = '<span class="li-sub">No sources yet — paste notes or upload PDFs above.</span>';
     ul.appendChild(li);
   }
   for (const s of sources) {
     if (s.status !== 'processed') pending++;
     const li = document.createElement('li'); li.className = 'static';
-    const left = document.createElement('div');
-    left.style.minWidth = '0';
+    const left = document.createElement('div'); left.style.minWidth = '0';
     const t = document.createElement('div'); t.className = 'li-title'; t.textContent = s.title;
     const meta = document.createElement('span'); meta.className = 'li-sub';
-    meta.textContent = s.type.toUpperCase() + (s.pageCount ? ' · ' + s.pageCount + ' pages' : '') +
+    meta.textContent = s.type.toUpperCase() +
+      (s.pageCount ? ' · ' + s.pageCount + ' pages' : '') +
       (s.status === 'processed' && s.chunkCount ? ' · ' + s.chunkCount + ' chunks' : '');
     left.append(t, meta);
     const right = document.createElement('div');
-    right.style.display = 'flex'; right.style.alignItems = 'center'; right.style.gap = '8px';
+    right.style.cssText = 'display:flex;align-items:center;gap:8px;';
     const pill = document.createElement('span');
     pill.className = 'pill ' + (s.status === 'processed' ? 'ok' : 'pending');
     pill.textContent = s.status;
@@ -795,14 +945,14 @@ $('addSrc').onclick = async () => {
     }
     for (const f of pickedFiles) fd.append('files', f);
     if (!text && !pickedFiles.length) throw new Error('Add some notes or choose files first');
-    busy($('addSrc'), true, 'Adding…', '＋ Add sources');
+    busy($('addSrc'), true, 'Adding…', '＋&nbsp;Add sources');
     const created = await api('/api/projects/' + projectId + '/sources', { method: 'POST', body: fd });
     $('noteText').value = ''; $('noteTitle').value = ''; $('noteStats').style.display = 'none';
     pickedFiles = []; syncInputFiles(); renderFileChips();
     toast(created.length + ' source(s) added', 'ok');
     await loadSources();
   } catch (e) { toast(e.message, 'err'); }
-  finally { busy($('addSrc'), false, '', '＋ Add sources'); }
+  finally { busy($('addSrc'), false, '', '＋&nbsp;Add sources'); }
 };
 
 async function processSource(sid, btn) {
@@ -819,7 +969,7 @@ async function processSource(sid, btn) {
 
 $('processAllBtn').onclick = async () => {
   try {
-    busy($('processAllBtn'), true, 'Processing…', '▶ Process all');
+    busy($('processAllBtn'), true, 'Processing…', '▶&nbsp;Process all');
     const sources = await api('/api/projects/' + projectId + '/sources');
     let done = 0;
     for (const s of sources.filter((x) => x.status !== 'processed')) {
@@ -829,15 +979,16 @@ $('processAllBtn').onclick = async () => {
     toast(done + ' source(s) processed', 'ok');
     await loadSources();
   } catch (e) { toast(e.message, 'err'); }
-  finally { busy($('processAllBtn'), false, '', '▶ Process all'); }
+  finally { busy($('processAllBtn'), false, '', '▶&nbsp;Process all'); }
 };
 
-/* ---------- analysis ---------- */
+/* ================= analysis ================= */
 $('analyzeBtn').onclick = async () => {
   const btn = $('analyzeBtn');
   try {
-    busy(btn, true, 'Analyzing…', '⚡ Run analysis');
+    busy(btn, true, 'Analyzing…', '⚡&nbsp;Run analysis');
     $('stats').style.display = 'none';
+    $('statsSkel').style.display = 'grid';
     const r = await api('/api/knowledge/' + projectId + '/analyze', { method: 'POST' });
     const cov = r.coverage || {};
     const covScore = cov.score != null ? cov.score : null;
@@ -853,10 +1004,14 @@ $('analyzeBtn').onclick = async () => {
     $('confStat').className = 'stat' + (conflicts > 0 ? ' bad' : '');
     $('covStat').className = 'stat' + (covScore == null ? '' : cov.insufficient ? ' warn' : ' good');
 
+    $('statsSkel').style.display = 'none';
     $('stats').style.display = 'grid';
     if (covScore != null) {
       $('covBar').style.display = 'block';
-      requestAnimationFrame(() => { $('covBar').querySelector('i').style.width = Math.min(100, covScore) + '%'; });
+      $('covBar').querySelector('i').style.width = '0%';
+      requestAnimationFrame(() => {
+        $('covBar').querySelector('i').style.width = Math.min(100, covScore) + '%';
+      });
     }
     const note = $('covNote');
     note.className = 'notice show ' + (cov.insufficient ? '' : 'good');
@@ -864,11 +1019,14 @@ $('analyzeBtn').onclick = async () => {
       ? '⚠ Coverage is low (' + covScore + '%). Add more sources on weak topics before generating for better results.'
       : '✓ Coverage looks healthy. You are ready to generate the book.';
     toast('Analysis complete — ' + r.topicCount + ' topics found', 'ok');
-  } catch (e) { toast(e.message, 'err'); }
-  finally { busy(btn, false, '', '⚡ Run analysis'); }
+  } catch (e) {
+    $('statsSkel').style.display = 'none';
+    toast(e.message, 'err');
+  }
+  finally { busy(btn, false, '', '⚡&nbsp;Run analysis'); }
 };
 
-/* ---------- book ---------- */
+/* ================= book ================= */
 function renderMarkdown(md) {
   const esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return esc.split(/\n{2,}/).map((block) => {
@@ -876,7 +1034,11 @@ function renderMarkdown(md) {
     if (/^###\s/.test(b)) return '<h3>' + inline(b.replace(/^###\s/, '')) + '</h3>';
     if (/^##\s/.test(b)) return '<h2>' + inline(b.replace(/^##\s/, '')) + '</h2>';
     if (/^#\s/.test(b)) return '<h1>' + inline(b.replace(/^#\s/, '')) + '</h1>';
-    if (/^[-*]\s/m.test(b)) return '<ul>' + b.split('\n').map((l) => l.replace(/^[-*]\s*/, '')).map((l) => '<li>' + inline(l) + '</li>').join('') + '</ul>';
+    if (/^[-*]\s/m.test(b)) {
+      return '<ul>' + b.split('\n')
+        .map((l) => l.replace(/^[-*]\s*/, ''))
+        .map((l) => '<li>' + inline(l) + '</li>').join('') + '</ul>';
+    }
     return '<p>' + inline(b).replace(/\n/g, '<br>') + '</p>';
   }).join('');
   function inline(s) {
@@ -887,7 +1049,7 @@ function renderMarkdown(md) {
 $('genBtn').onclick = async () => {
   const btn = $('genBtn');
   try {
-    busy(btn, true, 'Generating…', '📖 Generate book');
+    busy(btn, true, 'Generating…', '📖&nbsp;Generate book');
     const r = await api('/api/projects/' + projectId + '/book/generate', {
       method: 'POST',
       headers: aiRequestHeaders() || {}
@@ -895,8 +1057,9 @@ $('genBtn').onclick = async () => {
     const eng = r.engine || {};
     const ctx = r.context || {};
     let msg = 'Book generated — ' + r.chapters + ' chapter(s)';
-    if (eng.mode === 'ai') msg += ' · via ' + (eng.model || eng.provider);
-    else msg += ' · local heuristic';
+    msg += eng.mode === 'ai'
+      ? ' · via ' + (eng.model || eng.provider)
+      : ' · local heuristic';
     if (ctx.chunksAvailable) {
       msg += ' · context ' + ctx.chunksUsed + '/' + ctx.chunksAvailable +
         ' chunks (~' + Math.round(ctx.charsUsed / 1000) + 'k chars)';
@@ -904,7 +1067,7 @@ $('genBtn').onclick = async () => {
     toast(msg, 'ok');
     await loadBook(true);
   } catch (e) { toast(e.message, 'err'); }
-  finally { busy(btn, false, '', '📖 Generate book'); }
+  finally { busy(btn, false, '', '📖&nbsp;Generate book'); }
 };
 
 async function loadBook(scrollTo) {
@@ -986,7 +1149,17 @@ async function loadBook(scrollTo) {
   if (scrollTo) $('chapters').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/* ---------- boot ---------- */
+/* ================= health + boot ================= */
+(async () => {
+  try {
+    const h = await api('/health');
+    if (!(aiCfg.provider !== 'local' && aiCfg.apiKey)) {
+      $('provider').textContent = 'AI: ' + (h.aiProvider === 'openai' ? 'OpenAI' : 'Local heuristic');
+      $('provDot').classList.add(h.aiProvider === 'openai' ? 'ok' : '');
+    }
+  } catch (_e) { $('provider').textContent = 'offline'; }
+})();
+
 (async () => {
   try { await loadProviders(); } catch (_e) {}
   refreshBadge();
