@@ -17,5 +17,9 @@ module.exports = {
   },
   coverage: {
     minScore: 0.6
+  },
+  context: {
+    budgetChars: parseInt(process.env.CONTEXT_BUDGET_CHARS || '12000', 10),
+    perChunkCap: parseInt(process.env.CONTEXT_PER_CHUNK_CAP || '900', 10)
   }
 };

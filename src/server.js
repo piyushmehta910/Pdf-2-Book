@@ -6,6 +6,7 @@ const projectsRouter = require('./routes/projects');
 const sourcesRouter = require('./routes/sources');
 const knowledgeRouter = require('./routes/knowledge');
 const bookRouter = require('./routes/book');
+const providersRouter = require('./routes/providers');
 const webui = require('./webui');
 
 const app = express();
@@ -24,6 +25,7 @@ app.use('/api/projects', projectsRouter);
 app.use('/api/projects', sourcesRouter);
 app.use('/api/projects', bookRouter);
 app.use('/api/knowledge', knowledgeRouter);
+app.use('/api/providers', providersRouter);
 
 app.use((err, req, res, _next) => {
   logger.error(err.message);

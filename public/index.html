@@ -207,6 +207,54 @@
 
   footer { text-align: center; color: var(--muted); font-size: 12px; padding: 26px 0 34px; }
 
+  /* ---------- settings modal ---------- */
+  .modal-backdrop {
+    display: none; position: fixed; inset: 0; z-index: 90;
+    background: rgba(5,7,12,.66); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--panel); border: 1px solid var(--border2); border-radius: 16px;
+    width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto;
+    box-shadow: 0 24px 80px rgba(0,0,0,.55);
+    animation: pop .18s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes pop { from { opacity: 0; transform: scale(.96) translateY(8px); } to { opacity: 1; transform: none; } }
+  .modal-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 18px 22px; border-bottom: 1px solid var(--border);
+  }
+  .modal-head h2 { flex: 1; }
+  .modal-body { padding: 20px 22px; }
+  .modal-foot { padding: 16px 22px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+  .field { margin-bottom: 15px; }
+  .field > label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+  select {
+    width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 12px; font: inherit; outline: none;
+  }
+  select:focus-visible, input:focus-visible, textarea:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+  .keywrap { position: relative; }
+  .keywrap input { padding-right: 64px; }
+  .keytoggle {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    background: transparent; border: 0; color: var(--muted); font-size: 12px; cursor: pointer; padding: 4px 8px;
+  }
+  .keytoggle:hover { color: var(--text); }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .seg button.segbtn {
+    background: var(--panel2); border: 1px solid var(--border); color: var(--text2);
+    font-weight: 500; font-size: 13px; padding: 9px 6px; justify-content: center;
+  }
+  .seg button.segbtn.active { background: var(--glow); border-color: var(--accent); color: var(--text); }
+  .ctxinfo { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+  .provlink { color: var(--accent); text-decoration: none; font-size: 12.5px; }
+  .provlink:hover { text-decoration: underline; }
+  .testline { display: flex; gap: 10px; align-items: center; margin-top: 4px; min-height: 30px; }
+  .testresult { font-size: 12.5px; }
+  .testresult.ok { color: var(--ok); } .testresult.err { color: var(--err); }
+
   @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr; }
     aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
@@ -219,7 +267,7 @@
 <header>
   <div class="logo">pdf<b>2</b>book <small>Knowledge Book Studio</small></div>
   <div class="spacer"></div>
-  <span class="badge"><span class="dot" id="provDot"></span><span id="provider">connecting…</span></span>
+  <span class="badge" id="aiBadge" style="cursor:pointer" onclick="openSettings()" title="AI settings"><span class="dot" id="provDot"></span><span id="provider">connecting…</span></span>
 </header>
 
 <div class="layout">
@@ -313,6 +361,59 @@
   </main>
 </div>
 
+<div class="modal-backdrop" id="settingsModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <div class="modal-head">
+      <h2 id="setTitle">⚙ AI settings</h2>
+      <button class="danger small" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label for="setProvider">Provider</label>
+        <select id="setProvider"></select>
+      </div>
+
+      <div class="field" id="keyField">
+        <label for="setKey">API key
+          <a class="provlink" id="keyLink" target="_blank" rel="noopener" style="float:right">Get a free key ↗</a>
+        </label>
+        <div class="keywrap">
+          <input type="password" id="setKey" placeholder="Paste your API key…" autocomplete="off" spellcheck="false">
+          <button type="button" class="keytoggle" id="showKey">show</button>
+        </div>
+        <div class="ctxinfo">Stored only in this browser (localStorage) — sent per request to generate your book, never saved on the server.</div>
+      </div>
+
+      <div class="field">
+        <label for="setModel">Model</label>
+        <input type="text" id="setModel" list="modelList" placeholder="" autocomplete="off" spellcheck="false">
+        <datalist id="modelList"></datalist>
+        <div class="ctxinfo">Free models are pre-listed; you can type any model ID your account supports.</div>
+      </div>
+
+      <div class="field">
+        <label>Context budget per chapter topic</label>
+        <div class="seg" id="ctxSeg">
+          <button type="button" class="segbtn" data-budget="6000">Compact<br><span style="font-weight:400;font-size:10.5px;color:var(--muted)">~6k chars</span></button>
+          <button type="button" class="segbtn active" data-budget="12000">Balanced<br><span style="font-weight:400;font-size:10.5px;color:var(--muted)">~12k chars</span></button>
+          <button type="button" class="segbtn" data-budget="24000">Extended<br><span style="font-weight:400;font-size:10.5px;color:var(--muted)">~24k chars</span></button>
+        </div>
+        <div class="ctxinfo">Controls how much source material is packed into each AI request. Larger budgets give richer chapters but cost more tokens.</div>
+      </div>
+
+      <div class="testline">
+        <button class="ghost small" id="testBtn">Test connection</button>
+        <span class="testresult" id="testResult"></span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="hint" style="flex:1;align-self:center">Changes apply immediately.</span>
+      <button class="ghost" onclick="closeSettings()">Cancel</button>
+      <button id="saveSettings">Save settings</button>
+    </div>
+  </div>
+</div>
+
 <div id="toasts"></div>
 
 <script>
@@ -330,11 +431,9 @@ function toast(msg, kind) {
   setTimeout(() => t.remove(), 4200);
 }
 
-async function api(path, opts) {
-  const init = opts && Object.keys(opts).length ? {
-    headers: opts.body instanceof FormData ? undefined : { 'Content-Type': 'application/json' },
-    ...opts
-  } : undefined;
+async function api(path, opts = {}) {
+  const headers = { ...(opts.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), ...(opts.headers || {}) };
+  const init = Object.keys(opts).length || Object.keys(headers).length ? { ...opts, headers } : undefined;
   const res = await fetch(path, init);
   if (!res.ok) {
     let msg = res.status + ' ' + res.statusText;
@@ -352,12 +451,139 @@ function busy(btn, on, labelBusy, labelIdle) {
     : labelIdle;
 }
 
+/* ---------- AI provider settings ---------- */
+const CFG_KEY = 'pdf2book.aiConfig';
+let aiCfg = { provider: 'local', apiKey: '', model: '', contextBudget: 12000 };
+let providerMeta = [];
+
+try {
+  const saved = JSON.parse(localStorage.getItem(CFG_KEY) || 'null');
+  if (saved && typeof saved === 'object') aiCfg = { ...aiCfg, ...saved };
+} catch (_e) {}
+
+function saveAiCfg() {
+  localStorage.setItem(CFG_KEY, JSON.stringify(aiCfg));
+}
+
+function aiRequestHeaders() {
+  if (aiCfg.provider === 'local' || !aiCfg.apiKey) return null;
+  return { 'X-AI-Config': JSON.stringify({
+    provider: aiCfg.provider,
+    apiKey: aiCfg.apiKey,
+    model: aiCfg.model || undefined,
+    contextBudget: aiCfg.contextBudget || 12000
+  }) };
+}
+
+async function loadProviders() {
+  const data = await api('/api/providers');
+  providerMeta = data.providers;
+  const sel = $('setProvider');
+  sel.innerHTML = '';
+  for (const p of providerMeta) {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.label + (p.id === 'zen' ? ' — free models' : p.id === 'nvidia' ? ' — free tier' : '');
+    sel.appendChild(opt);
+  }
+}
+
+function currentProviderMeta() {
+  return providerMeta.find((p) => p.id === aiCfg.provider) || providerMeta[0];
+}
+
+function renderSettings() {
+  const meta = currentProviderMeta();
+  if (meta) {
+    $('setProvider').value = meta.id;
+    $('keyField').style.display = meta.baseUrl ? 'block' : 'none';
+    $('keyLink').href = meta.keyUrl || '#';
+    const dl = $('modelList');
+    dl.innerHTML = '';
+    for (const m of meta.models || []) {
+      const o = document.createElement('option'); o.value = m; dl.appendChild(o);
+    }
+    if (!$('setModel').value.trim()) $('setModel').value = meta.defaultModel || '';
+  }
+  [...$('ctxSeg').children].forEach((b) =>
+    b.classList.toggle('active', Number(b.dataset.budget) === Number(aiCfg.contextBudget)));
+}
+
+function openSettings() {
+  $('setKey').value = aiCfg.apiKey;
+  $('setModel').value = aiCfg.model;
+  renderSettings();
+  $('settingsModal').classList.add('open');
+}
+function closeSettings() { $('settingsModal').classList.remove('open'); }
+
+const keysByProvider = {};
+$('setProvider').addEventListener('change', () => {
+  keysByProvider[aiCfg.provider] = $('setKey').value.trim();
+  aiCfg.provider = $('setProvider').value;
+  aiCfg.model = '';
+  $('setKey').value = keysByProvider[aiCfg.provider] || '';
+  renderSettings();
+});
+$('showKey').onclick = () => {
+  const inp = $('setKey');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  $('showKey').textContent = inp.type === 'password' ? 'show' : 'hide';
+};
+$('ctxSeg').addEventListener('click', (e) => {
+  const btn = e.target.closest('.segbtn');
+  if (!btn) return;
+  aiCfg.contextBudget = Number(btn.dataset.budget);
+  renderSettings();
+});
+$('testBtn').onclick = async () => {
+  const resEl = $('testResult');
+  const cfg = {
+    provider: $('setProvider').value,
+    apiKey: $('setKey').value.trim(),
+    model: $('setModel').value.trim()
+  };
+  busy($('testBtn'), true, 'Testing…', 'Test connection');
+  resEl.className = 'testresult'; resEl.textContent = '';
+  try {
+    const r = await api('/api/providers/test', json(cfg));
+    resEl.className = 'testresult ok';
+    resEl.textContent = '✓ Connected' + (r.model ? ' — ' + r.model : '');
+  } catch (e) {
+    resEl.className = 'testresult err';
+    resEl.textContent = '✗ ' + e.message;
+  } finally { busy($('testBtn'), false, '', 'Test connection'); }
+};
+$('saveSettings').onclick = () => {
+  aiCfg.provider = $('setProvider').value;
+  aiCfg.apiKey = $('setKey').value.trim();
+  aiCfg.model = $('setModel').value.trim();
+  saveAiCfg();
+  closeSettings();
+  refreshBadge();
+  toast(aiCfg.provider === 'local'
+    ? 'Using local heuristic mode (no AI)'
+    : 'AI set to ' + (currentProviderMeta()?.label || aiCfg.provider) + (aiCfg.model ? ' · ' + aiCfg.model : ''), 'ok');
+};
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSettings(); });
+
+function refreshBadge() {
+  const el = $('provider');
+  if (aiCfg.provider !== 'local' && aiCfg.apiKey) {
+    const meta = currentProviderMeta();
+    el.textContent = 'AI: ' + (meta?.label || aiCfg.provider) + (aiCfg.model ? ' · ' + aiCfg.model : '');
+    $('provDot').classList.add('ok');
+  }
+}
+
 /* ---------- health ---------- */
 (async () => {
   try {
     const h = await api('/health');
-    $('provider').textContent = 'AI: ' + (h.aiProvider === 'openai' ? 'OpenAI' : 'Local heuristic mode');
-    $('provDot').classList.add(h.aiProvider === 'openai' ? 'ok' : '');
+    if (!(aiCfg.provider !== 'local' && aiCfg.apiKey)) {
+      $('provider').textContent = 'AI: ' + (h.aiProvider === 'openai' ? 'OpenAI' : 'Local heuristic mode');
+      $('provDot').classList.add(h.aiProvider === 'openai' ? 'ok' : '');
+    }
   } catch (_e) { $('provider').textContent = 'offline'; }
 })();
 
@@ -582,8 +808,20 @@ $('genBtn').onclick = async () => {
   const btn = $('genBtn');
   try {
     busy(btn, true, 'Generating…', '📖 Generate book');
-    const r = await api('/api/projects/' + projectId + '/book/generate', { method: 'POST' });
-    toast('Book generated — ' + r.chapters + ' chapter(s)', 'ok');
+    const r = await api('/api/projects/' + projectId + '/book/generate', {
+      method: 'POST',
+      headers: aiRequestHeaders() || {}
+    });
+    const eng = r.engine || {};
+    const ctx = r.context || {};
+    let msg = 'Book generated — ' + r.chapters + ' chapter(s)';
+    if (eng.mode === 'ai') msg += ' · via ' + (eng.model || eng.provider);
+    else msg += ' · local heuristic';
+    if (ctx.chunksAvailable) {
+      msg += ' · context ' + ctx.chunksUsed + '/' + ctx.chunksAvailable +
+        ' chunks (~' + Math.round(ctx.charsUsed / 1000) + 'k chars)';
+    }
+    toast(msg, 'ok');
     await loadBook(true);
   } catch (e) { toast(e.message, 'err'); }
   finally { busy(btn, false, '', '📖 Generate book'); }
@@ -670,6 +908,8 @@ async function loadBook(scrollTo) {
 
 /* ---------- boot ---------- */
 (async () => {
+  try { await loadProviders(); } catch (_e) {}
+  refreshBadge();
   try {
     await loadProjects();
     const projects = await api('/api/projects');

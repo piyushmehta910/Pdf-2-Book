@@ -1,14 +1,34 @@
 const express = require('express');
 const storage = require('../services/storage');
 const { synthesizeTopic, generateChapter } = require('../services/synthesizer');
+const aiProvider = require('../services/aiProvider');
+const config = require('../config');
 const { toMarkdown, toHtml, toProjectJson, writeExport } = require('../services/exporter');
 const logger = require('../logger');
 
 const router = express.Router();
 
+function aiConfigFromRequest(req) {
+  const raw = req.headers['x-ai-config'];
+  if (!raw) return {};
+  try {
+    const c = JSON.parse(raw);
+    const budget = Number(c.contextBudget);
+    return {
+      provider: typeof c.provider === 'string' ? c.provider.slice(0, 32) : undefined,
+      apiKey: typeof c.apiKey === 'string' ? c.apiKey.slice(0, 512) : undefined,
+      model: typeof c.model === 'string' ? c.model.slice(0, 128) : undefined,
+      contextBudget: Number.isFinite(budget) ? Math.min(Math.max(Math.round(budget), 2000), 64000) : undefined
+    };
+  } catch (_err) {
+    return {};
+  }
+}
+
 router.post('/:projectId/book/generate', async (req, res) => {
   try {
     const projectId = req.params.projectId;
+    const aiConfig = aiConfigFromRequest(req);
     const topics = storage.readCollection(projectId, 'topics');
     const chunks = storage.readCollection(projectId, 'chunks');
     const sources = storage.readCollection(projectId, 'sources');
@@ -18,7 +38,7 @@ router.post('/:projectId/book/generate', async (req, res) => {
 
     const syntheses = [];
     for (const topic of topics) {
-      syntheses.push(await synthesizeTopic(topic, chunks, sources));
+      syntheses.push(await synthesizeTopic(topic, chunks, sources, aiConfig));
     }
     storage.replaceAll(projectId, 'syntheses', syntheses);
 
@@ -35,7 +55,19 @@ router.post('/:projectId/book/generate', async (req, res) => {
     };
     storage.insert(projectId, 'revisions', version);
 
-    res.json({ chapters: chapters.length, version });
+    const engineMode = aiProvider.available(aiConfig)
+      ? { provider: aiConfig.provider || (config.openaiApiKey ? 'openai' : 'local'), model: aiConfig.model || null, mode: 'ai' }
+      : { provider: 'local', model: null, mode: 'local-heuristic' };
+    const contextTotals = syntheses.reduce(
+      (acc, s) => ({
+        charsUsed: acc.charsUsed + (s.contextStats ? s.contextStats.charsUsed : 0),
+        chunksUsed: acc.chunksUsed + (s.contextStats ? s.contextStats.chunksUsed : 0),
+        chunksAvailable: acc.chunksAvailable + (s.contextStats ? s.contextStats.chunksAvailable : 0)
+      }),
+      { charsUsed: 0, chunksUsed: 0, chunksAvailable: 0 }
+    );
+
+    res.json({ chapters: chapters.length, version, engine: engineMode, context: contextTotals });
   } catch (err) {
     logger.error(err.message);
     res.status(500).json({ error: err.message });

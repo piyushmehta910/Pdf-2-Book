@@ -1,4 +1,5 @@
 const aiProvider = require('./aiProvider');
+const { buildContext } = require('./contextManager');
 const { id } = require('./storage');
 
 function sourceTitleLookup(sources) {
@@ -7,20 +8,27 @@ function sourceTitleLookup(sources) {
   return map;
 }
 
-async function synthesizeTopic(topic, chunks, sources) {
+async function synthesizeTopic(topic, chunks, sources, aiConfig = {}) {
   const lookup = sourceTitleLookup(sources);
   const topicChunks = chunks.filter((c) => topic.chunkIds.includes(c.id));
 
   const evidence = topicChunks.map((c) => ({
+    id: c.id,
     content: c.content,
     sourceTitle: (lookup.get(c.sourceId) || {}).title || 'Unknown source',
     pageNumber: c.pageNumber
   }));
 
+  const context = buildContext({
+    query: `${topic.name} ${(topic.keywords || []).join(' ')}`,
+    items: evidence,
+    budgetChars: aiConfig.contextBudget
+  });
+
   let content;
-  if (aiProvider.available()) {
+  if (aiProvider.available(aiConfig)) {
     try {
-      content = await aiProvider.synthesize(evidence, topic.name);
+      content = await aiProvider.synthesize(context.picked, topic.name, aiConfig);
     } catch (_err) {
       content = extractiveSynthesis(evidence, topic.name);
     }
@@ -35,6 +43,12 @@ async function synthesizeTopic(topic, chunks, sources) {
     content,
     sourceIds: [...new Set(topicChunks.map((c) => c.sourceId))],
     pageRefs: topicChunks.map((c) => ({ sourceId: c.sourceId, page: c.pageNumber })),
+    contextStats: {
+      chunksAvailable: evidence.length,
+      chunksUsed: context.usedChunks,
+      charsUsed: context.usedChars,
+      budgetChars: context.budgetChars
+    },
     generatedAt: new Date().toISOString()
   };
 }
