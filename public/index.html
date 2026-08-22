@@ -6,180 +6,336 @@
 <title>pdf2book — Knowledge Book Studio</title>
 <style>
   :root {
-    --bg: #0f1115; --panel: #171a21; --panel2: #1d212b; --border: #2a2f3a;
-    --text: #e6e9ef; --muted: #8b93a3; --accent: #6c8cff; --accent2: #4c6ef5;
-    --ok: #3fb96f; --warn: #e5a13a; --err: #e05661;
+    --bg: #0b0d12; --bg2: #0f1219; --panel: #141824; --panel2: #1a1f2e; --panel3: #212739;
+    --border: #262c3d; --border2: #333b52;
+    --text: #e8ebf3; --text2: #b8bfd0; --muted: #7e8798;
+    --accent: #7c93ff; --accent-dim: #5a6fd6; --glow: rgba(124,147,255,.14);
+    --ok: #4ade80; --warn: #fbbf24; --err: #f87171;
+    --radius: 12px;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    font-size: 14px;
+    margin: 0; background:
+      radial-gradient(1200px 500px at 80% -10%, rgba(90,111,214,.10), transparent 60%),
+      radial-gradient(900px 400px at -10% 110%, rgba(74,222,128,.05), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14.5px; line-height: 1.5;
   }
+  ::selection { background: var(--accent); color: #fff; }
+
+  /* ---------- header ---------- */
   header {
-    display: flex; align-items: center; gap: 12px; padding: 14px 22px;
-    border-bottom: 1px solid var(--border); background: var(--panel);
+    position: sticky; top: 0; z-index: 40;
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 26px;
+    background: rgba(15,18,25,.85); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
   }
-  header h1 { font-size: 18px; margin: 0; letter-spacing: .3px; }
-  header h1 span { color: var(--accent); }
+  .logo { display: flex; align-items: baseline; gap: 2px; font-weight: 700; font-size: 19px; letter-spacing: .2px; }
+  .logo b { color: var(--accent); }
+  .logo small { font-weight: 400; color: var(--muted); margin-left: 8px; font-size: 11.5px; letter-spacing: .6px; text-transform: uppercase; }
+  header .spacer { flex: 1; }
   .badge {
-    font-size: 11px; padding: 3px 10px; border-radius: 999px;
-    border: 1px solid var(--border); color: var(--muted);
+    font-size: 11.5px; padding: 4px 12px; border-radius: 999px;
+    border: 1px solid var(--border2); background: var(--panel); color: var(--text2);
+    display: inline-flex; align-items: center; gap: 6px;
   }
-  .layout { display: grid; grid-template-columns: 250px 1fr; min-height: calc(100vh - 55px); }
-  aside { border-right: 1px solid var(--border); background: var(--panel); padding: 16px; }
-  main { padding: 22px; max-width: 900px; }
-  h2 { font-size: 15px; margin: 0 0 12px; }
-  h3 { font-size: 13px; margin: 18px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 8px rgba(74,222,128,.7); }
+
+  /* ---------- layout ---------- */
+  .layout { display: grid; grid-template-columns: 272px minmax(0,1fr); min-height: calc(100vh - 55px); }
+  aside {
+    border-right: 1px solid var(--border); background: var(--bg2);
+    padding: 20px 16px; position: sticky; top: 55px; height: calc(100vh - 55px);
+    overflow-y: auto;
+  }
+  main { padding: 30px 40px 80px; max-width: 960px; }
+
+  /* ---------- controls ---------- */
   input[type=text], textarea {
     width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
-    border-radius: 8px; padding: 9px 11px; font: inherit; outline: none;
+    border-radius: 9px; padding: 10px 13px; font: inherit; outline: none;
+    transition: border-color .15s, box-shadow .15s;
   }
-  input:focus, textarea:focus { border-color: var(--accent); }
-  textarea { resize: vertical; min-height: 110px; }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  input:focus-visible, textarea:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+  textarea { resize: vertical; line-height: 1.55; }
   button {
-    background: var(--accent2); color: #fff; border: 0; border-radius: 8px;
-    padding: 8px 14px; font: inherit; cursor: pointer;
+    background: linear-gradient(180deg, var(--accent), var(--accent-dim)); color: #fff;
+    border: 0; border-radius: 9px; padding: 9px 16px; font: inherit; font-weight: 600;
+    cursor: pointer; transition: filter .15s, transform .05s;
+    display: inline-flex; align-items: center; gap: 7px;
   }
-  button:hover { filter: brightness(1.12); }
-  button:disabled { opacity: .5; cursor: default; }
-  button.ghost { background: var(--panel2); border: 1px solid var(--border); color: var(--text); }
-  button.danger { background: transparent; border: 1px solid var(--err); color: var(--err); padding: 4px 9px; font-size: 12px; }
-  button.small { padding: 5px 10px; font-size: 12px; }
+  button:hover:not(:disabled) { filter: brightness(1.1); }
+  button:active:not(:disabled) { transform: translateY(1px); }
+  button:disabled { opacity: .45; cursor: default; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.ghost { background: var(--panel2); border: 1px solid var(--border2); color: var(--text); font-weight: 500; }
+  button.small { padding: 5px 12px; font-size: 12.5px; }
+  button.danger { background: transparent; border: 1px solid transparent; color: var(--muted); font-weight: 400; }
+  button.danger:hover { color: var(--err); border-color: var(--err); }
+  a.btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--panel2); border: 1px solid var(--border2); color: var(--text2);
+    border-radius: 9px; padding: 8px 15px; text-decoration: none; font-weight: 500;
+    transition: border-color .15s, color .15s;
+  }
+  a.btn:hover { border-color: var(--accent); color: var(--text); }
+  label.filebtn { cursor: pointer; }
+
+  /* ---------- cards & sections ---------- */
   .card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-    padding: 16px; margin-bottom: 16px;
+    background: linear-gradient(180deg, var(--panel), var(--bg2));
+    border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin-bottom: 20px;
   }
-  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .stack { display: flex; flex-direction: column; gap: 8px; }
-  ul.list { list-style: none; margin: 0; padding: 0; }
+  .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .card-head h2 { flex: 1; }
+  h2 { font-size: 16.5px; margin: 0; font-weight: 650; display: flex; align-items: center; gap: 9px; }
+  .step-num {
+    width: 24px; height: 24px; border-radius: 8px; background: var(--panel3); color: var(--accent);
+    display: inline-flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700;
+    border: 1px solid var(--border2);
+  }
+  .hint { color: var(--muted); font-size: 12.5px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .stack { display: flex; flex-direction: column; gap: 10px; }
+  hr.sep { border: 0; border-top: 1px solid var(--border); margin: 18px 0; }
+
+  /* ---------- sidebar ---------- */
+  aside h3 { font-size: 11px; margin: 0 0 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  ul.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
   ul.list li {
     display: flex; justify-content: space-between; align-items: center; gap: 8px;
-    padding: 9px 11px; border-radius: 8px; margin-bottom: 6px; background: var(--panel2);
+    padding: 10px 12px; border-radius: 10px; background: var(--panel);
     border: 1px solid var(--border); cursor: pointer;
+    transition: border-color .15s, background .15s;
   }
-  ul.list li.active { border-color: var(--accent); }
+  ul.list li:hover { border-color: var(--border2); background: var(--panel2); }
+  ul.list li.active { border-color: var(--accent); background: linear-gradient(90deg, var(--glow), transparent 70%), var(--panel2); }
   ul.list li.static { cursor: default; }
-  .muted { color: var(--muted); font-size: 12px; }
-  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); }
-  .pill.ok { color: var(--ok); border-color: var(--ok); }
-  .pill.pending { color: var(--warn); border-color: var(--warn); }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
-  .stat { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
-  .stat b { display: block; font-size: 22px; }
-  .stat span { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
-  .bar { height: 8px; background: var(--panel2); border-radius: 999px; overflow: hidden; border: 1px solid var(--border); }
-  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--ok)); }
-  .banner {
-    display: none; position: fixed; bottom: 18px; right: 18px; z-index: 50;
-    background: var(--panel2); border: 1px solid var(--err); color: var(--text);
-    padding: 12px 16px; border-radius: 10px; max-width: 420px;
+  ul.list li.static:hover { background: var(--panel); border-color: var(--border); }
+  .li-title { font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .li-sub { font-size: 11.5px; color: var(--muted); }
+
+  /* ---------- pills / status ---------- */
+  .pill { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border2); color: var(--muted); white-space: nowrap; }
+  .pill.ok { color: var(--ok); border-color: rgba(74,222,128,.4); background: rgba(74,222,128,.08); }
+  .pill.pending { color: var(--warn); border-color: rgba(251,191,36,.4); background: rgba(251,191,36,.07); }
+
+  /* ---------- stats ---------- */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .stat {
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+    position: relative; overflow: hidden;
   }
-  .chapter { border-bottom: 1px solid var(--border); padding: 14px 0; }
-  .chapter:last-child { border-bottom: 0; }
-  .chapter h4 { margin: 0 0 8px; font-size: 14px; }
-  pre.book {
-    white-space: pre-wrap; word-wrap: break-word; font-family: Georgia, serif;
-    line-height: 1.65; margin: 0; font-size: 15px;
+  .stat b { display: block; font-size: 26px; font-weight: 700; line-height: 1.2; }
+  .stat span { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .8px; }
+  .stat.warn b { color: var(--warn); } .stat.bad b { color: var(--err); } .stat.good b { color: var(--ok); }
+
+  .bar { height: 9px; background: var(--panel3); border-radius: 999px; overflow: hidden; }
+  .bar i {
+    display: block; height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--ok));
+    border-radius: 999px; transition: width .8s cubic-bezier(.2,.8,.2,1);
   }
-  a.btn {
-    display: inline-block; background: var(--panel2); border: 1px solid var(--border);
-    color: var(--text); border-radius: 8px; padding: 7px 13px; text-decoration: none; font: inherit;
+
+  .notice {
+    display: none; margin-top: 14px; padding: 11px 14px; border-radius: 10px; font-size: 13px;
+    border: 1px solid rgba(251,191,36,.35); background: rgba(251,191,36,.07); color: #ffd479;
   }
-  a.btn:hover { border-color: var(--accent); }
-  .empty { color: var(--muted); padding: 20px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; }
+  .notice.show { display: block; }
+  .notice.good { border-color: rgba(74,222,128,.35); background: rgba(74,222,128,.06); color: var(--ok); }
+  .notice.bad  { border-color: rgba(248,113,113,.35); background: rgba(248,113,113,.06); color: var(--err); }
+
+  /* ---------- drop zone ---------- */
+  .dropzone {
+    border: 1.5px dashed var(--border2); border-radius: 12px; padding: 22px;
+    text-align: center; color: var(--muted); cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .dropzone:hover, .dropzone.over { border-color: var(--accent); background: var(--glow); color: var(--text2); }
+  .dz-icon { font-size: 26px; margin-bottom: 6px; }
+
+  /* ---------- chapters ---------- */
+  .chapter {
+    border: 1px solid var(--border); border-radius: 12px; background: var(--panel2);
+    padding: 18px 20px; margin-bottom: 12px;
+  }
+  .chapter-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .chapter-head h4 { flex: 1; margin: 0; font-size: 14.5px; font-weight: 650; }
+  .reader {
+    font-family: Georgia, "Times New Roman", serif; font-size: 16.5px; line-height: 1.75;
+    color: #dfe3ec; max-width: 68ch;
+  }
+  .reader h1 { font-size: 23px; margin: 18px 0 10px; } 
+  .reader h2 { font-size: 18px; margin: 16px 0 8px; }
+  .reader p { margin: 10px 0; }
+  .reader ul { padding-left: 24px; margin: 8px 0; }
+  .reader strong { color: #fff; }
+
+  /* ---------- toasts ---------- */
+  #toasts { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; max-width: 420px; }
+  .toast {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel3); border: 1px solid var(--border2); border-left: 3px solid var(--accent);
+    padding: 12px 16px; border-radius: 11px; font-size: 13.5px;
+    animation: slidein .25s cubic-bezier(.2,.8,.2,1);
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+  }
+  .toast.err { border-left-color: var(--err); }
+  .toast.ok { border-left-color: var(--ok); }
+  @keyframes slidein { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- empty state ---------- */
+  .empty {
+    color: var(--muted); text-align: center; border: 1.5px dashed var(--border2);
+    border-radius: 14px; padding: 44px 24px;
+  }
+  .empty .big { font-size: 34px; margin-bottom: 10px; }
+  .empty b { color: var(--text2); display: block; margin-bottom: 6px; font-size: 15px; }
+
+  /* ---------- skeleton ---------- */
+  .skel { border-radius: 10px; background: linear-gradient(90deg, var(--panel2) 25%, var(--panel3) 45%, var(--panel2) 65%); background-size: 200% 100%; animation: shimmer 1.3s infinite; }
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: rot .7s linear infinite; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 26px 0 34px; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+    main { padding: 22px 18px 70px; }
+  }
 </style>
 </head>
 <body>
+
 <header>
-  <h1>pdf<span>2</span>book</h1>
-  <span class="badge" id="provider">checking…</span>
+  <div class="logo">pdf<b>2</b>book <small>Knowledge Book Studio</small></div>
+  <div class="spacer"></div>
+  <span class="badge"><span class="dot" id="provDot"></span><span id="provider">connecting…</span></span>
 </header>
+
 <div class="layout">
   <aside>
-    <div class="stack">
-      <button id="newBtn">+ New project</button>
-      <input type="text" id="projTitle" placeholder="Project title">
-      <div style="height:6px"></div>
-      <ul class="list" id="projects"></ul>
+    <h3>Projects</h3>
+    <div class="stack" style="margin-bottom:16px">
+      <input type="text" id="projTitle" placeholder="New project title…" maxlength="120"
+             onkeydown="if(event.key==='Enter')document.getElementById('newBtn').click()">
+      <button id="newBtn">✦&nbsp; Create project</button>
     </div>
+    <ul class="list" id="projects"></ul>
   </aside>
-  <main>
-    <div id="noProject" class="empty">Create or select a project to begin.</div>
-    <div id="workspace" style="display:none">
 
+  <main>
+    <div id="noProject" class="empty">
+      <div class="big">📚</div>
+      <b>Welcome to pdf2book</b>
+      Turn scattered research papers and notes into a coherent knowledge book.<br>
+      Create or select a project on the left to begin.
+    </div>
+
+    <div id="workspace" style="display:none">
+      <div style="margin-bottom:18px">
+        <h2 id="projHeading" style="font-size:21px;margin-bottom:4px"></h2>
+        <div class="hint" id="projMeta"></div>
+      </div>
+
+      <!-- STEP 1 — SOURCES -->
       <section class="card">
-        <h2>Sources</h2>
+        <div class="card-head"><h2><span class="step-num">1</span> Add sources</h2></div>
         <div class="stack">
           <input type="text" id="noteTitle" placeholder="Title for pasted notes (optional)">
-          <textarea id="noteText" placeholder="Paste research notes, summaries, or paper excerpts here…"></textarea>
+          <textarea id="noteText" rows="4" placeholder="Paste research notes, paper excerpts, summaries…"></textarea>
+
+          <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose files">
+            <div class="dz-icon">📄</div>
+            <b style="color:var(--text2)">Drop PDF or TXT files here</b><br>
+            <span class="hint">or click to browse — multiple files supported</span>
+            <input type="file" id="files" accept=".pdf,.txt" multiple hidden>
+          </div>
           <div class="row">
-            <label class="btn ghost"><input type="file" id="files" accept=".pdf,.txt" multiple hidden>
-              <button type="button" class="ghost" onclick="document.getElementById('files').click()">Choose PDF / TXT files…</button></label>
-            <span class="muted" id="fileCount"></span>
+            <span class="hint" id="fileCount"></span>
             <span style="flex:1"></span>
-            <button id="addSrc">Add sources</button>
+            <button id="addSrc">＋ Add sources</button>
           </div>
         </div>
-        <div style="height:12px"></div>
+        <hr class="sep">
         <ul class="list" id="sources"></ul>
+        <div class="row" id="processAllRow" style="display:none;margin-top:12px">
+          <span class="hint" style="flex:1">Process all pending sources at once.</span>
+          <button class="ghost" id="processAllBtn">▶ Process all</button>
+        </div>
       </section>
 
+      <!-- STEP 2 — ANALYSIS -->
       <section class="card">
-        <div class="row">
-          <h2 style="flex:1;margin:0">Knowledge analysis</h2>
-          <button id="analyzeBtn">Run analysis</button>
+        <div class="card-head">
+          <h2><span class="step-num">2</span> Analyze knowledge</h2>
+          <button id="analyzeBtn">⚡ Run analysis</button>
         </div>
-        <div style="height:12px"></div>
+        <p class="hint">Detects topics across sources, merges duplicates, flags contradictions, and checks coverage so no topic is left behind.</p>
+        <div class="stats skel" id="statsSkel" style="height:76px;display:none"></div>
         <div class="stats" id="stats" style="display:none">
-          <div class="stat"><b id="sTopics">–</b><span>Topics</span></div>
+          <div class="stat good"><b id="sTopics">–</b><span>Topics</span></div>
           <div class="stat"><b id="sChapters">–</b><span>Outline chapters</span></div>
-          <div class="stat"><b id="sDupes">–</b><span>Duplicate groups</span></div>
-          <div class="stat"><b id="sConflicts">–</b><span>Conflicts</span></div>
-          <div class="stat"><b id="sCov">–</b><span>Coverage</span></div>
+          <div class="stat" id="dupeStat"><b id="sDupes">–</b><span>Duplicate groups</span></div>
+          <div class="stat" id="confStat"><b id="sConflicts">–</b><span>Conflicts</span></div>
+          <div class="stat" id="covStat"><b id="sCov">–</b><span>Coverage</span></div>
         </div>
-        <div id="covBar" class="bar" style="display:none;margin-top:10px"><i style="width:0%"></i></div>
-        <p class="muted" id="covNote" style="margin:8px 0 0"></p>
+        <div class="bar" id="covBar" style="display:none;margin-top:14px"><i></i></div>
+        <div class="notice" id="covNote"></div>
       </section>
 
+      <!-- STEP 3 — BOOK -->
       <section class="card">
-        <div class="row">
-          <h2 style="flex:1;margin:0">Book</h2>
-          <button id="genBtn">Generate book</button>
+        <div class="card-head">
+          <h2><span class="step-num">3</span> Generate your book</h2>
+          <button id="genBtn">📖 Generate book</button>
         </div>
-        <div style="height:8px"></div>
-        <div class="row" id="exports" style="display:none">
-          <span class="muted">Export:</span>
-          <a class="btn" id="expMd" target="_blank">Markdown</a>
-          <a class="btn" id="expHtml" target="_blank">HTML</a>
-          <a class="btn" id="expJson" target="_blank">JSON</a>
+        <div class="row" id="exports" style="display:none;margin-bottom:16px">
+          <span class="hint">Export:</span>
+          <a class="btn" id="expMd" target="_blank" rel="noopener">⬇ Markdown</a>
+          <a class="btn" id="expHtml" target="_blank" rel="noopener">⬇ HTML</a>
+          <a class="btn" id="expJson" target="_blank" rel="noopener">⬇ JSON</a>
         </div>
-        <div style="height:8px"></div>
-        <div id="chapters"></div>
+        <div id="chapters"><div class="empty">Run the analysis first, then generate your book.</div></div>
       </section>
 
+      <footer>pdf2book · local-first knowledge synthesis engine</footer>
     </div>
   </main>
 </div>
-<div class="banner" id="banner"></div>
+
+<div id="toasts"></div>
 
 <script>
+'use strict';
 const $ = (id) => document.getElementById(id);
 let projectId = null;
 
-function fail(err) {
-  const b = $('banner');
-  b.textContent = 'Error: ' + err.message;
-  b.style.display = 'block';
-  clearTimeout(fail._t);
-  fail._t = setTimeout(() => { b.style.display = 'none'; }, 6000);
+/* ---------- helpers ---------- */
+function toast(msg, kind) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (kind ? ' ' + kind : '');
+  t.textContent = msg;
+  $('toasts').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; }, 3800);
+  setTimeout(() => t.remove(), 4200);
 }
 
 async function api(path, opts) {
-  const res = await fetch(path, opts && Object.keys(opts).length ? {
+  const init = opts && Object.keys(opts).length ? {
     headers: opts.body instanceof FormData ? undefined : { 'Content-Type': 'application/json' },
     ...opts
-  } : undefined);
+  } : undefined;
+  const res = await fetch(path, init);
   if (!res.ok) {
     let msg = res.status + ' ' + res.statusText;
     try { msg = (await res.json()).error || msg; } catch (_e) {}
@@ -189,30 +345,50 @@ async function api(path, opts) {
 }
 const json = (body) => ({ method: 'POST', body: JSON.stringify(body) });
 
-async function loadHealth() {
-  try {
-    const h = await api('/health');
-    $('provider').textContent = 'AI: ' + h.aiProvider;
-  } catch (_e) { $('provider').textContent = 'offline'; }
+function busy(btn, on, labelBusy, labelIdle) {
+  btn.disabled = on;
+  btn.innerHTML = on
+    ? '<span class="spin"></span>&nbsp; ' + labelBusy
+    : labelIdle;
 }
 
+/* ---------- health ---------- */
+(async () => {
+  try {
+    const h = await api('/health');
+    $('provider').textContent = 'AI: ' + (h.aiProvider === 'openai' ? 'OpenAI' : 'Local heuristic mode');
+    $('provDot').classList.add(h.aiProvider === 'openai' ? 'ok' : '');
+  } catch (_e) { $('provider').textContent = 'offline'; }
+})();
+
+/* ---------- projects ---------- */
 async function loadProjects() {
   const projects = await api('/api/projects');
   const ul = $('projects');
   ul.innerHTML = '';
+  if (!projects.length) {
+    const li = document.createElement('li'); li.className = 'static';
+    li.innerHTML = '<span class="li-sub">No projects yet — create one above.</span>';
+    ul.appendChild(li); return;
+  }
   for (const p of projects) {
     const li = document.createElement('li');
-    li.className = p.id === projectId ? 'active' : '';
-    li.onclick = () => selectProject(p.id);
-    const name = document.createElement('span'); name.textContent = p.title;
+    if (p.id === projectId) li.className = 'active';
+    li.onclick = () => selectProject(p.id, p.title);
+    const name = document.createElement('div');
+    name.style.minWidth = '0';
+    const t = document.createElement('div'); t.className = 'li-title'; t.textContent = p.title;
+    const s = document.createElement('div'); s.className = 'li-sub'; s.textContent = new Date(p.createdAt).toLocaleDateString();
+    name.append(t, s);
     const del = document.createElement('button');
-    del.className = 'danger'; del.textContent = '✕';
+    del.className = 'danger small'; del.textContent = 'Delete';
     del.onclick = async (e) => {
       e.stopPropagation();
-      if (!confirm('Delete project "' + p.title + '"?')) return;
+      if (!confirm('Delete "' + p.title + '" and all its data?')) return;
       await api('/api/projects/' + p.id, { method: 'DELETE' });
-      if (projectId === p.id) projectId = null;
-      await refresh();
+      toast('Project deleted', 'ok');
+      if (projectId === p.id) { projectId = null; showWorkspace(false); }
+      await loadProjects();
     };
     li.append(name, del);
     ul.appendChild(li);
@@ -222,61 +398,87 @@ async function loadProjects() {
 $('newBtn').onclick = async () => {
   try {
     const title = $('projTitle').value.trim() || 'Untitled Project';
+    busy($('newBtn'), true, 'Creating…', '<span aria-hidden="true">✦</span>&nbsp; Create project');
     const p = await api('/api/projects', json({ title }));
     $('projTitle').value = '';
+    toast('Project "' + p.title + '" created', 'ok');
     await loadProjects();
-    selectProject(p.id);
-  } catch (e) { fail(e); }
+    selectProject(p.id, p.title);
+  } catch (e) { toast(e.message, 'err'); }
+  finally { busy($('newBtn'), false, '', '<span aria-hidden="true">✦</span>&nbsp; Create project'); }
 };
 
-async function selectProject(id) {
+function showWorkspace(on) {
+  $('noProject').style.display = on ? 'none' : 'block';
+  $('workspace').style.display = on ? 'block' : 'none';
+}
+
+async function selectProject(id, title) {
   projectId = id;
-  $('noProject').style.display = 'none';
-  $('workspace').style.display = 'block';
+  $('projHeading').textContent = title || id;
+  showWorkspace(true);
   document.querySelectorAll('#projects li').forEach((li) => li.classList.remove('active'));
-  const lis = document.querySelectorAll('#projects li');
-  const idx = [...lis].findIndex((li) => li.textContent.replace('✕','').trim() === id || true);
-  if (idx >= 0) lis[idx] && lis[idx].classList.add('active');
+  [...document.querySelectorAll('#projects li')]
+    .find((li) => li.querySelector('.li-title') && li.querySelector('.li-title').textContent === (title || id))
+    ?.classList.add('active');
+
   $('stats').style.display = 'none'; $('covBar').style.display = 'none';
-  $('covNote').textContent = ''; $('chapters').innerHTML = ''; $('exports').style.display = 'none';
+  $('covNote').className = 'notice'; $('chapters').innerHTML =
+    '<div class="empty">Run the analysis first, then generate your book.</div>';
+  $('exports').style.display = 'none';
+
   await Promise.all([loadSources(), loadBook()]);
 }
+
+/* ---------- sources ---------- */
+const dz = $('dropzone'), fileInput = $('files');
+dz.onclick = () => fileInput.click();
+dz.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } };
+['dragover', 'dragenter'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add('over'); }));
+['dragleave', 'drop'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove('over'); }));
+dz.addEventListener('drop', (e) => { fileInput.files = e.dataTransfer.files; fileInput.onchange(); });
+fileInput.onchange = () => {
+  const n = fileInput.files.length;
+  $('fileCount').textContent = n ? n + ' file(s): ' + [...fileInput.files].map((f) => f.name).join(', ') : '';
+};
 
 async function loadSources() {
   const sources = await api('/api/projects/' + projectId + '/sources');
   const ul = $('sources');
   ul.innerHTML = '';
+  let pending = 0;
   if (!sources.length) {
     const li = document.createElement('li'); li.className = 'static';
-    li.innerHTML = '<span class="muted">No sources yet — paste notes or upload PDFs above.</span>';
-    ul.appendChild(li); return;
+    li.innerHTML = '<span class="li-sub">No sources yet — add notes or upload PDFs above.</span>';
+    ul.appendChild(li);
   }
   for (const s of sources) {
+    if (s.status !== 'processed') pending++;
     const li = document.createElement('li'); li.className = 'static';
     const left = document.createElement('div');
-    const t = document.createElement('div'); t.textContent = s.title;
-    const meta = document.createElement('span'); meta.className = 'muted';
-    meta.textContent = s.type.toUpperCase() + (s.pageCount ? ' · ' + s.pageCount + ' pages' : '');
+    left.style.minWidth = '0';
+    const t = document.createElement('div'); t.className = 'li-title'; t.textContent = s.title;
+    const meta = document.createElement('span'); meta.className = 'li-sub';
+    meta.textContent = s.type.toUpperCase() + (s.pageCount ? ' · ' + s.pageCount + ' pages' : '') +
+      (s.status === 'processed' && s.chunkCount ? ' · ' + s.chunkCount + ' chunks' : '');
     left.append(t, meta);
     const right = document.createElement('div');
+    right.style.display = 'flex'; right.style.alignItems = 'center'; right.style.gap = '8px';
     const pill = document.createElement('span');
     pill.className = 'pill ' + (s.status === 'processed' ? 'ok' : 'pending');
-    pill.textContent = s.status === 'processed' ? 'processed · ' + (s.chunkCount || '?') + ' chunks' : s.status;
+    pill.textContent = s.status;
     right.appendChild(pill);
     if (s.status !== 'processed') {
       const btn = document.createElement('button');
-      btn.className = 'small'; btn.textContent = 'Process';
+      btn.className = 'ghost small'; btn.textContent = 'Process';
       btn.onclick = () => processSource(s.id, btn);
       right.appendChild(btn);
     }
     li.append(left, right);
     ul.appendChild(li);
   }
+  $('processAllRow').style.display = pending > 1 ? 'flex' : 'none';
 }
-
-$('files').onchange = () => {
-  $('fileCount').textContent = $('files').files.length ? $('files').files.length + ' file(s) selected' : '';
-};
 
 $('addSrc').onclick = async () => {
   try {
@@ -286,58 +488,113 @@ $('addSrc').onclick = async () => {
       fd.append('text', text);
       fd.append('title', $('noteTitle').value.trim());
     }
-    for (const f of $('files').files) fd.append('files', f);
-    if (!text && !$('files').files.length) throw new Error('Add notes or choose files first');
-    await api('/api/projects/' + projectId + '/sources', { method: 'POST', body: fd });
-    $('noteText').value = ''; $('noteTitle').value = ''; $('files').value = ''; $('fileCount').textContent = '';
+    for (const f of fileInput.files) fd.append('files', f);
+    if (!text && !fileInput.files.length) throw new Error('Add some notes or choose files first');
+    busy($('addSrc'), true, 'Adding…', '＋ Add sources');
+    const created = await api('/api/projects/' + projectId + '/sources', { method: 'POST', body: fd });
+    $('noteText').value = ''; $('noteTitle').value = ''; fileInput.value = ''; $('fileCount').textContent = '';
+    toast(created.length + ' source(s) added', 'ok');
     await loadSources();
-  } catch (e) { fail(e); }
+  } catch (e) { toast(e.message, 'err'); }
+  finally { busy($('addSrc'), false, '', '＋ Add sources'); }
 };
 
 async function processSource(sid, btn) {
   btn.disabled = true; btn.textContent = 'Processing…';
   try {
     const r = await api('/api/projects/' + projectId + '/sources/' + sid + '/process', { method: 'POST' });
-    btn.textContent = r.pages + 'p / ' + r.chunks + ' chunks ✓';
-  } catch (e) { fail(e); btn.disabled = false; btn.textContent = 'Retry'; }
+    toast('Processed: ' + r.pages + ' pages → ' + r.chunks + ' chunks', 'ok');
+    await loadSources();
+  } catch (e) {
+    toast(e.message, 'err');
+    btn.disabled = false; btn.textContent = 'Retry';
+  }
 }
 
-$('analyzeBtn').onclick = async () => {
-  const btn = $('analyzeBtn'); btn.disabled = true; btn.textContent = 'Analyzing…';
+$('processAllBtn').onclick = async () => {
   try {
-    const r = await api('/api/knowledge/' + projectId + '/analyze', { method: 'POST' });
-    $('stats').style.display = 'grid';
-    $('sTopics').textContent = r.topicCount;
-    $('sChapters').textContent = r.chapterCount;
-    $('sDupes').textContent = r.duplicateGroups;
-    $('sConflicts').textContent = r.conflictCount;
-    const cov = r.coverage || {};
-    $('sCov').textContent = cov.score != null ? cov.score + '%' : '–';
-    if (cov.score != null) {
-      $('covBar').style.display = 'block';
-      $('covBar').querySelector('i').style.width = Math.min(100, cov.score) + '%';
+    busy($('processAllBtn'), true, 'Processing…', '▶ Process all');
+    const sources = await api('/api/projects/' + projectId + '/sources');
+    let done = 0;
+    for (const s of sources.filter((x) => x.status !== 'processed')) {
+      await api('/api/projects/' + projectId + '/sources/' + s.id + '/process', { method: 'POST' });
+      done++;
     }
-    $('covNote').textContent = cov.insufficient
-      ? '⚠ Coverage below threshold — add more sources on weak topics before generating.'
-      : (r.conflictCount ? 'Note: conflicts detected — review before generating.' : 'Ready to generate.');
-  } catch (e) { fail(e); }
-  btn.disabled = false; btn.textContent = 'Run analysis';
+    toast(done + ' source(s) processed', 'ok');
+    await loadSources();
+  } catch (e) { toast(e.message, 'err'); }
+  finally { busy($('processAllBtn'), false, '', '▶ Process all'); }
 };
+
+/* ---------- analysis ---------- */
+$('analyzeBtn').onclick = async () => {
+  const btn = $('analyzeBtn');
+  try {
+    busy(btn, true, 'Analyzing…', '⚡ Run analysis');
+    $('stats').style.display = 'none';
+    const r = await api('/api/knowledge/' + projectId + '/analyze', { method: 'POST' });
+    const cov = r.coverage || {};
+    const covScore = cov.score != null ? cov.score : null;
+    const conflicts = r.conflictCount || 0;
+
+    $('sTopics').textContent = r.topicCount ?? '–';
+    $('sChapters').textContent = r.chapterCount ?? '–';
+    $('sDupes').textContent = r.duplicateGroups ?? '–';
+    $('sConflicts').textContent = conflicts;
+    $('sCov').textContent = covScore != null ? covScore + '%' : '–';
+
+    $('dupeStat').className = 'stat' + (r.duplicateGroups > 0 ? ' warn' : '');
+    $('confStat').className = 'stat' + (conflicts > 0 ? ' bad' : '');
+    $('covStat').className = 'stat' + (covScore == null ? '' : cov.insufficient ? ' warn' : ' good');
+
+    $('stats').style.display = 'grid';
+    if (covScore != null) {
+      $('covBar').style.display = 'block';
+      requestAnimationFrame(() => { $('covBar').querySelector('i').style.width = Math.min(100, covScore) + '%'; });
+    }
+    const note = $('covNote');
+    note.className = 'notice show ' + (cov.insufficient ? '' : 'good');
+    note.textContent = cov.insufficient
+      ? '⚠ Coverage is low (' + covScore + '%). Add more sources on weak topics before generating for better results.'
+      : '✓ Coverage looks healthy. You are ready to generate the book.';
+    toast('Analysis complete — ' + r.topicCount + ' topics found', 'ok');
+  } catch (e) { toast(e.message, 'err'); }
+  finally { busy(btn, false, '', '⚡ Run analysis'); }
+};
+
+/* ---------- book ---------- */
+function renderMarkdown(md) {
+  const esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return esc.split(/\n{2,}/).map((block) => {
+    const b = block.trim();
+    if (/^###\s/.test(b)) return '<h3>' + inline(b.replace(/^###\s/, '')) + '</h3>';
+    if (/^##\s/.test(b)) return '<h2>' + inline(b.replace(/^##\s/, '')) + '</h2>';
+    if (/^#\s/.test(b)) return '<h1>' + inline(b.replace(/^#\s/, '')) + '</h1>';
+    if (/^[-*]\s/m.test(b)) return '<ul>' + b.split('\n').map((l) => l.replace(/^[-*]\s*/, '')).map((l) => '<li>' + inline(l) + '</li>').join('') + '</ul>';
+    return '<p>' + inline(b).replace(/\n/g, '<br>') + '</p>';
+  }).join('');
+  function inline(s) {
+    return s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  }
+}
 
 $('genBtn').onclick = async () => {
-  const btn = $('genBtn'); btn.disabled = true; btn.textContent = 'Generating…';
+  const btn = $('genBtn');
   try {
-    await api('/api/projects/' + projectId + '/book/generate', { method: 'POST' });
-    await loadBook();
-  } catch (e) { fail(e); }
-  btn.disabled = false; btn.textContent = 'Generate book';
+    busy(btn, true, 'Generating…', '📖 Generate book');
+    const r = await api('/api/projects/' + projectId + '/book/generate', { method: 'POST' });
+    toast('Book generated — ' + r.chapters + ' chapter(s)', 'ok');
+    await loadBook(true);
+  } catch (e) { toast(e.message, 'err'); }
+  finally { busy(btn, false, '', '📖 Generate book'); }
 };
 
-async function loadBook() {
+async function loadBook(scrollTo) {
   let book;
   try { book = await api('/api/projects/' + projectId + '/book'); } catch (_e) { return; }
   const wrap = $('chapters');
   wrap.innerHTML = '';
+
   if (book.chapters.length) {
     $('exports').style.display = 'flex';
     const base = '/api/projects/' + projectId + '/export/';
@@ -345,45 +602,81 @@ async function loadBook() {
     $('expHtml').href = base + 'html';
     $('expJson').href = base + 'json';
   }
-  book.chapters.forEach((ch, i) => {
+
+  if (!book.chapters.length) {
+    wrap.innerHTML = '<div class="empty">Run the analysis first, then generate your book.</div>';
+    return;
+  }
+
+  book.chapters.forEach((ch) => {
     const div = document.createElement('div');
     div.className = 'chapter';
+    const head = document.createElement('div'); head.className = 'chapter-head';
     const h = document.createElement('h4'); h.textContent = ch.title;
-    const ta = document.createElement('textarea');
-    ta.value = ch.content; ta.style.minHeight = '140px'; ta.readOnly = true;
-    const row = document.createElement('div'); row.className = 'row'; row.style.marginTop = '8px';
-    const edit = document.createElement('button'); edit.className = 'ghost small'; edit.textContent = 'Edit';
-    edit.onclick = () => { ta.readOnly = false; save.style.display = 'inline-block'; edit.style.display = 'none'; ta.focus(); };
-    const save = document.createElement('button'); save.className = 'small'; save.textContent = 'Save';
+    head.appendChild(h);
+
+    const reader = document.createElement('div');
+    reader.className = 'reader';
+    reader.innerHTML = renderMarkdown(ch.content);
+
+    const editor = document.createElement('textarea');
+    editor.value = ch.content;
+    editor.rows = Math.max(8, ch.content.split('\n').length + 2);
+    editor.style.display = 'none';
+
+    const row = document.createElement('div'); row.className = 'row'; row.style.marginTop = '12px';
+    const edit = document.createElement('button'); edit.className = 'ghost small'; edit.textContent = '✎ Edit chapter';
+    const save = document.createElement('button'); save.className = 'small'; save.textContent = 'Save changes';
     save.style.display = 'none';
+    const cancel = document.createElement('button'); cancel.className = 'danger small'; cancel.textContent = 'Cancel';
+    cancel.style.display = 'none';
+
+    edit.onclick = () => {
+      reader.style.display = 'none';
+      editor.style.display = 'block';
+      edit.style.display = 'none';
+      save.style.display = 'inline-flex'; cancel.style.display = 'inline-flex';
+      editor.focus();
+    };
+    cancel.onclick = () => {
+      editor.value = ch.content;
+      reader.style.display = ''; editor.style.display = 'none';
+      edit.style.display = 'inline-flex';
+      save.style.display = 'none'; cancel.style.display = 'none';
+    };
     save.onclick = async () => {
       save.disabled = true;
       try {
         await api('/api/projects/' + projectId + '/book/chapters/' + ch.id, {
-          method: 'PUT', body: JSON.stringify({ content: ta.value })
+          method: 'PUT', body: JSON.stringify({ content: editor.value })
         });
-        save.textContent = 'Saved ✓';
-      } catch (e) { fail(e); save.disabled = false; }
+        ch.content = editor.value;
+        reader.innerHTML = renderMarkdown(ch.content);
+        toast('Chapter saved', 'ok');
+        cancel.onclick();
+      } catch (e) {
+        toast(e.message, 'err');
+        save.disabled = false;
+      }
     };
-    row.append(edit, save);
-    div.append(h, ta, row);
+
+    row.append(edit, save, cancel);
+    div.append(head, reader, editor, row);
     wrap.appendChild(div);
   });
-  if (!book.chapters.length) {
-    const d = document.createElement('div'); d.className = 'empty';
-    d.textContent = 'No chapters yet — run analysis, then generate.';
-    wrap.appendChild(d);
-  }
+
+  if (scrollTo) $('chapters').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-async function refresh() {
-  await loadProjects();
-  $('noProject').style.display = projectId ? 'none' : 'block';
-  $('workspace').style.display = projectId ? 'block' : 'none';
-}
-
-loadHealth();
-refresh().catch(fail);
+/* ---------- boot ---------- */
+(async () => {
+  try {
+    await loadProjects();
+    const projects = await api('/api/projects');
+    if (projects.length) selectProject(projects[0].id, projects[0].title);
+    else showWorkspace(false);
+  } catch (e) { toast(e.message, 'err'); }
+})();
 </script>
 </body>
 </html>

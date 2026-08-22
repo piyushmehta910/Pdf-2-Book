@@ -25,6 +25,7 @@ async function processSource(projectId, source) {
   storage.updateById(projectId, 'sources', source.id, {
     status: 'processed',
     pageCount: pages.length,
+    chunkCount: chunks.length,
     markdown,
     processedAt: new Date().toISOString()
   });
