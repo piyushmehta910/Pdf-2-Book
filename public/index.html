@@ -255,6 +255,18 @@
   .testresult { font-size: 12.5px; }
   .testresult.ok { color: var(--ok); } .testresult.err { color: var(--err); }
 
+  .filechips { display: flex; flex-direction: column; gap: 6px; }
+  .filechip {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 9px;
+    padding: 8px 12px;
+  }
+  .filechip .ficon { font-size: 17px; }
+  .filechip .fname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+  .filechip .fsize { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
+  .filechip button { background: transparent; border: 0; color: var(--muted); cursor: pointer; padding: 2px 6px; font-size: 14px; }
+  .filechip button:hover { color: var(--err); }
+
   @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr; }
     aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
@@ -267,7 +279,8 @@
 <header>
   <div class="logo">pdf<b>2</b>book <small>Knowledge Book Studio</small></div>
   <div class="spacer"></div>
-  <span class="badge" id="aiBadge" style="cursor:pointer" onclick="openSettings()" title="AI settings"><span class="dot" id="provDot"></span><span id="provider">connecting…</span></span>
+  <span class="badge" id="aiBadge"><span class="dot" id="provDot"></span><span id="provider">connecting…</span></span>
+  <button class="ghost small" onclick="openSettings()">⚙ AI settings</button>
 </header>
 
 <div class="layout">
@@ -301,6 +314,7 @@
         <div class="stack">
           <input type="text" id="noteTitle" placeholder="Title for pasted notes (optional)">
           <textarea id="noteText" rows="4" placeholder="Paste research notes, paper excerpts, summaries…"></textarea>
+          <div class="hint" id="noteStats" style="display:none"></div>
 
           <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose files">
             <div class="dz-icon">📄</div>
@@ -308,9 +322,11 @@
             <span class="hint">or click to browse — multiple files supported</span>
             <input type="file" id="files" accept=".pdf,.txt" multiple hidden>
           </div>
+          <div class="filechips" id="fileChips"></div>
           <div class="row">
             <span class="hint" id="fileCount"></span>
             <span style="flex:1"></span>
+            <button class="ghost small" id="clearFiles" style="display:none">Clear files</button>
             <button id="addSrc">＋ Add sources</button>
           </div>
         </div>
@@ -341,10 +357,11 @@
         <div class="notice" id="covNote"></div>
       </section>
 
-      <!-- STEP 3 — BOOK -->
+            <!-- STEP 3 — BOOK -->
       <section class="card">
         <div class="card-head">
           <h2><span class="step-num">3</span> Generate your book</h2>
+          <button class="ghost" onclick="openSettings()" title="AI provider settings">⚙</button>
           <button id="genBtn">📖 Generate book</button>
         </div>
         <div class="row" id="exports" style="display:none;margin-bottom:16px">
@@ -422,6 +439,10 @@ const $ = (id) => document.getElementById(id);
 let projectId = null;
 
 /* ---------- helpers ---------- */
+window.onerror = function (msg) {
+  try { toast('UI error: ' + msg, 'err'); } catch (_e) {}
+};
+
 function toast(msg, kind) {
   const t = document.createElement('div');
   t.className = 'toast' + (kind ? ' ' + kind : '');
@@ -516,6 +537,9 @@ function openSettings() {
   $('settingsModal').classList.add('open');
 }
 function closeSettings() { $('settingsModal').classList.remove('open'); }
+$('settingsModal').addEventListener('click', (e) => {
+  if (e.target === $('settingsModal')) closeSettings();
+});
 
 const keysByProvider = {};
 $('setProvider').addEventListener('change', () => {
@@ -658,15 +682,70 @@ async function selectProject(id, title) {
 
 /* ---------- sources ---------- */
 const dz = $('dropzone'), fileInput = $('files');
+let pickedFiles = [];
+
+function fmtSize(bytes) {
+  if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+}
+function fileIcon(name) {
+  return /\.pdf$/i.test(name) ? '📕' : /\.txt$/i.test(name) ? '📝' : '📄';
+}
+
+function renderFileChips() {
+  const wrap = $('fileChips');
+  wrap.innerHTML = '';
+  pickedFiles.forEach((f, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'filechip';
+    const icon = document.createElement('span'); icon.className = 'ficon'; icon.textContent = fileIcon(f.name);
+    const name = document.createElement('span'); name.className = 'fname'; name.textContent = f.name;
+    const size = document.createElement('span'); size.className = 'fsize'; size.textContent = fmtSize(f.size);
+    const rm = document.createElement('button'); rm.textContent = '✕'; rm.title = 'Remove';
+    rm.onclick = () => { pickedFiles.splice(i, 1); syncInputFiles(); renderFileChips(); };
+    chip.append(icon, name, size, rm);
+    wrap.appendChild(chip);
+  });
+  $('fileCount').textContent = pickedFiles.length ? pickedFiles.length + ' file(s) ready' : '';
+  $('clearFiles').style.display = pickedFiles.length ? 'inline-flex' : 'none';
+}
+
+function syncInputFiles() {
+  try {
+    const dt = new DataTransfer();
+    pickedFiles.forEach((f) => dt.items.add(f));
+    fileInput.files = dt.files;
+  } catch (_e) {}
+}
+
+function setPickedFiles(fileList) {
+  const incoming = [...fileList].filter((f) => /\.(pdf|txt)$/i.test(f.name));
+  const skipped = fileList.length - incoming.length;
+  for (const f of incoming) {
+    if (!pickedFiles.some((p) => p.name === f.name && p.size === f.size)) pickedFiles.push(f);
+  }
+  syncInputFiles();
+  renderFileChips();
+  if (skipped > 0) toast(skipped + ' file(s) skipped — only PDF and TXT are supported', 'err');
+}
+
 dz.onclick = () => fileInput.click();
 dz.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } };
 ['dragover', 'dragenter'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add('over'); }));
 ['dragleave', 'drop'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove('over'); }));
-dz.addEventListener('drop', (e) => { fileInput.files = e.dataTransfer.files; fileInput.onchange(); });
-fileInput.onchange = () => {
-  const n = fileInput.files.length;
-  $('fileCount').textContent = n ? n + ' file(s): ' + [...fileInput.files].map((f) => f.name).join(', ') : '';
-};
+dz.addEventListener('drop', (e) => setPickedFiles(e.dataTransfer.files));
+fileInput.onchange = () => setPickedFiles(fileInput.files);
+$('clearFiles').onclick = () => { pickedFiles = []; syncInputFiles(); renderFileChips(); };
+
+$('noteText').addEventListener('input', () => {
+  const v = $('noteText').value;
+  const stats = $('noteStats');
+  if (!v.trim()) { stats.style.display = 'none'; return; }
+  stats.style.display = 'block';
+  const words = v.trim().split(/\s+/).length;
+  stats.textContent = v.length.toLocaleString() + ' chars · ' + words.toLocaleString() + ' words · ~' +
+    Math.ceil(v.length / 1800) + ' page(s) of source text';
+});
 
 async function loadSources() {
   const sources = await api('/api/projects/' + projectId + '/sources');
@@ -714,11 +793,12 @@ $('addSrc').onclick = async () => {
       fd.append('text', text);
       fd.append('title', $('noteTitle').value.trim());
     }
-    for (const f of fileInput.files) fd.append('files', f);
-    if (!text && !fileInput.files.length) throw new Error('Add some notes or choose files first');
+    for (const f of pickedFiles) fd.append('files', f);
+    if (!text && !pickedFiles.length) throw new Error('Add some notes or choose files first');
     busy($('addSrc'), true, 'Adding…', '＋ Add sources');
     const created = await api('/api/projects/' + projectId + '/sources', { method: 'POST', body: fd });
-    $('noteText').value = ''; $('noteTitle').value = ''; fileInput.value = ''; $('fileCount').textContent = '';
+    $('noteText').value = ''; $('noteTitle').value = ''; $('noteStats').style.display = 'none';
+    pickedFiles = []; syncInputFiles(); renderFileChips();
     toast(created.length + ' source(s) added', 'ok');
     await loadSources();
   } catch (e) { toast(e.message, 'err'); }

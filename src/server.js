@@ -14,6 +14,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 app.get('/', (req, res) => {
+  res.set('Cache-Control', 'no-store');
   res.type('html').send(webui);
 });
 
