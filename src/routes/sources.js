@@ -9,7 +9,15 @@ const logger = require('../logger');
 
 const router = express.Router();
 const uploadDir = path.resolve(config.dataDir, 'uploads');
-fs.mkdirSync(uploadDir, { recursive: true });
+
+function ensureUploadDir() {
+  try {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  } catch (err) {
+    logger.error(`Failed to create upload dir ${uploadDir}: ${err.message}`);
+    throw err;
+  }
+}
 
 const upload = multer({ dest: uploadDir });
 
@@ -23,7 +31,10 @@ function registerProject(req) {
   return projectId;
 }
 
-router.post('/:projectId/sources', upload.array('files'), async (req, res) => {
+router.post('/:projectId/sources', (req, res, next) => {
+  ensureUploadDir();
+  next();
+}, upload.array('files'), async (req, res) => {
   try {
     const projectId = registerProject(req);
     const pastedText = req.body.text;
