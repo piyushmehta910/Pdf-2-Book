@@ -1,8 +1,8 @@
 const fs = require('fs');
-const pdf = require('pdf-parse');
 
 async function extractPages(filePath) {
   const buffer = fs.readFileSync(filePath);
+  const pdf = require('pdf-parse');
   const data = await pdf(buffer, { pagerender: renderPageText });
   return data;
 }
