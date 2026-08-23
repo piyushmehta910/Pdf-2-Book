@@ -493,6 +493,80 @@
     border-radius: 10px; padding: 10px 12px; font: inherit; outline: none;
   }
 
+  /* ---------- notebook setup panel ---------- */
+  .nb-panel {
+    border: 1px solid var(--border); border-radius: 14px;
+    background: var(--panel2); margin-bottom: 16px; overflow: hidden;
+  }
+  .nb-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 12px 16px; cursor: pointer; user-select: none;
+  }
+  .nb-head:hover { background: var(--panel3); }
+  .nb-title { font-weight: 700; font-size: 13.5px; }
+  .nb-chips { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; justify-content: flex-end; }
+  .nb-chip {
+    font-size: 10.5px; font-weight: 650; padding: 2px 10px; border-radius: 999px;
+    border: 1px solid var(--border2); color: var(--text2); background: var(--panel);
+  }
+  #nbBody { padding: 4px 16px 16px; border-top: 1px solid var(--border); }
+  #nbBody.collapsed { display: none; }
+  .nb-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); margin: 14px 0 7px;
+  }
+  .stylegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 7px; }
+  .stylecard {
+    position: relative; text-align: left; width: 100%;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 11px;
+    padding: 10px 12px; cursor: pointer; box-shadow: none;
+    transition: border-color .15s, background .15s;
+  }
+  .stylecard:hover { border-color: var(--border2); filter: none; }
+  .stylecard.active { border-color: var(--accent); background: linear-gradient(135deg, rgba(125,146,255,.12), transparent), var(--panel); }
+  .stylecard .si { font-size: 17px; margin-right: 6px; }
+  .stylecard .sn { font-weight: 650; font-size: 12.5px; }
+  .stylecard .sb { font-size: 10.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+  .stylecard.active::after { content: "✓"; position: absolute; top: 8px; right: 10px; color: var(--accent); font-weight: 800; font-size: 12px; }
+
+  .fmtgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 7px; }
+  .fmtbtn {
+    background: var(--panel); border: 1px solid var(--border); color: var(--text2);
+    font-weight: 600; font-size: 12px; padding: 9px 4px; border-radius: 10px; box-shadow: none;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .fmtbtn .fi2 { font-size: 16px; }
+  .fmtbtn.active { border-color: var(--accent); color: var(--text); background: linear-gradient(135deg, rgba(125,146,255,.14), transparent), var(--panel); }
+
+  .nbtoggles { display: flex; gap: 14px; flex-wrap: wrap; }
+  .nbcheck { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; font-size: 12.5px; font-weight: 550; color: var(--text2); }
+  .nbcheck input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+  .crossseg { display: inline-flex; gap: 0; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+  .crossbtn { background: var(--panel); border: 0; box-shadow: none; border-radius: 0; color: var(--muted); font-size: 12px; font-weight: 600; padding: 5px 12px; }
+  .crossbtn + .crossbtn { border-left: 1px solid var(--border); }
+  .crossbtn.active { background: linear-gradient(135deg, rgba(125,146,255,.2), rgba(154,107,255,.1)); color: var(--text); }
+
+  /* ---------- rendered formats ---------- */
+  .fcgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .fcell { perspective: 1200px; height: 210px; cursor: pointer; }
+  .finner { position: relative; width: 100%; height: 100%; transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-style: preserve-3d; }
+  .fcell.flipped .finner { transform: rotateY(180deg); }
+  .fface {
+    position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border: 1px solid var(--border2); border-radius: 13px; padding: 15px; overflow-y: auto;
+    background: linear-gradient(160deg, var(--panel2), var(--panel));
+    font-size: 12.8px; line-height: 1.55; white-space: pre-line;
+  }
+  .fface.back { transform: rotateY(180deg); background: linear-gradient(160deg, rgba(125,146,255,.09), var(--panel)); }
+  .fface .ftag { position: absolute; top: 9px; right: 11px; font-size: 9.5px; font-weight: 800; letter-spacing: .6px; color: var(--muted); text-transform: uppercase; }
+  .mcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+  .mcard { border: 1px solid var(--border); border-radius: 12px; background: var(--panel2); padding: 14px; font-size: 13px; }
+  .mcard .mq { font-weight: 700; margin-bottom: 8px; color: var(--accent); }
+  .mcard .ma { white-space: pre-line; color: var(--reader-text); }
+  .chapter.appendix { opacity: .85; border-style: dashed; }
+  .chapter.appendix h4::before { content: "📎 "; }
+  a.wikilink { color: var(--accent); text-decoration: underline dotted; cursor: pointer; }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
     html { scroll-behavior: auto; }
@@ -607,10 +681,64 @@
           <button id="genBtn">📖&nbsp;Generate book</button>
         </div>
         <div class="gate-hint" id="gate3">🔒 Run the analysis first — the book is generated from detected topics.</div>
+
+        <div class="nb-panel" id="nbPanel" style="display:none">
+          <div class="nb-head" id="nbHead">
+            <span class="nb-title">📓 Notebook setup</span>
+            <span class="nb-chips" id="nbChips"></span>
+            <button type="button" class="iconbtn" id="nbChevron"><span class="chev">▾</span></button>
+          </div>
+          <div id="nbBody">
+            <div class="nb-label">Style — the voice of your notebook</div>
+            <div class="stylegrid" id="styleGrid"></div>
+            <div class="row" style="align-items:flex-start;gap:18px;margin-top:16px">
+              <div style="flex:1.2;min-width:230px">
+                <div class="nb-label">Format</div>
+                <div class="fmtgrid" id="fmtSeg"></div>
+              </div>
+              <div style="flex:1;min-width:200px">
+                <div class="nb-label">Depth</div>
+                <div class="seg" id="depthSeg" style="grid-template-columns:repeat(3,1fr);gap:6px">
+                  <button type="button" class="segbtn" data-depth="brief">Brief<small>~400w/topic</small></button>
+                  <button type="button" class="segbtn" data-depth="standard">Standard<small>~750w/topic</small></button>
+                  <button type="button" class="segbtn" data-depth="deep">Deep Dive<small>~1400w/topic</small></button>
+                </div>
+                <div class="nb-label">Tone</div>
+                <select id="toneSel">
+                  <option value="neutral">Neutral &amp; objective</option>
+                  <option value="enthusiastic">Enthusiastic</option>
+                  <option value="critical">Critical &amp; skeptical</option>
+                  <option value="simplified">Simplified (beginner-friendly)</option>
+                </select>
+              </div>
+            </div>
+            <div class="nb-label">Fine-tuning</div>
+            <div class="row" style="gap:16px">
+              <div class="nbtoggles">
+                <label class="nbcheck"><input type="checkbox" id="optQuotes"> Verbatim quotes</label>
+                <label class="nbcheck"><input type="checkbox" id="optPages"> Page numbers</label>
+                <label class="nbcheck"><input type="checkbox" id="optGaps"> Knowledge-gaps appendix</label>
+                <label class="nbcheck"><input type="checkbox" id="optGlossary"> Glossary appendix</label>
+              </div>
+              <span class="hint">Cross-refs</span>
+              <div class="crossseg" id="crossSeg">
+                <button type="button" class="crossbtn" data-cross="low">Low</button>
+                <button type="button" class="crossbtn" data-cross="medium">Med</button>
+                <button type="button" class="crossbtn" data-cross="high">High</button>
+              </div>
+            </div>
+            <div class="row" style="margin-top:14px">
+              <span class="hint" style="flex:1">Setup is saved to this project and reused on every generation.</span>
+              <button class="ghost small" id="nbSave">💾 Save setup</button>
+            </div>
+          </div>
+        </div>
+
         <div class="row" id="exports" style="display:none;margin-bottom:16px">
           <span class="hint">Export:</span>
           <a class="btn" id="expMd" target="_blank" rel="noopener">⬇&nbsp;Markdown</a>
           <a class="btn" id="expHtml" target="_blank" rel="noopener">⬇&nbsp;HTML</a>
+          <a class="btn" id="expCsv" target="_blank" rel="noopener" style="display:none">⬇&nbsp;Flashcards CSV</a>
           <a class="btn" id="expJson" target="_blank" rel="noopener">⬇&nbsp;JSON</a>
         </div>
         <div class="genfx" id="genFx">
@@ -953,6 +1081,110 @@ function updateStepper() {
   $('card3').classList.toggle('locked', lock3);
 }
 
+/* ================= notebook setup ================= */
+let NB_META = null;
+let nb = { style: 'scholar', format: 'book', depth: 'standard', tone: 'neutral',
+  includeQuotes: true, includePageNumbers: true, crossRefDensity: 'medium',
+  knowledgeGaps: true, glossary: false };
+
+function nbLabel(map, id, key) {
+  const hit = ((NB_META || {})[map] || []).find((x) => x.id === id);
+  return hit ? (key ? hit[key] : hit.label) : id;
+}
+
+async function loadNotebookMeta() {
+  try {
+    NB_META = await api('/api/notebook');
+    buildNbPanel();
+    syncNbUI();
+  } catch (_e) {}
+}
+
+function buildNbPanel() {
+  if (!NB_META) return;
+  const sg = $('styleGrid'); sg.innerHTML = '';
+  for (const s of NB_META.styles) {
+    const card = document.createElement('button');
+    card.type = 'button'; card.className = 'stylecard'; card.dataset.id = s.id;
+    card.innerHTML = '<span class="si"></span><span class="sn"></span><div class="sb"></div>';
+    card.querySelector('.si').textContent = s.icon;
+    card.querySelector('.sn').textContent = s.label.replace(/^The /, '');
+    card.querySelector('.sb').textContent = s.blurb;
+    card.onclick = () => { nb.style = s.id; syncNbUI(); };
+    sg.appendChild(card);
+  }
+  const fs2 = $('fmtSeg'); fs2.innerHTML = '';
+  for (const f of NB_META.formats) {
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'fmtbtn'; btn.dataset.id = f.id;
+    btn.innerHTML = '<span class="fi2"></span><span class="fl"></span>';
+    btn.querySelector('.fi2').textContent = f.icon;
+    btn.querySelector('.fl').textContent = f.label.split(' ').slice(-1)[0];
+    btn.title = f.label;
+    btn.onclick = () => { nb.format = f.id; syncNbUI(); };
+    fs2.appendChild(btn);
+  }
+  $('nbPanel').style.display = 'block';
+}
+
+function syncNbUI() {
+  document.querySelectorAll('.stylecard').forEach((c) =>
+    c.classList.toggle('active', c.dataset.id === nb.style));
+  document.querySelectorAll('.fmtbtn').forEach((c) =>
+    c.classList.toggle('active', c.dataset.id === nb.format));
+  document.querySelectorAll('#depthSeg .segbtn').forEach((b) =>
+    b.classList.toggle('active', b.dataset.depth === nb.depth));
+  document.querySelectorAll('#crossSeg .crossbtn').forEach((b) =>
+    b.classList.toggle('active', b.dataset.cross === nb.crossRefDensity));
+  $('toneSel').value = nb.tone;
+  $('optQuotes').checked = !!nb.includeQuotes;
+  $('optPages').checked = !!nb.includePageNumbers;
+  $('optGaps').checked = !!nb.knowledgeGaps;
+  $('optGlossary').checked = !!nb.glossary;
+  updateNbChips();
+}
+
+function updateNbChips() {
+  const chips = $('nbChips');
+  if (!NB_META) { chips.innerHTML = ''; return; }
+  const items = [
+    nbLabel('styles', nb.style, 'icon') + ' ' + nbLabel('styles', nb.style),
+    nbLabel('formats', nb.format, 'icon') + ' ' + nbLabel('formats', nb.format),
+    nb.depth,
+    nb.tone
+  ];
+  chips.innerHTML = items.map((t) => '<span class="nb-chip">' + t + '</span>').join('');
+}
+
+$('nbHead').onclick = (e) => {
+  if (e.target.closest('#nbSave')) return;
+  $('nbBody').classList.toggle('collapsed');
+  $('nbChevron').querySelector('.chev').classList.toggle('closed');
+};
+
+$('depthSeg').addEventListener('click', (e) => {
+  const btn = e.target.closest('.segbtn'); if (!btn) return;
+  nb.depth = btn.dataset.depth; syncNbUI();
+});
+$('crossSeg').addEventListener('click', (e) => {
+  const btn = e.target.closest('.crossbtn'); if (!btn) return;
+  nb.crossRefDensity = btn.dataset.cross; syncNbUI();
+});
+$('toneSel').onchange = () => { nb.tone = $('toneSel').value; updateNbChips(); };
+$('optQuotes').onchange = () => { nb.includeQuotes = $('optQuotes').checked; };
+$('optPages').onchange = () => { nb.includePageNumbers = $('optPages').checked; };
+$('optGaps').onchange = () => { nb.knowledgeGaps = $('optGaps').checked; };
+$('optGlossary').onchange = () => { nb.glossary = $('optGlossary').checked; };
+
+$('nbSave').onclick = async () => {
+  try {
+    busy($('nbSave'), true, 'Saving…', '💾 Save setup');
+    await api('/api/projects/' + projectId, { method: 'PATCH', body: JSON.stringify({ notebook: nb }) });
+    toast('Notebook setup saved — ' + nbLabel('styles', nb.style) + ' · ' + nbLabel('formats', nb.format), 'ok');
+  } catch (e) { toast(e.message, 'err'); }
+  finally { busy($('nbSave'), false, '', '💾 Save setup'); }
+};
+
 /* ================= projects ================= */
 async function loadProjects() {
   const projects = await api('/api/projects');
@@ -1235,7 +1467,12 @@ $('analyzeBtn').onclick = async () => {
 };
 
 /* ================= book ================= */
+function preprocessWiki(md) {
+  return String(md).replace(/\[\[([^\]]+)\]\]/g, (_m, name) => `[${name}](#wiki-${name.trim()})`);
+}
+
 function renderMarkdown(md) {
+  md = preprocessWiki(md);
   const esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return esc.split(/\n{2,}/).map((block) => {
     const b = block.trim();
@@ -1243,15 +1480,64 @@ function renderMarkdown(md) {
     if (/^##\s/.test(b)) return '<h2>' + inline(b.replace(/^##\s/, '')) + '</h2>';
     if (/^#\s/.test(b)) return '<h1>' + inline(b.replace(/^#\s/, '')) + '</h1>';
     if (/^[-*]\s/m.test(b)) {
-      return '<ul>' + b.split('\n')
-        .map((l) => l.replace(/^[-*]\s*/, ''))
-        .map((l) => '<li>' + inline(l) + '</li>').join('') + '</ul>';
+      const items = b.split('\n');
+      let html = '';
+      let level = 1;
+      for (const raw of items) {
+        const ind = Math.min(4, Math.floor((raw.match(/^\s*/)[0].length) / 2)) + 1;
+        const txt = raw.replace(/^\s*[-*]\s*/, '');
+        while (ind > level) { html += '<ul>'; level++; }
+        while (ind < level) { html += '</ul>'; level--; }
+        html += '<li>' + inline(txt) + '</li>';
+      }
+      while (level > 1) { html += '</ul>'; level--; }
+      return html;
     }
     return '<p>' + inline(b).replace(/\n/g, '<br>') + '</p>';
   }).join('');
   function inline(s) {
-    return s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    return s
+      .replace(/\[([^\]]+)\]\(#wiki-([^)]+)\)/g, '<a class="wikilink" data-wiki="$2">$1</a>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>');
   }
+}
+
+function buildFlipCards(cards) {
+  const grid = document.createElement('div'); grid.className = 'fcgrid';
+  cards.forEach((c) => {
+    const cell = document.createElement('div'); cell.className = 'fcell'; cell.title = 'Click to flip';
+    cell.innerHTML = '<div class="finner"><div class="fface"><span class="ftag">Q</span></div><div class="fface back"><span class="ftag">A</span></div></div>';
+    cell.querySelector('.fface').append(document.createTextNode(c.front));
+    cell.querySelector('.fface.back').append(document.createTextNode(c.back));
+    cell.onclick = () => cell.classList.toggle('flipped');
+    grid.appendChild(cell);
+  });
+  return grid;
+}
+
+function buildModCards(cards) {
+  const wrap = document.createElement('div'); wrap.className = 'mcards';
+  cards.forEach((c) => {
+    const div = document.createElement('div'); div.className = 'mcard';
+    const q = document.createElement('div'); q.className = 'mq'; q.textContent = c.front;
+    const a = document.createElement('div'); a.className = 'ma'; a.textContent = c.back;
+    div.append(q, a); wrap.appendChild(div);
+  });
+  return wrap;
+}
+
+function bindWikiLinks(container) {
+  container.querySelectorAll('a[data-wiki]').forEach((a) => {
+    a.onclick = (e) => {
+      e.preventDefault();
+      const target = a.dataset.wiki.trim().toLowerCase();
+      const heads = [...container.querySelectorAll('h1,h2,h3,h4')];
+      const hit = heads.find((h) => h.textContent.trim().toLowerCase() === target)
+        || heads.find((h) => h.textContent.toLowerCase().includes(target));
+      if (hit) hit.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else toast('No section found for “' + a.dataset.wiki + '”');
+    };
+  });
 }
 
 const GEN_MSGS = [
@@ -1286,14 +1572,17 @@ $('genBtn').onclick = async () => {
     startGenFx();
     const r = await api('/api/projects/' + projectId + '/book/generate', {
       method: 'POST',
-      headers: aiRequestHeaders() || {}
+      headers: aiRequestHeaders() || {},
+      body: JSON.stringify({ notebook: nb })
     });
+    if (r.notebook) { nb = { ...nb, ...r.notebook }; syncNbUI(); }
     const eng = r.engine || {};
     const ctx = r.context || {};
     let msg = 'Book generated — ' + r.chapters + ' chapter(s)';
-    msg += eng.mode === 'ai'
-      ? ' · via ' + (eng.model || eng.provider)
+    msg += eng.mode === 'ai-polished' ? ' · AI-polished ' + nbLabel('formats', nb.format)
+      : eng.mode === 'ai' ? ' · via ' + (eng.model || eng.provider)
       : ' · extractive fallback (no AI key)';
+    if (r.cards) msg += ' · ' + r.cards + ' cards';
     if (ctx.chunksAvailable) {
       msg += ' · context ' + ctx.chunksUsed + '/' + ctx.chunksAvailable +
         ' chunks (~' + Math.round(ctx.charsUsed / 1000) + 'k chars)';
@@ -1310,11 +1599,20 @@ async function loadBook(scrollTo) {
   const wrap = $('chapters');
   wrap.innerHTML = '';
 
+  const savedNb = (book.project && book.project.notebook) || null;
+  if (savedNb) { nb = { ...nb, ...savedNb }; syncNbUI(); }
+  const fmt = (book.project && book.project.notebook && book.project.notebook.format) || nb.format;
+
+  let totalCards = 0;
+  for (const ch of book.chapters) totalCards += (ch.cards && ch.cards.length) || 0;
+  $('expCsv').style.display = totalCards ? 'inline-flex' : 'none';
+
   if (book.chapters.length) {
     $('exports').style.display = 'flex';
     const base = '/api/projects/' + projectId + '/export/';
     $('expMd').href = base + 'markdown';
     $('expHtml').href = base + 'html';
+    $('expCsv').href = base + 'flashcards-csv';
     $('expJson').href = base + 'json';
   }
 
@@ -1327,29 +1625,42 @@ async function loadBook(scrollTo) {
   flow.analyzed = true;
 
   book.chapters.forEach((ch) => {
+    const isAppendix = ch.type === 'appendix';
     const words = ch.content.trim().split(/\s+/).length;
     const mins = Math.max(1, Math.round(words / 220));
 
     const div = document.createElement('div');
-    div.className = 'chapter';
+    div.className = 'chapter' + (isAppendix ? ' appendix' : '');
+    div.id = 'ch-' + ch.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     const head = document.createElement('div'); head.className = 'chapter-head';
     const h = document.createElement('h4'); h.textContent = ch.title;
     const wc = document.createElement('span'); wc.className = 'wc';
-    wc.textContent = '~' + words.toLocaleString() + ' words · ' + mins + ' min read';
+    wc.textContent = (ch.cards && ch.cards.length)
+      ? ch.cards.length + ' card(s)'
+      : '~' + words.toLocaleString() + ' words · ' + mins + ' min read';
     head.append(h, wc);
 
     const body = document.createElement('div'); body.className = 'ch-body';
 
-    const reader = document.createElement('div');
-    reader.className = 'reader';
-    reader.innerHTML = renderMarkdown(ch.content);
+    const structured = !isAppendix && ch.cards && ch.cards.length &&
+      ['cards', 'flashcards'].includes(fmt);
+
+    let reader = null;
+    if (!structured) {
+      reader = document.createElement('div');
+      reader.className = 'reader';
+      reader.innerHTML = renderMarkdown(ch.content);
+      bindWikiLinks(reader);
+    }
 
     const editor = document.createElement('textarea');
     editor.value = ch.content;
     editor.rows = Math.max(8, ch.content.split('\n').length + 2);
     editor.style.display = 'none';
 
-    body.append(reader, editor);
+    if (structured) body.append(fmt === 'flashcards' ? buildFlipCards(ch.cards) : buildModCards(ch.cards));
+    if (reader) body.append(reader);
+    body.append(editor);
 
     const row = document.createElement('div'); row.className = 'row'; row.style.marginTop = '12px';
     const edit = document.createElement('button'); edit.className = 'ghost small'; edit.textContent = '✎ Edit';
@@ -1373,7 +1684,8 @@ async function loadBook(scrollTo) {
     };
 
     edit.onclick = () => {
-      reader.style.display = 'none';
+      if (structured) { body.querySelectorAll('.fcgrid,.mcards').forEach((el) => el.style.display = 'none'); }
+      if (reader) reader.style.display = 'none';
       editor.style.display = 'block';
       edit.style.display = 'none';
       save.style.display = 'inline-flex'; cancel.style.display = 'inline-flex';
@@ -1381,7 +1693,9 @@ async function loadBook(scrollTo) {
     };
     cancel.onclick = () => {
       editor.value = ch.content;
-      reader.style.display = ''; editor.style.display = 'none';
+      if (structured) { body.querySelectorAll('.fcgrid,.mcards').forEach((el) => el.style.display = ''); }
+      if (reader) reader.style.display = '';
+      editor.style.display = 'none';
       edit.style.display = 'inline-flex';
       save.style.display = 'none'; cancel.style.display = 'none';
     };
@@ -1392,7 +1706,7 @@ async function loadBook(scrollTo) {
           method: 'PUT', body: JSON.stringify({ content: editor.value })
         });
         ch.content = editor.value;
-        reader.innerHTML = renderMarkdown(ch.content);
+        if (reader) reader.innerHTML = renderMarkdown(ch.content);
         toast('Chapter saved', 'ok');
         cancel.onclick();
       } catch (e) {
@@ -1425,6 +1739,7 @@ async function loadBook(scrollTo) {
 (async () => {
   try { await loadProviders(); } catch (_e) {}
   refreshBadge();
+  loadNotebookMeta();
   try {
     await loadProjects();
     const projects = await api('/api/projects');

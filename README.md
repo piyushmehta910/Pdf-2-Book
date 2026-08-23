@@ -14,6 +14,16 @@ npm run dev              # http://localhost:3000
 Open the app, click **⚙ AI settings**, and pick a provider — **OpenCode Zen** (free models)
 or **NVIDIA NIM** (free tier). Paste your API key; it is stored only in your browser.
 
+### Notebook styles & formats
+
+Every project has a **📓 Notebook setup** panel in step 3:
+
+- **Styles**: The Scholar · The Builder · The Storyteller · The Architect · The Minimalist
+- **Formats**: Long-Form Book · Modular Cards · Hierarchical Outline · Interactive Wiki · Q&A Flashcards
+- **Depth** (brief/standard/deep-dive), **tone**, verbatim quotes, page-number citations,
+  cross-reference density, plus auto-generated Knowledge-Gaps and Glossary appendices.
+- Flashcard books export to **Anki-ready CSV** (`⬇ Flashcards CSV`).
+
 ## Architecture
 
 ```

@@ -103,6 +103,10 @@ const aiProvider = {
     return reply.toUpperCase().includes('OK');
   },
 
+  async complete(systemPrompt, userPrompt, options = {}, override = {}) {
+    return chat(systemPrompt, userPrompt, options, override);
+  },
+
   async generate(prompt, context, override = {}) {
     return chat(SYSTEM_AUTHOR, `Context:\n${context}\n\nTask: ${prompt}`, {}, override);
   },
@@ -129,16 +133,17 @@ const aiProvider = {
     return candidateLabels.map((label) => ({ label, score: chosen.includes(label) ? 1 : 0 }));
   },
 
-  async synthesize(evidence, topicName, override = {}) {
-    if (!normalizeOverride(override).client) {
-      return evidence.map((e) => e.content).join('\n\n');
-    }
+  async synthesize(evidence, topicName, override = {}, addenda = null) {
+    const system = addenda ? addenda.system :
+      'You are synthesizing knowledge from multiple research sources into one coherent, well-structured explanation. Combine complementary information, remove repetition, preserve disagreements explicitly, and write for the reader. Ground everything in the sources.';
+    const task = addenda ? addenda.user : 'Synthesize the sources into one coherent explanation.';
+    const body = evidence
+      .map((e, i) => `[Source ${i + 1}] ${e.sourceTitle}, page ${e.pageNumber}: ${e.text || e.content}`)
+      .join('\n\n');
     return chat(
-      'You are synthesizing knowledge from multiple research sources into one coherent, well-structured explanation. Combine complementary information, remove repetition, preserve disagreements explicitly, and write for the reader. Ground everything in the sources.',
-      `Topic: ${topicName}\n\nSources:\n${evidence
-        .map((e, i) => `[Source ${i + 1}] ${e.sourceTitle}, page ${e.pageNumber}: ${e.text || e.content}`)
-        .join('\n\n')}`,
-      { maxTokens: 1800 },
+      system,
+      `${task}\n\nTopic: ${topicName}\n\nSources:\n${body}`,
+      { maxTokens: 2400 },
       override
     );
   },

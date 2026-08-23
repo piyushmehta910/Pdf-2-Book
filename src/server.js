@@ -28,6 +28,11 @@ app.use('/api/projects', bookRouter);
 app.use('/api/knowledge', knowledgeRouter);
 app.use('/api/providers', providersRouter);
 
+const notebookOptions = require('./services/notebookOptions');
+app.get('/api/notebook', (req, res) => {
+  res.json(notebookOptions.describe());
+});
+
 app.use((err, req, res, _next) => {
   logger.error(err.message);
   res.status(500).json({ error: err.message });

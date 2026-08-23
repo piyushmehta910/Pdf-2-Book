@@ -1,9 +1,12 @@
 const express = require('express');
 const storage = require('../services/storage');
-const { synthesizeTopic, generateChapter } = require('../services/synthesizer');
+const { synthesizeTopic } = require('../services/synthesizer');
+const { composeChapters } = require('../services/chapterComposer');
 const aiProvider = require('../services/aiProvider');
-const config = require('../config');
-const { toMarkdown, toHtml, toProjectJson, writeExport } = require('../services/exporter');
+const {
+  toMarkdown, toHtml, toProjectJson, toFlashcardsCsv, writeExport
+} = require('../services/exporter');
+const { validateNotebook } = require('../services/notebookOptions');
 const logger = require('../logger');
 
 const router = express.Router();
@@ -29,34 +32,48 @@ router.post('/:projectId/book/generate', async (req, res) => {
   try {
     const projectId = req.params.projectId;
     const aiConfig = aiConfigFromRequest(req);
+    const project = storage.readCollection(projectId, 'project')[0] || {};
+    const notebook = validateNotebook({ ...(project.notebook || {}), ...(req.body.notebook || {}) });
+
     const topics = storage.readCollection(projectId, 'topics');
     const chunks = storage.readCollection(projectId, 'chunks');
     const sources = storage.readCollection(projectId, 'sources');
     const outline = storage.readCollection(projectId, 'outline')[0];
+    const coverage = storage.readCollection(projectId, 'coverage');
 
     if (!outline) return res.status(400).json({ error: 'Run analysis first (POST /api/knowledge/:id/analyze)' });
 
     const syntheses = [];
     for (const topic of topics) {
-      syntheses.push(await synthesizeTopic(topic, chunks, sources, aiConfig));
+      syntheses.push(await synthesizeTopic(topic, chunks, sources, aiConfig, notebook));
     }
     storage.replaceAll(projectId, 'syntheses', syntheses);
 
-    const chapters = [];
-    for (const chapter of outline.chapters) {
-      chapters.push(await generateChapter(chapter, syntheses));
-    }
+    const { chapters, polished } = await composeChapters({
+      outline,
+      syntheses,
+      notebook,
+      aiConfig,
+      topics,
+      coverage,
+      chunks
+    });
     storage.replaceAll(projectId, 'chapters', chapters);
+
+    if (project.id) {
+      storage.updateById(projectId, 'project', project.id, { notebook });
+    }
 
     const version = {
       id: storage.id('rev'),
       createdAt: new Date().toISOString(),
-      chapterCount: chapters.length
+      chapterCount: chapters.length,
+      notebook
     };
     storage.insert(projectId, 'revisions', version);
 
     const engineMode = aiProvider.available(aiConfig)
-      ? { provider: aiConfig.provider || null, model: aiConfig.model || null, mode: 'ai' }
+      ? { provider: aiConfig.provider || null, model: aiConfig.model || null, mode: polished ? 'ai-polished' : 'ai' }
       : { provider: null, model: null, mode: 'extractive-fallback' };
     const contextTotals = syntheses.reduce(
       (acc, s) => ({
@@ -67,7 +84,14 @@ router.post('/:projectId/book/generate', async (req, res) => {
       { charsUsed: 0, chunksUsed: 0, chunksAvailable: 0 }
     );
 
-    res.json({ chapters: chapters.length, version, engine: engineMode, context: contextTotals });
+    res.json({
+      chapters: chapters.length,
+      cards: chapters.reduce((n, c) => n + ((c.cards && c.cards.length) || 0), 0),
+      version,
+      engine: engineMode,
+      notebook,
+      context: contextTotals
+    });
   } catch (err) {
     logger.error(err.message);
     res.status(500).json({ error: err.message });
@@ -104,6 +128,11 @@ router.get('/:projectId/export/:format', async (req, res) => {
     } else if (req.params.format === 'html') {
       const html = toHtml(project, chapters);
       const file = writeExport(projectId, 'book.html', html);
+      res.download(file);
+    } else if (req.params.format === 'flashcards-csv') {
+      const csv = toFlashcardsCsv(chapters);
+      if (!csv) return res.status(400).json({ error: 'No flashcards in this book — generate with the Q&A Flashcards format first' });
+      const file = writeExport(projectId, 'flashcards.csv', csv);
       res.download(file);
     } else if (req.params.format === 'json') {
       const json = toProjectJson(project, {
