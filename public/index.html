@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="pdf2book — turn scattered research papers and notes into a coherent knowledge book.">
 <title>pdf2book — Knowledge Book Studio</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,8 +29,29 @@
     --warn: #fbbf24;
     --err: #f87171;
     --grad: linear-gradient(135deg, #6d7cff, #9a6bff);
+    --header-bg: rgba(9,11,17,.78);
+    --input-bg: rgba(0,0,0,.25);
+    --reader-text: #e3e7f0;
     --shadow-lg: 0 18px 50px rgba(0,0,0,.5);
     --shadow-sm: 0 4px 16px rgba(0,0,0,.35);
+  }
+  html[data-theme="light"] {
+    --bg: #f2f4f9;
+    --bg2: #eef0f7;
+    --panel: #ffffff;
+    --panel2: #f5f6fb;
+    --panel3: #e8eaf3;
+    --border: #dde1ee;
+    --border2: #c6ccdf;
+    --text: #181c28;
+    --text2: #3c4358;
+    --muted: #6b7288;
+    --glow: rgba(109,124,255,.16);
+    --header-bg: rgba(255,255,255,.82);
+    --input-bg: #ffffff;
+    --reader-text: #262c3d;
+    --shadow-lg: 0 18px 50px rgba(30,40,80,.14);
+    --shadow-sm: 0 4px 16px rgba(30,40,80,.08);
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -43,6 +65,7 @@
     font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     font-size: 14.5px; line-height: 1.55;
     -webkit-font-smoothing: antialiased;
+    transition: background .25s, color .25s;
   }
   ::selection { background: var(--accent); color: #fff; }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -52,14 +75,14 @@
   /* ---------- header ---------- */
   header {
     position: sticky; top: 0; z-index: 40;
-    display: flex; align-items: center; gap: 14px;
-    padding: 14px 28px;
-    background: rgba(9,11,17,.78); backdrop-filter: blur(14px);
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 13px 28px;
+    background: var(--header-bg); backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border);
   }
   .logo {
     font-weight: 800; font-size: 20px; letter-spacing: .2px;
-    background: linear-gradient(90deg, #fff, #b9c0ff);
+    background: linear-gradient(90deg, var(--text), var(--text2));
     -webkit-background-clip: text; background-clip: text; color: transparent;
     display: flex; align-items: baseline;
   }
@@ -74,26 +97,28 @@
     border: 1px solid var(--border2); background: var(--panel); color: var(--text2);
     display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
   }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); flex: none; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); flex: none; transition: background .2s; }
   .dot.ok { background: var(--ok); box-shadow: 0 0 9px rgba(52,211,153,.8); }
 
   /* ---------- layout ---------- */
-  .layout { display: grid; grid-template-columns: 280px minmax(0,1fr); min-height: calc(100vh - 57px); }
+  .layout { display: grid; grid-template-columns: 290px minmax(0,1fr); min-height: calc(100vh - 57px); }
   aside {
     border-right: 1px solid var(--border); background: var(--bg2);
     padding: 22px 16px; position: sticky; top: 57px; height: calc(100vh - 57px);
     overflow-y: auto;
   }
-  main { padding: 34px 44px 90px; max-width: 980px; }
+  main { padding: 34px 44px 90px; max-width: 1000px; width: 100%; }
   @media (max-width: 960px) {
     .layout { grid-template-columns: 1fr; }
     aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
-    main { padding: 24px 18px 80px; }
+    main { padding: 24px 16px 80px; margin: 0 auto; }
+    header { padding: 12px 16px; }
+    .logo small { display: none; }
   }
 
   /* ---------- controls ---------- */
   input[type=text], input[type=password], textarea {
-    width: 100%; background: rgba(0,0,0,.25); border: 1px solid var(--border); color: var(--text);
+    width: 100%; background: var(--input-bg); border: 1px solid var(--border); color: var(--text);
     border-radius: 10px; padding: 10px 14px; font: inherit; outline: none;
     transition: border-color .15s, box-shadow .15s;
   }
@@ -106,11 +131,11 @@
     padding: 9px 17px; font: inherit; font-weight: 600; cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     box-shadow: 0 6px 20px rgba(109,124,255,.25), inset 0 1px 0 rgba(255,255,255,.18);
-    transition: filter .15s, transform .05s;
+    transition: filter .15s, transform .05s, opacity .15s;
   }
   button:hover:not(:disabled) { filter: brightness(1.12); }
   button:active:not(:disabled) { transform: translateY(1px); }
-  button:disabled { opacity: .45; cursor: default; }
+  button:disabled { opacity: .45; cursor: not-allowed; filter: grayscale(.35); }
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   button.ghost {
     background: var(--panel2); border: 1px solid var(--border2); color: var(--text);
@@ -120,6 +145,11 @@
   button.small { padding: 6px 13px; font-size: 12.5px; border-radius: 8px; }
   button.danger { background: transparent; border: 0; box-shadow: none; color: var(--muted); font-weight: 450; }
   button.danger:hover:not(:disabled) { color: var(--err); }
+  button.iconbtn {
+    background: transparent; border: 1px solid transparent; box-shadow: none;
+    color: var(--muted); padding: 4px 9px; border-radius: 8px; font-size: 13px;
+  }
+  button.iconbtn:hover { color: var(--text); background: var(--panel3); filter: none; }
 
   a.btn {
     display: inline-flex; align-items: center; gap: 7px;
@@ -133,30 +163,68 @@
   /* ---------- cards ---------- */
   .card {
     position: relative;
-    background: linear-gradient(180deg, var(--panel), rgba(16,19,28,.6));
+    background: linear-gradient(180deg, var(--panel), color-mix(in srgb, var(--panel) 60%, transparent));
     border: 1px solid var(--border); border-radius: 18px;
     padding: 24px; margin-bottom: 20px;
     box-shadow: var(--shadow-sm);
+    transition: opacity .25s;
   }
   .card::before {
     content: ""; position: absolute; inset: 0 0 auto; height: 1px;
     background: linear-gradient(90deg, transparent, rgba(125,146,255,.35), transparent);
     border-radius: 18px 18px 0 0; pointer-events: none;
   }
-  .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .card-head h2 { flex: 1; }
+  .card.locked > *:not(.gate-hint):not(.card-head) { opacity: .45; pointer-events: none; user-select: none; }
+  .card.locked .card-head h2 { opacity: .75; }
+  .gate-hint {
+    display: none; margin: -6px 0 12px; padding: 9px 14px; border-radius: 10px;
+    font-size: 12.5px; font-weight: 550; color: var(--warn);
+    background: rgba(251,191,36,.07); border: 1px dashed rgba(251,191,36,.4);
+  }
+  .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .card-head h2 { flex: 1; min-width: 180px; }
   h2 { font-size: 16.5px; margin: 0; font-weight: 700; letter-spacing: .1px; display: flex; align-items: center; gap: 10px; }
   .step-num {
-    width: 26px; height: 26px; flex: none; border-radius: 9px;
-    background: var(--grad); color: #fff;
+    width: 27px; height: 27px; flex: none; border-radius: 9px;
+    background: var(--panel3); color: var(--muted);
+    border: 1px solid var(--border);
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 12.5px; font-weight: 800;
+    transition: background .25s, color .25s, box-shadow .25s;
+  }
+  .card.live .step-num, .step.done.s-num {
+    background: var(--grad); color: #fff; border-color: transparent;
     box-shadow: 0 4px 14px rgba(109,124,255,.35);
   }
   .hint { color: var(--muted); font-size: 12.5px; }
   .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .stack { display: flex; flex-direction: column; gap: 10px; }
   hr.sep { border: 0; border-top: 1px solid var(--border); margin: 18px 0; }
+
+  /* ---------- stepper ---------- */
+  .stepper {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px; margin-bottom: 22px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    overflow-x: auto;
+  }
+  .step { display: flex; align-items: center; gap: 9px; flex: none; }
+  .step .s-num {
+    width: 26px; height: 26px; border-radius: 50%; flex: none;
+    background: var(--panel3); border: 1px solid var(--border); color: var(--muted);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; transition: all .25s;
+  }
+  .step.active .s-num {
+    background: var(--grad); color: #fff; border-color: transparent;
+    box-shadow: 0 0 0 4px var(--glow);
+  }
+  .step.done .s-num { background: rgba(52,211,153,.14); border-color: rgba(52,211,153,.5); color: var(--ok); }
+  .step .s-label { font-size: 12.5px; font-weight: 650; color: var(--muted); transition: color .2s; white-space: nowrap; }
+  .step.active .s-label { color: var(--text); }
+  .step.done .s-label { color: var(--text2); }
+  .s-line { flex: 1; min-width: 22px; height: 2px; border-radius: 99px; background: var(--border); transition: background .3s; }
+  .s-line.done { background: linear-gradient(90deg, rgba(52,211,153,.7), rgba(52,211,153,.35)); }
 
   /* ---------- sidebar ---------- */
   aside h3 {
@@ -201,8 +269,8 @@
   .stat:hover { transform: translateY(-2px); border-color: var(--border2); }
   .stat b { display: block; font-size: 27px; font-weight: 800; line-height: 1.15; letter-spacing: -.5px; }
   .stat span { color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-  .stat.warn b { color: var(--warn); } 
-  .stat.bad b { color: var(--err); } 
+  .stat.warn b { color: var(--warn); }
+  .stat.bad b { color: var(--err); }
   .stat.good b { color: var(--ok); }
 
   .bar { height: 10px; background: var(--panel3); border-radius: 999px; overflow: hidden; border: 1px solid var(--border); }
@@ -220,6 +288,25 @@
   .notice.show { display: block; }
   .notice.good { border-color: rgba(52,211,153,.35); background: rgba(52,211,153,.05); color: var(--ok); }
   .notice.bad  { border-color: rgba(248,113,113,.35); background: rgba(248,113,113,.06); color: var(--err); }
+
+  /* ---------- hero ---------- */
+  .hero { text-align: center; padding: 54px 20px 30px; }
+  .hero .big { font-size: 52px; margin-bottom: 6px; filter: drop-shadow(0 10px 24px rgba(122,102,255,.35)); }
+  .hero h1 {
+    font-size: clamp(26px, 4vw, 38px); margin: 0 0 12px; font-weight: 800; letter-spacing: -.8px;
+    background: linear-gradient(100deg, var(--text) 30%, var(--accent) 70%, var(--accent2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p { color: var(--muted); max-width: 520px; margin: 0 auto 26px; font-size: 15px; }
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; max-width: 720px; margin: 34px auto 0; text-align: left; }
+  .feature {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px;
+    transition: transform .15s, border-color .15s;
+  }
+  .feature:hover { transform: translateY(-3px); border-color: var(--border2); }
+  .feature .fi { font-size: 21px; margin-bottom: 8px; }
+  .feature b { display: block; font-size: 13.5px; margin-bottom: 3px; }
+  .feature span { font-size: 12px; color: var(--muted); line-height: 1.5; }
 
   /* ---------- dropzone & file chips ---------- */
   .dropzone {
@@ -250,25 +337,33 @@
     background: linear-gradient(180deg, var(--panel2), var(--panel));
     padding: 20px 22px; margin-bottom: 12px;
   }
-  .chapter-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-  .chapter-head h4 { flex: 1; margin: 0; font-size: 14.5px; font-weight: 700; }
+  .chapter-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .chapter-head h4 { flex: 1; min-width: 160px; margin: 0; font-size: 14.5px; font-weight: 700; }
+  .wc { font-size: 11px; color: var(--muted); white-space: nowrap; font-weight: 550; }
+  .ch-body.collapsed { display: none; }
+  .chev { transition: transform .2s; display: inline-block; }
+  .chev.closed { transform: rotate(-90deg); }
   .reader {
     font-family: Georgia, "Times New Roman", serif; font-size: 16.5px; line-height: 1.8;
-    color: #e3e7f0; max-width: 68ch;
+    color: var(--reader-text); max-width: 68ch;
   }
   .reader h1 { font-size: 23px; margin: 18px 0 10px; letter-spacing: -.2px; }
   .reader h2 { font-size: 18px; margin: 16px 0 8px; }
   .reader h3 { font-size: 15.5px; margin: 14px 0 6px; }
   .reader p { margin: 10px 0; }
   .reader ul { padding-left: 24px; margin: 8px 0; }
-  .reader strong { color: #fff; }
+  .reader strong { color: var(--text); font-weight: 700; }
+
+  /* ---------- generation fx ---------- */
+  .genfx { display: none; padding: 8px 0; }
+  .genfx .gline { height: 14px; border-radius: 8px; margin-bottom: 12px; }
+  .genfx .gmsg { display: flex; align-items: center; gap: 10px; color: var(--text2); font-size: 13.5px; font-weight: 550; margin-top: 18px; }
 
   /* ---------- empty state ---------- */
   .empty {
     color: var(--muted); text-align: center; border: 1.5px dashed var(--border2);
-    border-radius: 16px; padding: 48px 26px;
+    border-radius: 16px; padding: 44px 26px; font-size: 13.5px;
   }
-  .empty .big { font-size: 36px; margin-bottom: 12px; }
   .empty b { color: var(--text2); display: block; margin-bottom: 6px; font-size: 15px; font-weight: 650; }
 
   /* ---------- skeleton ---------- */
@@ -280,8 +375,8 @@
   @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
   .spin {
-    display: inline-block; width: 14px; height: 14px;
-    border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
+    display: inline-block; width: 14px; height: 14px; flex: none;
+    border: 2px solid rgba(125,146,255,.3); border-top-color: var(--accent);
     border-radius: 50%; animation: rot .7s linear infinite;
   }
   @keyframes rot { to { transform: rotate(360deg); } }
@@ -291,7 +386,7 @@
   /* ---------- toasts ---------- */
   #toasts { position: fixed; bottom: 22px; right: 22px; z-index: 100; display: flex; flex-direction: column; gap: 10px; max-width: 430px; }
   .toast {
-    background: rgba(29,34,49,.92); backdrop-filter: blur(10px);
+    background: var(--panel3); backdrop-filter: blur(10px);
     border: 1px solid var(--border2); border-left: 3px solid var(--accent);
     padding: 13px 17px; border-radius: 12px; font-size: 13.5px; font-weight: 500;
     box-shadow: var(--shadow-lg);
@@ -390,12 +485,17 @@
   .provlink:hover { text-decoration: underline; }
   .testline { display: flex; gap: 12px; align-items: center; min-height: 32px; }
   .testresult { font-size: 13px; font-weight: 550; }
-  .testresult.ok { color: var(--ok); } 
+  .testresult.ok { color: var(--ok); }
   .testresult.err { color: var(--err); }
 
   select {
-    width: 100%; background: rgba(0,0,0,.25); color: var(--text); border: 1px solid var(--border);
+    width: 100%; background: var(--input-bg); color: var(--text); border: 1px solid var(--border);
     border-radius: 10px; padding: 10px 12px; font: inherit; outline: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    html { scroll-behavior: auto; }
   }
 </style>
 </head>
@@ -405,7 +505,8 @@
   <div class="logo">pdf<b>2</b>book <small>Knowledge Book Studio</small></div>
   <div class="spacer"></div>
   <span class="badge" id="aiBadge"><span class="dot" id="provDot"></span><span id="provider">connecting…</span></span>
-  <button class="ghost small" onclick="openSettings()">⚙&nbsp;AI settings</button>
+  <button class="ghost small" id="themeToggle" title="Toggle light/dark theme" aria-label="Toggle theme">☀️</button>
+  <button class="ghost small" onclick="openSettings()" title="AI provider settings">⚙&nbsp;AI settings</button>
 </header>
 
 <div class="layout">
@@ -420,11 +521,18 @@
   </aside>
 
   <main>
-    <div id="noProject" class="empty">
-      <div class="big">📚</div>
-      <b>Welcome to pdf2book</b>
-      Turn scattered research papers and notes into a coherent knowledge book.<br>
-      Create or select a project on the left to begin.
+    <div id="noProject" style="display:none">
+      <div class="hero">
+        <div class="big">📚</div>
+        <h1>Turn research chaos into a readable book</h1>
+        <p>pdf2book reads your papers and notes, maps the knowledge inside, resolves contradictions, and writes coherent chapters you can edit and export.</p>
+        <button id="heroCta">＋&nbsp;Create your first project</button>
+        <div class="features">
+          <div class="feature"><div class="fi">📥</div><b>Add anything</b><span>Drop PDFs or paste raw notes — everything stays local.</span></div>
+          <div class="feature"><div class="fi">🧠</div><b>Smart analysis</b><span>Detects topics, merges duplicates, flags conflicting claims.</span></div>
+          <div class="feature"><div class="fi">📖</div><b>Readable output</b><span>Grounded chapters with your choice of free AI models.</span></div>
+        </div>
+      </div>
     </div>
 
     <div id="workspace" style="display:none">
@@ -433,8 +541,16 @@
         <div class="hint" id="projMeta"></div>
       </div>
 
+      <div class="stepper" id="stepper" aria-label="Workflow progress">
+        <div class="step" data-step="1"><span class="s-num">1</span><span class="s-label">Add sources</span></div>
+        <div class="s-line"></div>
+        <div class="step" data-step="2"><span class="s-num">2</span><span class="s-label">Analyze</span></div>
+        <div class="s-line"></div>
+        <div class="step" data-step="3"><span class="s-num">3</span><span class="s-label">Generate book</span></div>
+      </div>
+
       <!-- STEP 1 -->
-      <section class="card">
+      <section class="card live" id="card1">
         <div class="card-head"><h2><span class="step-num">1</span>Add sources</h2></div>
         <div class="stack">
           <input type="text" id="noteTitle" placeholder="Title for pasted notes (optional)">
@@ -464,11 +580,12 @@
       </section>
 
       <!-- STEP 2 -->
-      <section class="card">
+      <section class="card" id="card2">
         <div class="card-head">
           <h2><span class="step-num">2</span>Analyze knowledge</h2>
           <button id="analyzeBtn">⚡&nbsp;Run analysis</button>
         </div>
+        <div class="gate-hint" id="gate2">🔒 Add at least one source and process it to unlock analysis.</div>
         <p class="hint" style="margin-top:0">Detects topics across sources, merges duplicates, flags contradictions, and checks coverage so no topic is left behind.</p>
         <div class="stats skel" id="statsSkel" style="height:84px;display:none"></div>
         <div class="stats" id="stats" style="display:none">
@@ -483,17 +600,25 @@
       </section>
 
       <!-- STEP 3 -->
-      <section class="card">
+      <section class="card" id="card3">
         <div class="card-head">
           <h2><span class="step-num">3</span>Generate your book</h2>
           <button class="ghost small" onclick="openSettings()" title="AI provider settings">⚙&nbsp;AI</button>
           <button id="genBtn">📖&nbsp;Generate book</button>
         </div>
+        <div class="gate-hint" id="gate3">🔒 Run the analysis first — the book is generated from detected topics.</div>
         <div class="row" id="exports" style="display:none;margin-bottom:16px">
           <span class="hint">Export:</span>
           <a class="btn" id="expMd" target="_blank" rel="noopener">⬇&nbsp;Markdown</a>
           <a class="btn" id="expHtml" target="_blank" rel="noopener">⬇&nbsp;HTML</a>
           <a class="btn" id="expJson" target="_blank" rel="noopener">⬇&nbsp;JSON</a>
+        </div>
+        <div class="genfx" id="genFx">
+          <div class="gline skel" style="width:88%"></div>
+          <div class="gline skel" style="width:96%"></div>
+          <div class="gline skel" style="width:72%"></div>
+          <div class="gline skel" style="width:91%"></div>
+          <div class="gmsg"><span class="spin"></span><span id="genMsg">Warming up the author…</span></div>
         </div>
         <div id="chapters"><div class="empty">Run the analysis first, then generate your book.</div></div>
       </section>
@@ -557,7 +682,7 @@
   </div>
 </div>
 
-<div id="toasts"></div>
+<div id="toasts" aria-live="polite"></div>
 
 <script>
 'use strict';
@@ -572,10 +697,10 @@ window.onerror = function (msg) {
 function toast(msg, kind) {
   const t = document.createElement('div');
   t.className = 'toast' + (kind ? ' ' + kind : '');
-  t.textContent = msg;
+  t.textContent = (kind === 'ok' ? '✓  ' : kind === 'err' ? '✕  ' : 'ℹ  ') + msg;
   $('toasts').appendChild(t);
   setTimeout(() => { t.style.opacity = '0'; }, 3800);
-  setTimeout(() => t.remove(), 4200);
+  setTimeout(() => t.remove(), 4300);
 }
 
 async function api(path, opts = {}) {
@@ -596,6 +721,42 @@ function busy(btn, on, labelBusy, labelIdle) {
   btn.innerHTML = on ? '<span class="spin"></span>&nbsp; ' + labelBusy : labelIdle;
 }
 
+function timeAgo(iso) {
+  const d = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (d < 60) return 'just now';
+  if (d < 3600) return Math.floor(d / 60) + 'm ago';
+  if (d < 86400) return Math.floor(d / 3600) + 'h ago';
+  return Math.floor(d / 86400) + 'd ago';
+}
+
+async function copyText(txt) {
+  try { await navigator.clipboard.writeText(txt); return true; }
+  catch (_e) {
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (_e2) {}
+    ta.remove(); return ok;
+  }
+}
+
+/* ================= theme ================= */
+const THEME_KEY = 'pdf2book.theme';
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  $('themeToggle').textContent = t === 'light' ? '🌙' : '☀️';
+}
+$('themeToggle').onclick = () => {
+  const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+};
+applyTheme(
+  localStorage.getItem(THEME_KEY) ||
+  (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+);
+
 /* ================= AI provider settings ================= */
 const CFG_KEY = 'pdf2book.aiConfig';
 let aiCfg = { provider: 'zen', apiKey: '', model: '', contextBudget: 12000 };
@@ -613,7 +774,7 @@ if (!['zen', 'nvidia'].includes(aiCfg.provider)) {
 function saveAiCfg() { localStorage.setItem(CFG_KEY, JSON.stringify(aiCfg)); }
 
 function aiRequestHeaders() {
-  if (aiCfg.provider === 'local' || !aiCfg.apiKey) return null;
+  if (!aiCfg.apiKey) return null;
   return { 'X-AI-Config': JSON.stringify({
     provider: aiCfg.provider,
     apiKey: aiCfg.apiKey,
@@ -639,10 +800,8 @@ async function loadProviders() {
     const info = document.createElement('div'); info.style.minWidth = '0';
     const name = document.createElement('div'); name.className = 'pname';
     name.append(document.createTextNode(p.label));
-    if (p.id === 'zen' || p.id === 'nvidia') {
-      const tag = document.createElement('span'); tag.className = 'ptag'; tag.textContent = 'FREE';
-      name.appendChild(tag);
-    }
+    const tag = document.createElement('span'); tag.className = 'ptag'; tag.textContent = 'FREE';
+    name.appendChild(tag);
     const sub = document.createElement('div'); sub.className = 'psub';
     sub.textContent = p.id === 'zen'
       ? (p.models || []).length + ' free models'
@@ -676,7 +835,7 @@ function renderSettings() {
   document.querySelectorAll('.provcard').forEach((c) =>
     c.classList.toggle('active', c.dataset.id === aiCfg.provider));
 
-  const hasKeyField = meta && meta.baseUrl;
+  const hasKeyField = Boolean(meta);
   $('keyField').style.display = hasKeyField ? 'block' : 'none';
   $('modelField').style.display = hasKeyField ? 'block' : 'none';
   $('testLine').style.display = hasKeyField ? 'flex' : 'none';
@@ -696,17 +855,25 @@ function renderSettings() {
     b.classList.toggle('active', Number(b.dataset.budget) === Number(aiCfg.contextBudget)));
 }
 
+let lastFocused = null;
 function openSettings() {
+  lastFocused = document.activeElement;
   $('setKey').value = aiCfg.apiKey;
   $('setModel').value = aiCfg.model;
   renderSettings();
   $('settingsModal').classList.add('open');
+  setTimeout(() => { try { $('setKey').focus(); } catch (_e) {} }, 60);
 }
-function closeSettings() { $('settingsModal').classList.remove('open'); }
+function closeSettings() {
+  $('settingsModal').classList.remove('open');
+  if (lastFocused && lastFocused.focus) lastFocused.focus();
+}
 $('settingsModal').addEventListener('click', (e) => {
   if (e.target === $('settingsModal')) closeSettings();
 });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSettings(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && $('settingsModal').classList.contains('open')) closeSettings();
+});
 
 $('showKey').onclick = () => {
   const inp = $('setKey');
@@ -759,6 +926,33 @@ function refreshBadge() {
   }
 }
 
+/* ================= workflow state ================= */
+const flow = { processed: false, analyzed: false, chapters: false };
+
+function updateStepper() {
+  const activeStep = flow.chapters ? 4 : flow.analyzed ? 3 : flow.processed ? 2 : 1;
+  document.querySelectorAll('#stepper .step').forEach((el) => {
+    const n = Number(el.dataset.step);
+    el.classList.toggle('done', activeStep === 4 || n < activeStep);
+    el.classList.toggle('active', activeStep !== 4 && n === activeStep);
+  });
+  const lines = document.querySelectorAll('#stepper .s-line');
+  lines.forEach((ln, i) => ln.classList.toggle('done', activeStep === 4 || i + 1 < activeStep));
+
+  $('card1').classList.toggle('live', activeStep === 1);
+  $('card2').classList.toggle('live', activeStep === 2);
+  $('card3').classList.toggle('live', activeStep >= 3);
+
+  const lock2 = !flow.processed;
+  const lock3 = !flow.analyzed;
+  $('analyzeBtn').disabled = lock2;
+  $('genBtn').disabled = lock3;
+  $('gate2').style.display = lock2 ? 'block' : 'none';
+  $('gate3').style.display = lock3 ? 'block' : 'none';
+  $('card2').classList.toggle('locked', lock2);
+  $('card3').classList.toggle('locked', lock3);
+}
+
 /* ================= projects ================= */
 async function loadProjects() {
   const projects = await api('/api/projects');
@@ -776,7 +970,7 @@ async function loadProjects() {
     const name = document.createElement('div'); name.style.minWidth = '0';
     const t = document.createElement('div'); t.className = 'li-title'; t.textContent = p.title;
     const s = document.createElement('div'); s.className = 'li-sub';
-    s.textContent = new Date(p.createdAt).toLocaleDateString();
+    s.textContent = timeAgo(p.createdAt);
     name.append(t, s);
     const del = document.createElement('button');
     del.className = 'danger small'; del.textContent = 'Delete';
@@ -806,6 +1000,11 @@ $('newBtn').onclick = async () => {
   finally { busy($('newBtn'), false, '', '<span aria-hidden="true">✦</span>&nbsp; Create project'); }
 };
 
+$('heroCta').onclick = () => {
+  $('projTitle').focus();
+  $('projTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
 function showWorkspace(on) {
   $('noProject').style.display = on ? 'none' : 'block';
   $('workspace').style.display = on ? 'block' : 'none';
@@ -821,6 +1020,8 @@ async function selectProject(id, title) {
     .find((li) => li.querySelector('.li-title') && li.querySelector('.li-title').textContent === (title || id));
   if (match) match.classList.add('active');
 
+  flow.processed = false; flow.analyzed = false; flow.chapters = false;
+
   $('stats').style.display = 'none'; $('statsSkel').style.display = 'none';
   $('covBar').style.display = 'none';
   $('covNote').className = 'notice';
@@ -828,6 +1029,7 @@ async function selectProject(id, title) {
   $('exports').style.display = 'none';
 
   await Promise.all([loadSources(), loadBook()]);
+  updateStepper();
 }
 
 /* ================= sources ================= */
@@ -933,6 +1135,7 @@ async function loadSources() {
     ul.appendChild(li);
   }
   $('processAllRow').style.display = pending > 1 ? 'flex' : 'none';
+  flow.processed = sources.some((s) => s.status === 'processed');
 }
 
 $('addSrc').onclick = async () => {
@@ -951,6 +1154,7 @@ $('addSrc').onclick = async () => {
     pickedFiles = []; syncInputFiles(); renderFileChips();
     toast(created.length + ' source(s) added', 'ok');
     await loadSources();
+    updateStepper();
   } catch (e) { toast(e.message, 'err'); }
   finally { busy($('addSrc'), false, '', '＋&nbsp;Add sources'); }
 };
@@ -961,6 +1165,7 @@ async function processSource(sid, btn) {
     const r = await api('/api/projects/' + projectId + '/sources/' + sid + '/process', { method: 'POST' });
     toast('Processed: ' + r.pages + ' pages → ' + r.chunks + ' chunks', 'ok');
     await loadSources();
+    updateStepper();
   } catch (e) {
     toast(e.message, 'err');
     btn.disabled = false; btn.textContent = 'Retry';
@@ -978,6 +1183,7 @@ $('processAllBtn').onclick = async () => {
     }
     toast(done + ' source(s) processed', 'ok');
     await loadSources();
+    updateStepper();
   } catch (e) { toast(e.message, 'err'); }
   finally { busy($('processAllBtn'), false, '', '▶&nbsp;Process all'); }
 };
@@ -1018,6 +1224,8 @@ $('analyzeBtn').onclick = async () => {
     note.textContent = cov.insufficient
       ? '⚠ Coverage is low (' + covScore + '%). Add more sources on weak topics before generating for better results.'
       : '✓ Coverage looks healthy. You are ready to generate the book.';
+    flow.analyzed = true;
+    updateStepper();
     toast('Analysis complete — ' + r.topicCount + ' topics found', 'ok');
   } catch (e) {
     $('statsSkel').style.display = 'none';
@@ -1046,10 +1254,36 @@ function renderMarkdown(md) {
   }
 }
 
+const GEN_MSGS = [
+  'Warming up the author…',
+  'Reading your sources…',
+  'Selecting the best evidence…',
+  'Weaving chapters together…',
+  'Smoothing transitions…',
+  'Adding final polish…'
+];
+let genTimer = null;
+function startGenFx() {
+  $('genFx').style.display = 'block';
+  $('chapters').style.display = 'none';
+  let i = 0;
+  $('genMsg').textContent = GEN_MSGS[0];
+  genTimer = setInterval(() => {
+    i = Math.min(i + 1, GEN_MSGS.length - 1);
+    $('genMsg').textContent = GEN_MSGS[i];
+  }, 1800);
+}
+function stopGenFx() {
+  if (genTimer) { clearInterval(genTimer); genTimer = null; }
+  $('genFx').style.display = 'none';
+  $('chapters').style.display = '';
+}
+
 $('genBtn').onclick = async () => {
   const btn = $('genBtn');
   try {
-    busy(btn, true, 'Generating…', '📖&nbsp;Generate book');
+    busy(btn, true, 'Writing…', '📖&nbsp;Generate book');
+    startGenFx();
     const r = await api('/api/projects/' + projectId + '/book/generate', {
       method: 'POST',
       headers: aiRequestHeaders() || {}
@@ -1067,7 +1301,7 @@ $('genBtn').onclick = async () => {
     toast(msg, 'ok');
     await loadBook(true);
   } catch (e) { toast(e.message, 'err'); }
-  finally { busy(btn, false, '', '📖&nbsp;Generate book'); }
+  finally { stopGenFx(); busy(btn, false, '', '📖&nbsp;Generate book'); }
 };
 
 async function loadBook(scrollTo) {
@@ -1089,12 +1323,22 @@ async function loadBook(scrollTo) {
     return;
   }
 
+  flow.chapters = true;
+  flow.analyzed = true;
+
   book.chapters.forEach((ch) => {
+    const words = ch.content.trim().split(/\s+/).length;
+    const mins = Math.max(1, Math.round(words / 220));
+
     const div = document.createElement('div');
     div.className = 'chapter';
     const head = document.createElement('div'); head.className = 'chapter-head';
     const h = document.createElement('h4'); h.textContent = ch.title;
-    head.appendChild(h);
+    const wc = document.createElement('span'); wc.className = 'wc';
+    wc.textContent = '~' + words.toLocaleString() + ' words · ' + mins + ' min read';
+    head.append(h, wc);
+
+    const body = document.createElement('div'); body.className = 'ch-body';
 
     const reader = document.createElement('div');
     reader.className = 'reader';
@@ -1105,12 +1349,28 @@ async function loadBook(scrollTo) {
     editor.rows = Math.max(8, ch.content.split('\n').length + 2);
     editor.style.display = 'none';
 
+    body.append(reader, editor);
+
     const row = document.createElement('div'); row.className = 'row'; row.style.marginTop = '12px';
-    const edit = document.createElement('button'); edit.className = 'ghost small'; edit.textContent = '✎ Edit chapter';
+    const edit = document.createElement('button'); edit.className = 'ghost small'; edit.textContent = '✎ Edit';
     const save = document.createElement('button'); save.className = 'small'; save.textContent = 'Save changes';
     save.style.display = 'none';
     const cancel = document.createElement('button'); cancel.className = 'danger small'; cancel.textContent = 'Cancel';
     cancel.style.display = 'none';
+
+    const copy = document.createElement('button');
+    copy.className = 'iconbtn'; copy.title = 'Copy chapter'; copy.textContent = '⧉ Copy';
+    copy.onclick = async () => {
+      toast(await copyText(ch.content) ? 'Chapter copied to clipboard' : 'Copy failed', 'ok');
+    };
+
+    const collapse = document.createElement('button');
+    collapse.className = 'iconbtn'; collapse.title = 'Collapse chapter';
+    collapse.innerHTML = '<span class="chev">▾</span>';
+    collapse.onclick = () => {
+      body.classList.toggle('collapsed');
+      collapse.querySelector('.chev').classList.toggle('closed', body.classList.contains('collapsed'));
+    };
 
     edit.onclick = () => {
       reader.style.display = 'none';
@@ -1142,10 +1402,12 @@ async function loadBook(scrollTo) {
     };
 
     row.append(edit, save, cancel);
-    div.append(head, reader, editor, row);
+    head.append(copy, collapse);
+    div.append(head, body, row);
     wrap.appendChild(div);
   });
 
+  updateStepper();
   if (scrollTo) $('chapters').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
