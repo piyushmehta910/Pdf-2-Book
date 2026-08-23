@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="pdf2book — turn scattered research papers and notes into a coherent knowledge book.">
 <title>pdf2book — Knowledge Book Studio</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='18' y='30' width='64' height='44' rx='6' fill='%236d7cff'/><rect x='26' y='22' width='64' height='44' rx='6' fill='none' stroke='%239a6bff' stroke-width='5'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -291,7 +291,7 @@
 
   /* ---------- hero ---------- */
   .hero { text-align: center; padding: 54px 20px 30px; }
-  .hero .big { font-size: 52px; margin-bottom: 6px; filter: drop-shadow(0 10px 24px rgba(122,102,255,.35)); }
+  .hero .big { width: 64px; height: 4px; margin: 0 auto 22px; border-radius: 99px; background: var(--grad); }
   .hero h1 {
     font-size: clamp(26px, 4vw, 38px); margin: 0 0 12px; font-weight: 800; letter-spacing: -.8px;
     background: linear-gradient(100deg, var(--text) 30%, var(--accent) 70%, var(--accent2));
@@ -564,7 +564,6 @@
   .mcard .mq { font-weight: 700; margin-bottom: 8px; color: var(--accent); }
   .mcard .ma { white-space: pre-line; color: var(--reader-text); }
   .chapter.appendix { opacity: .85; border-style: dashed; }
-  .chapter.appendix h4::before { content: "📎 "; }
   a.wikilink { color: var(--accent); text-decoration: underline dotted; cursor: pointer; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -579,8 +578,8 @@
   <div class="logo">pdf<b>2</b>book <small>Knowledge Book Studio</small></div>
   <div class="spacer"></div>
   <span class="badge" id="aiBadge"><span class="dot" id="provDot"></span><span id="provider">connecting…</span></span>
-  <button class="ghost small" id="themeToggle" title="Toggle light/dark theme" aria-label="Toggle theme">☀️</button>
-  <button class="ghost small" onclick="openSettings()" title="AI provider settings">⚙&nbsp;AI settings</button>
+  <button class="ghost small" id="themeToggle" title="Toggle light/dark theme" aria-label="Toggle theme">Theme</button>
+  <button class="ghost small" onclick="openSettings()" title="AI provider settings">AI settings</button>
 </header>
 
 <div class="layout">
@@ -589,7 +588,7 @@
     <div class="stack" style="margin-bottom:18px">
       <input type="text" id="projTitle" placeholder="New project title…" maxlength="120"
              onkeydown="if(event.key==='Enter')document.getElementById('newBtn').click()">
-      <button id="newBtn"><span aria-hidden="true">✦</span>&nbsp; Create project</button>
+      <button id="newBtn">Create project</button>
     </div>
     <ul class="list" id="projects"></ul>
   </aside>
@@ -597,14 +596,14 @@
   <main>
     <div id="noProject" style="display:none">
       <div class="hero">
-        <div class="big">📚</div>
+        <div class="big"></div>
         <h1>Turn research chaos into a readable book</h1>
         <p>pdf2book reads your papers and notes, maps the knowledge inside, resolves contradictions, and writes coherent chapters you can edit and export.</p>
-        <button id="heroCta">＋&nbsp;Create your first project</button>
+        <button id="heroCta">+ Create your first project</button>
         <div class="features">
-          <div class="feature"><div class="fi">📥</div><b>Add anything</b><span>Drop PDFs or paste raw notes — everything stays local.</span></div>
-          <div class="feature"><div class="fi">🧠</div><b>Smart analysis</b><span>Detects topics, merges duplicates, flags conflicting claims.</span></div>
-          <div class="feature"><div class="fi">📖</div><b>Readable output</b><span>Grounded chapters with your choice of free AI models.</span></div>
+        <div class="feature"><b>Add anything</b><span>Drop PDFs or paste raw notes — everything stays local.</span></div>
+        <div class="feature"><b>Smart analysis</b><span>Detects topics, merges duplicates, flags conflicting claims.</span></div>
+        <div class="feature"><b>Readable output</b><span>Grounded chapters with your choice of free AI models.</span></div>
         </div>
       </div>
     </div>
@@ -632,7 +631,7 @@
           <div class="hint" id="noteStats" style="display:none"></div>
 
           <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose files">
-            <div class="dz-icon">📄</div>
+            <div class="dz-icon">↑</div>
             <b style="color:var(--text2)">Drop PDF or TXT files here</b><br>
             <span class="hint">or click to browse — multiple files supported</span>
             <input type="file" id="files" accept=".pdf,.txt" multiple hidden>
@@ -642,14 +641,14 @@
             <span class="hint" id="fileCount"></span>
             <span style="flex:1"></span>
             <button class="ghost small" id="clearFiles" style="display:none">Clear files</button>
-            <button id="addSrc">＋&nbsp;Add sources</button>
+            <button id="addSrc">+ Add sources</button>
           </div>
         </div>
         <hr class="sep">
         <ul class="list" id="sources"></ul>
         <div class="row" id="processAllRow" style="display:none;margin-top:12px">
           <span class="hint" style="flex:1">Process all pending sources at once.</span>
-          <button class="ghost" id="processAllBtn">▶&nbsp;Process all</button>
+          <button class="ghost" id="processAllBtn">Process all</button>
         </div>
       </section>
 
@@ -657,9 +656,9 @@
       <section class="card" id="card2">
         <div class="card-head">
           <h2><span class="step-num">2</span>Analyze knowledge</h2>
-          <button id="analyzeBtn">⚡&nbsp;Run analysis</button>
+          <button id="analyzeBtn">Run analysis</button>
         </div>
-        <div class="gate-hint" id="gate2">🔒 Add at least one source and process it to unlock analysis.</div>
+        <div class="gate-hint" id="gate2">Add at least one source and process it to unlock analysis.</div>
         <p class="hint" style="margin-top:0">Detects topics across sources, merges duplicates, flags contradictions, and checks coverage so no topic is left behind.</p>
         <div class="stats skel" id="statsSkel" style="height:84px;display:none"></div>
         <div class="stats" id="stats" style="display:none">
@@ -677,21 +676,19 @@
       <section class="card" id="card3">
         <div class="card-head">
           <h2><span class="step-num">3</span>Generate your book</h2>
-          <button class="ghost small" onclick="openSettings()" title="AI provider settings">⚙&nbsp;AI</button>
-          <button id="genBtn">📖&nbsp;Generate book</button>
+        <button class="ghost small" onclick="openSettings()" title="AI provider settings">AI</button>
+        <button id="genBtn">Generate book</button>
         </div>
-        <div class="gate-hint" id="gate3">🔒 Run the analysis first — the book is generated from detected topics.</div>
+        <div class="gate-hint" id="gate3">Run the analysis first — the book is generated from detected topics.</div>
 
         <div class="nb-panel" id="nbPanel" style="display:none">
           <div class="nb-head" id="nbHead">
-            <span class="nb-title">📓 Notebook setup</span>
+            <span class="nb-title">Notebook setup</span>
             <span class="nb-chips" id="nbChips"></span>
             <button type="button" class="iconbtn" id="nbChevron"><span class="chev">▾</span></button>
           </div>
           <div id="nbBody">
-            <div class="nb-label">Style — the voice of your notebook</div>
-            <div class="stylegrid" id="styleGrid"></div>
-            <div class="row" style="align-items:flex-start;gap:18px;margin-top:16px">
+            <div class="row" style="align-items:flex-start;gap:18px;margin-top:8px">
               <div style="flex:1.2;min-width:230px">
                 <div class="nb-label">Format</div>
                 <div class="fmtgrid" id="fmtSeg"></div>
@@ -729,17 +726,17 @@
             </div>
             <div class="row" style="margin-top:14px">
               <span class="hint" style="flex:1">Setup is saved to this project and reused on every generation.</span>
-              <button class="ghost small" id="nbSave">💾 Save setup</button>
+              <button class="ghost small" id="nbSave">Save setup</button>
             </div>
           </div>
         </div>
 
         <div class="row" id="exports" style="display:none;margin-bottom:16px">
           <span class="hint">Export:</span>
-          <a class="btn" id="expMd" target="_blank" rel="noopener">⬇&nbsp;Markdown</a>
-          <a class="btn" id="expHtml" target="_blank" rel="noopener">⬇&nbsp;HTML</a>
-          <a class="btn" id="expCsv" target="_blank" rel="noopener" style="display:none">⬇&nbsp;Flashcards CSV</a>
-          <a class="btn" id="expJson" target="_blank" rel="noopener">⬇&nbsp;JSON</a>
+          <a class="btn" id="expMd" target="_blank" rel="noopener">↓&nbsp;Markdown</a>
+          <a class="btn" id="expHtml" target="_blank" rel="noopener">↓&nbsp;HTML</a>
+          <a class="btn" id="expCsv" target="_blank" rel="noopener" style="display:none">↓&nbsp;Flashcards CSV</a>
+          <a class="btn" id="expJson" target="_blank" rel="noopener">↓&nbsp;JSON</a>
         </div>
         <div class="genfx" id="genFx">
           <div class="gline skel" style="width:88%"></div>
@@ -760,7 +757,7 @@
 <div class="modal-backdrop" id="settingsModal">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <div class="modal-head">
-      <h2 id="setTitle">⚙&nbsp;AI settings</h2>
+      <h2 id="setTitle">AI settings</h2>
       <button class="danger small" onclick="closeSettings()">✕</button>
     </div>
     <div class="modal-body">
@@ -778,7 +775,7 @@
           <input type="password" id="setKey" placeholder="Paste your API key…" autocomplete="off" spellcheck="false">
           <button type="button" class="keytoggle" id="showKey">SHOW</button>
         </div>
-        <div class="ctxinfo">🔑 Stored only in this browser (localStorage) — sent per request when generating, never saved on the server.</div>
+        <div class="ctxinfo">Stored only in this browser (localStorage) — sent per request when generating, never saved on the server.</div>
       </div>
 
       <div class="field" id="modelField" style="display:none">
@@ -825,7 +822,7 @@ window.onerror = function (msg) {
 function toast(msg, kind) {
   const t = document.createElement('div');
   t.className = 'toast' + (kind ? ' ' + kind : '');
-  t.textContent = (kind === 'ok' ? '✓  ' : kind === 'err' ? '✕  ' : 'ℹ  ') + msg;
+  t.textContent = msg;
   $('toasts').appendChild(t);
   setTimeout(() => { t.style.opacity = '0'; }, 3800);
   setTimeout(() => t.remove(), 4300);
@@ -873,7 +870,7 @@ async function copyText(txt) {
 const THEME_KEY = 'pdf2book.theme';
 function applyTheme(t) {
   document.documentElement.dataset.theme = t;
-  $('themeToggle').textContent = t === 'light' ? '🌙' : '☀️';
+  $('themeToggle').textContent = t === 'light' ? 'Light' : 'Dark';
 }
 $('themeToggle').onclick = () => {
   const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
@@ -911,7 +908,7 @@ function aiRequestHeaders() {
   }) };
 }
 
-const PROV_ICONS = { zen: '🌀', nvidia: '🟩' };
+const PROV_ICONS = { zen: 'Z', nvidia: 'N' };
 
 async function loadProviders() {
   const data = await api('/api/providers');
@@ -924,7 +921,7 @@ async function loadProviders() {
     card.className = 'provcard';
     card.dataset.id = p.id;
 
-    const icon = document.createElement('div'); icon.className = 'picon'; icon.textContent = PROV_ICONS[p.id] || '🔌';
+    const icon = document.createElement('div'); icon.className = 'picon'; icon.textContent = PROV_ICONS[p.id] || '?';
     const info = document.createElement('div'); info.style.minWidth = '0';
     const name = document.createElement('div'); name.className = 'pname';
     name.append(document.createTextNode(p.label));
@@ -1027,10 +1024,10 @@ $('testBtn').onclick = async () => {
       model: $('setModel').value.trim()
     }));
     resEl.className = 'testresult ok';
-    resEl.textContent = '✓ Connected' + (r.model ? ' — ' + r.model : '');
+    resEl.textContent = 'Connected' + (r.model ? ' — ' + r.model : '');
   } catch (e) {
     resEl.className = 'testresult err';
-    resEl.textContent = '✗ ' + e.message;
+    resEl.textContent = 'Failed: ' + e.message;
   } finally { busy($('testBtn'), false, '', 'Test connection'); }
 };
 
@@ -1102,17 +1099,6 @@ async function loadNotebookMeta() {
 
 function buildNbPanel() {
   if (!NB_META) return;
-  const sg = $('styleGrid'); sg.innerHTML = '';
-  for (const s of NB_META.styles) {
-    const card = document.createElement('button');
-    card.type = 'button'; card.className = 'stylecard'; card.dataset.id = s.id;
-    card.innerHTML = '<span class="si"></span><span class="sn"></span><div class="sb"></div>';
-    card.querySelector('.si').textContent = s.icon;
-    card.querySelector('.sn').textContent = s.label.replace(/^The /, '');
-    card.querySelector('.sb').textContent = s.blurb;
-    card.onclick = () => { nb.style = s.id; syncNbUI(); };
-    sg.appendChild(card);
-  }
   const fs2 = $('fmtSeg'); fs2.innerHTML = '';
   for (const f of NB_META.formats) {
     const btn = document.createElement('button');
@@ -1148,8 +1134,7 @@ function updateNbChips() {
   const chips = $('nbChips');
   if (!NB_META) { chips.innerHTML = ''; return; }
   const items = [
-    nbLabel('styles', nb.style, 'icon') + ' ' + nbLabel('styles', nb.style),
-    nbLabel('formats', nb.format, 'icon') + ' ' + nbLabel('formats', nb.format),
+    nbLabel('formats', nb.format),
     nb.depth,
     nb.tone
   ];
@@ -1178,11 +1163,11 @@ $('optGlossary').onchange = () => { nb.glossary = $('optGlossary').checked; };
 
 $('nbSave').onclick = async () => {
   try {
-    busy($('nbSave'), true, 'Saving…', '💾 Save setup');
+    busy($('nbSave'), true, 'Saving…', 'Save setup');
     await api('/api/projects/' + projectId, { method: 'PATCH', body: JSON.stringify({ notebook: nb }) });
     toast('Notebook setup saved — ' + nbLabel('styles', nb.style) + ' · ' + nbLabel('formats', nb.format), 'ok');
   } catch (e) { toast(e.message, 'err'); }
-  finally { busy($('nbSave'), false, '', '💾 Save setup'); }
+  finally {     busy($('nbSave'), false, '', 'Save setup'); }
 };
 
 /* ================= projects ================= */
@@ -1222,14 +1207,14 @@ async function loadProjects() {
 $('newBtn').onclick = async () => {
   try {
     const title = $('projTitle').value.trim() || 'Untitled Project';
-    busy($('newBtn'), true, 'Creating…', '<span aria-hidden="true">✦</span>&nbsp; Create project');
+    busy($('newBtn'), true, 'Creating…', 'Create project');
     const p = await api('/api/projects', json({ title }));
     $('projTitle').value = '';
     toast('Project "' + p.title + '" created', 'ok');
     await loadProjects();
     selectProject(p.id, p.title);
   } catch (e) { toast(e.message, 'err'); }
-  finally { busy($('newBtn'), false, '', '<span aria-hidden="true">✦</span>&nbsp; Create project'); }
+  finally {     busy($('newBtn'), false, '', 'Create project'); }
 };
 
 $('heroCta').onclick = () => {
@@ -1273,7 +1258,7 @@ function fmtSize(bytes) {
   return Math.max(1, Math.round(bytes / 1024)) + ' KB';
 }
 function fileIcon(name) {
-  return /\.pdf$/i.test(name) ? '📕' : /\.txt$/i.test(name) ? '📝' : '📄';
+  return /\.pdf$/i.test(name) ? 'PDF' : /\.txt$/i.test(name) ? 'TXT' : 'FILE';
 }
 
 function renderFileChips() {
@@ -1372,6 +1357,7 @@ async function loadSources() {
 
 $('addSrc').onclick = async () => {
   try {
+    if (!projectId) { toast('Create a project first', 'err'); return; }
     const fd = new FormData();
     const text = $('noteText').value.trim();
     if (text) {
@@ -1380,15 +1366,15 @@ $('addSrc').onclick = async () => {
     }
     for (const f of pickedFiles) fd.append('files', f);
     if (!text && !pickedFiles.length) throw new Error('Add some notes or choose files first');
-    busy($('addSrc'), true, 'Adding…', '＋&nbsp;Add sources');
+    busy($('addSrc'), true, 'Adding…', '+ Add sources');
     const created = await api('/api/projects/' + projectId + '/sources', { method: 'POST', body: fd });
     $('noteText').value = ''; $('noteTitle').value = ''; $('noteStats').style.display = 'none';
     pickedFiles = []; syncInputFiles(); renderFileChips();
     toast(created.length + ' source(s) added', 'ok');
     await loadSources();
     updateStepper();
-  } catch (e) { toast(e.message, 'err'); }
-  finally { busy($('addSrc'), false, '', '＋&nbsp;Add sources'); }
+  } catch (e) { toast(e.message || 'Could not add source', 'err'); }
+  finally { busy($('addSrc'), false, '', '+ Add sources'); }
 };
 
 async function processSource(sid, btn) {
@@ -1406,7 +1392,7 @@ async function processSource(sid, btn) {
 
 $('processAllBtn').onclick = async () => {
   try {
-    busy($('processAllBtn'), true, 'Processing…', '▶&nbsp;Process all');
+    busy($('processAllBtn'), true, 'Processing…', 'Process all');
     const sources = await api('/api/projects/' + projectId + '/sources');
     let done = 0;
     for (const s of sources.filter((x) => x.status !== 'processed')) {
@@ -1417,14 +1403,14 @@ $('processAllBtn').onclick = async () => {
     await loadSources();
     updateStepper();
   } catch (e) { toast(e.message, 'err'); }
-  finally { busy($('processAllBtn'), false, '', '▶&nbsp;Process all'); }
+  finally {     busy($('processAllBtn'), false, '', 'Process all'); }
 };
 
 /* ================= analysis ================= */
 $('analyzeBtn').onclick = async () => {
   const btn = $('analyzeBtn');
   try {
-    busy(btn, true, 'Analyzing…', '⚡&nbsp;Run analysis');
+    busy(btn, true, 'Analyzing…', 'Run analysis');
     $('stats').style.display = 'none';
     $('statsSkel').style.display = 'grid';
     const r = await api('/api/knowledge/' + projectId + '/analyze', { method: 'POST' });
@@ -1454,7 +1440,7 @@ $('analyzeBtn').onclick = async () => {
     const note = $('covNote');
     note.className = 'notice show ' + (cov.insufficient ? '' : 'good');
     note.textContent = cov.insufficient
-      ? '⚠ Coverage is low (' + covScore + '%). Add more sources on weak topics before generating for better results.'
+      ? 'Coverage is low (' + covScore + '%). Add more sources on weak topics before generating for better results.'
       : '✓ Coverage looks healthy. You are ready to generate the book.';
     flow.analyzed = true;
     updateStepper();
@@ -1463,7 +1449,7 @@ $('analyzeBtn').onclick = async () => {
     $('statsSkel').style.display = 'none';
     toast(e.message, 'err');
   }
-  finally { busy(btn, false, '', '⚡&nbsp;Run analysis'); }
+  finally {     busy(btn, false, '', 'Run analysis'); }
 };
 
 /* ================= book ================= */
@@ -1568,7 +1554,7 @@ function stopGenFx() {
 $('genBtn').onclick = async () => {
   const btn = $('genBtn');
   try {
-    busy(btn, true, 'Writing…', '📖&nbsp;Generate book');
+    busy(btn, true, 'Writing…', 'Generate book');
     startGenFx();
     const r = await api('/api/projects/' + projectId + '/book/generate', {
       method: 'POST',
@@ -1590,7 +1576,7 @@ $('genBtn').onclick = async () => {
     toast(msg, 'ok');
     await loadBook(true);
   } catch (e) { toast(e.message, 'err'); }
-  finally { stopGenFx(); busy(btn, false, '', '📖&nbsp;Generate book'); }
+  finally { stopGenFx();     busy(btn, false, '', 'Generate book'); }
 };
 
 async function loadBook(scrollTo) {
@@ -1663,14 +1649,14 @@ async function loadBook(scrollTo) {
     body.append(editor);
 
     const row = document.createElement('div'); row.className = 'row'; row.style.marginTop = '12px';
-    const edit = document.createElement('button'); edit.className = 'ghost small'; edit.textContent = '✎ Edit';
+    const edit = document.createElement('button'); edit.className = 'ghost small'; edit.textContent = 'Edit';
     const save = document.createElement('button'); save.className = 'small'; save.textContent = 'Save changes';
     save.style.display = 'none';
     const cancel = document.createElement('button'); cancel.className = 'danger small'; cancel.textContent = 'Cancel';
     cancel.style.display = 'none';
 
     const copy = document.createElement('button');
-    copy.className = 'iconbtn'; copy.title = 'Copy chapter'; copy.textContent = '⧉ Copy';
+    copy.className = 'iconbtn'; copy.title = 'Copy chapter'; copy.textContent = 'Copy';
     copy.onclick = async () => {
       toast(await copyText(ch.content) ? 'Chapter copied to clipboard' : 'Copy failed', 'ok');
     };
