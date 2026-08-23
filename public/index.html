@@ -598,7 +598,7 @@ function busy(btn, on, labelBusy, labelIdle) {
 
 /* ================= AI provider settings ================= */
 const CFG_KEY = 'pdf2book.aiConfig';
-let aiCfg = { provider: 'local', apiKey: '', model: '', contextBudget: 12000 };
+let aiCfg = { provider: 'zen', apiKey: '', model: '', contextBudget: 12000 };
 let providerMeta = [];
 const keysByProvider = {};
 
@@ -606,6 +606,9 @@ try {
   const saved = JSON.parse(localStorage.getItem(CFG_KEY) || 'null');
   if (saved && typeof saved === 'object') aiCfg = { ...aiCfg, ...saved };
 } catch (_e) {}
+if (!['zen', 'nvidia'].includes(aiCfg.provider)) {
+  aiCfg = { provider: 'zen', apiKey: '', model: '', contextBudget: aiCfg.contextBudget || 12000 };
+}
 
 function saveAiCfg() { localStorage.setItem(CFG_KEY, JSON.stringify(aiCfg)); }
 
@@ -619,7 +622,7 @@ function aiRequestHeaders() {
   }) };
 }
 
-const PROV_ICONS = { local: '🛠️', openai: '✳️', zen: '🌀', nvidia: '🟩' };
+const PROV_ICONS = { zen: '🌀', nvidia: '🟩' };
 
 async function loadProviders() {
   const data = await api('/api/providers');
@@ -641,10 +644,9 @@ async function loadProviders() {
       name.appendChild(tag);
     }
     const sub = document.createElement('div'); sub.className = 'psub';
-    sub.textContent = p.id === 'local' ? 'No API key needed'
-      : p.id === 'zen' ? ((p.models || []).length + ' free models')
-      : p.id === 'nvidia' ? 'Free tier credits'
-      : 'Pay-per-use';
+    sub.textContent = p.id === 'zen'
+      ? (p.models || []).length + ' free models'
+      : 'Free tier credits';
     info.append(name, sub);
 
     const check = document.createElement('span'); check.className = 'pcheck'; check.textContent = '✓';
@@ -744,15 +746,13 @@ $('saveSettings').onclick = () => {
   saveAiCfg();
   closeSettings();
   refreshBadge();
-  toast(aiCfg.provider === 'local'
-    ? 'Using local heuristic mode (no AI)'
-    : 'AI set to ' + (currentProviderMeta()?.label || aiCfg.provider) +
-      (aiCfg.model ? ' · ' + aiCfg.model : ''), 'ok');
+  toast('AI set to ' + (currentProviderMeta()?.label || aiCfg.provider) +
+    (aiCfg.model ? ' · ' + aiCfg.model : ''), 'ok');
 };
 
 function refreshBadge() {
   const el = $('provider');
-  if (aiCfg.provider !== 'local' && aiCfg.apiKey) {
+  if (aiCfg.apiKey) {
     el.textContent = 'AI: ' + (currentProviderMeta()?.label || aiCfg.provider) +
       (aiCfg.model ? ' · ' + aiCfg.model : '');
     $('provDot').classList.add('ok');
@@ -1059,7 +1059,7 @@ $('genBtn').onclick = async () => {
     let msg = 'Book generated — ' + r.chapters + ' chapter(s)';
     msg += eng.mode === 'ai'
       ? ' · via ' + (eng.model || eng.provider)
-      : ' · local heuristic';
+      : ' · extractive fallback (no AI key)';
     if (ctx.chunksAvailable) {
       msg += ' · context ' + ctx.chunksUsed + '/' + ctx.chunksAvailable +
         ' chunks (~' + Math.round(ctx.charsUsed / 1000) + 'k chars)';
@@ -1152,10 +1152,10 @@ async function loadBook(scrollTo) {
 /* ================= health + boot ================= */
 (async () => {
   try {
-    const h = await api('/health');
-    if (!(aiCfg.provider !== 'local' && aiCfg.apiKey)) {
-      $('provider').textContent = 'AI: ' + (h.aiProvider === 'openai' ? 'OpenAI' : 'Local heuristic');
-      $('provDot').classList.add(h.aiProvider === 'openai' ? 'ok' : '');
+    await api('/health');
+    if (!aiCfg.apiKey) {
+      $('provider').textContent = 'AI: add API key in settings';
+      $('provDot').classList.remove('ok');
     }
   } catch (_e) { $('provider').textContent = 'offline'; }
 })();

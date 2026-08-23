@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', aiProvider: config.openaiApiKey ? 'openai' : 'local-heuristic' });
+  res.json({ status: 'ok', aiProvider: 'bring-your-own-key' });
 });
 
 app.use('/api/projects', projectsRouter);

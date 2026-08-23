@@ -1,20 +1,6 @@
-const config = require('../config');
 const logger = require('../logger');
 
 const PROVIDERS = {
-  local: {
-    label: 'Local heuristic (no AI)',
-    requiresKey: false,
-    baseUrl: null
-  },
-  openai: {
-    label: 'OpenAI',
-    requiresKey: true,
-    baseUrl: 'https://api.openai.com/v1',
-    keyUrl: 'https://platform.openai.com/api-keys',
-    defaultModel: 'gpt-4o-mini',
-    models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini']
-  },
   zen: {
     label: 'OpenCode Zen',
     requiresKey: true,
@@ -51,12 +37,10 @@ const PROVIDERS = {
 };
 
 function normalizeOverride(override = {}) {
-  const provider = PROVIDERS[override.provider] ? override.provider : config.openaiApiKey ? 'openai' : 'local';
+  const provider = PROVIDERS[override.provider] ? override.provider : null;
+  if (!provider) return { provider: null, client: null };
   const meta = PROVIDERS[provider];
-  if (!meta || !meta.baseUrl) return { provider, client: null };
-
-  let apiKey = override.apiKey || '';
-  if (!apiKey && provider === 'openai') apiKey = config.openaiApiKey;
+  const apiKey = override.apiKey || '';
   if (!apiKey) return { provider, client: null };
 
   const OpenAI = require('openai');
@@ -103,7 +87,6 @@ const aiProvider = {
 
   describe() {
     return {
-      serverProvider: config.openaiApiKey ? 'openai' : 'local',
       providers: Object.entries(PROVIDERS).map(([id, p]) => ({
         id,
         label: p.label,

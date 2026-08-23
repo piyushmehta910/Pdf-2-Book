@@ -8,11 +8,11 @@ and generates an editable book exportable to Markdown, HTML, and JSON.
 
 ```bash
 npm install
-copy .env.example .env   # add OPENAI_API_KEY for AI synthesis (optional)
 npm run dev              # http://localhost:3000
 ```
 
-Without an API key the app runs in **local heuristic mode** (extractive synthesis).
+Open the app, click **⚙ AI settings**, and pick a provider — **OpenCode Zen** (free models)
+or **NVIDIA NIM** (free tier). Paste your API key; it is stored only in your browser.
 
 ## Architecture
 

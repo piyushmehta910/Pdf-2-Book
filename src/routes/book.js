@@ -56,8 +56,8 @@ router.post('/:projectId/book/generate', async (req, res) => {
     storage.insert(projectId, 'revisions', version);
 
     const engineMode = aiProvider.available(aiConfig)
-      ? { provider: aiConfig.provider || (config.openaiApiKey ? 'openai' : 'local'), model: aiConfig.model || null, mode: 'ai' }
-      : { provider: 'local', model: null, mode: 'local-heuristic' };
+      ? { provider: aiConfig.provider || null, model: aiConfig.model || null, mode: 'ai' }
+      : { provider: null, model: null, mode: 'extractive-fallback' };
     const contextTotals = syntheses.reduce(
       (acc, s) => ({
         charsUsed: acc.charsUsed + (s.contextStats ? s.contextStats.charsUsed : 0),
