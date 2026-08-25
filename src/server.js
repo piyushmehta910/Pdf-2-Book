@@ -19,7 +19,7 @@ app.use('/vendor', express.static(path.join(__dirname, '..', 'public', 'vendor')
 
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store');
-  res.type('html').send(webui);
+  res.type('html').send(webui());
 });
 
 app.get('/health', (req, res) => {

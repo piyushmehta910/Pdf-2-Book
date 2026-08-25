@@ -1440,7 +1440,6 @@ function renderFileChips() {
     chip.append(icon, name, size, rm);
     wrap.appendChild(chip);
   });
-  $('fileCount').textContent = pickedFiles.length ? pickedFiles.length + ' file(s) ready' : '';
   $('clearFiles').style.display = pickedFiles.length ? 'inline-flex' : 'none';
 }
 
