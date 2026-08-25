@@ -112,11 +112,12 @@ function buildGlossaryChapter(topics, chunks) {
   };
 }
 
-async function composeChapters({ outline, syntheses, notebook, aiConfig = {}, topics = [], coverage = [], chunks = [] }) {
+async function composeChapters({ outline, syntheses, notebook, aiConfig = {}, topics = [], coverage = [], chunks = [], deadline = 0 }) {
   const canPolish =
     aiProvider.available(aiConfig) &&
     FORMATS_POLISHABLE.has(notebook.format) &&
-    notebook.style !== 'minimalist';
+    notebook.style !== 'minimalist' &&
+    (!deadline || Date.now() < deadline);
 
   const metas = outline.chapters.map((chapter) => ({
     title: chapter.title,
@@ -135,7 +136,7 @@ async function composeChapters({ outline, syntheses, notebook, aiConfig = {}, to
     const topicSyntheses = syntheses.filter((s) => chapter.topics.some((t) => t.id === s.topicId));
 
     let body = topicSyntheses.map((s) => s.content).join('\n\n');
-    if (canPolish && topicSyntheses.length) {
+    if (canPolish && topicSyntheses.length && (!deadline || Date.now() < deadline)) {
       try {
         body = await polishChapter(chapter.title, topicSyntheses, previousTitles, notebook, aiConfig);
       } catch (_err) {

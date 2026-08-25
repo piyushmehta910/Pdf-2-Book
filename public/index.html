@@ -516,18 +516,6 @@
     color: var(--muted); margin: 14px 0 7px;
   }
   .stylegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 7px; }
-  .stylecard {
-    position: relative; text-align: left; width: 100%;
-    background: var(--panel); border: 1px solid var(--border); border-radius: 11px;
-    padding: 10px 12px; cursor: pointer; box-shadow: none;
-    transition: border-color .15s, background .15s;
-  }
-  .stylecard:hover { border-color: var(--border2); filter: none; }
-  .stylecard.active { border-color: var(--accent); background: linear-gradient(135deg, rgba(125,146,255,.12), transparent), var(--panel); }
-  .stylecard .si { font-size: 17px; margin-right: 6px; }
-  .stylecard .sn { font-weight: 650; font-size: 12.5px; }
-  .stylecard .sb { font-size: 10.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
-  .stylecard.active::after { content: "✓"; position: absolute; top: 8px; right: 10px; color: var(--accent); font-weight: 800; font-size: 12px; }
 
   .fmtgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 7px; }
   .fmtbtn {
@@ -566,6 +554,62 @@
   .chapter.appendix { opacity: .85; border-style: dashed; }
   a.wikilink { color: var(--accent); text-decoration: underline dotted; cursor: pointer; }
 
+  /* ---------- error banner ---------- */
+  .errbar {
+    position: sticky; top: 0; z-index: 60; display: none; align-items: center; gap: 12px;
+    background: #3b1220; border-bottom: 1px solid #a2475e; color: #ffd7de;
+    padding: 10px 20px; font-size: 13px;
+  }
+  html[data-theme="light"] .errbar { background: #ffe9ee; border-color: #e0687f; color: #8c1826; }
+  .errbar button.ghost { background: transparent; border-color: currentColor; color: inherit; }
+
+  /* ---------- reader toolbar / TOC ---------- */
+  .readertoolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .engbadge {
+    margin-left: auto; font-size: 11.5px; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px; padding: 4px 11px;
+    max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tocdrawer {
+    position: fixed; top: 0; right: 0; height: 100vh; width: min(330px, 88vw);
+    background: var(--panel); border-left: 1px solid var(--border); z-index: 70;
+    transform: translateX(105%); transition: transform .22s ease;
+    display: flex; flex-direction: column; box-shadow: -18px 0 44px rgba(0,0,0,.3);
+  }
+  .tocdrawer.open { transform: none; }
+  .toc-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .toc-list { overflow-y: auto; padding: 10px; }
+  .toc-item {
+    display: block; width: 100%; text-align: left; background: none; border: 0;
+    color: var(--text2); padding: 9px 11px; border-radius: 9px; cursor: pointer;
+    font: inherit; font-size: 13px; box-shadow: none;
+  }
+  .toc-item:hover { background: var(--panel2); color: var(--text); filter: none; }
+  .toc-item.active { color: var(--accent); font-weight: 650; }
+
+  /* ---------- exports as buttons ---------- */
+  button.exportbtn {
+    background: var(--panel2); border: 1px solid var(--border2); color: var(--text2);
+    font-weight: 550; font-size: 13px; padding: 7px 14px; border-radius: 10px; box-shadow: none;
+  }
+  button.exportbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--text); filter: none; }
+
+  /* ---------- nav + focus + mobile ---------- */
+  .navbtns { display: flex; gap: 10px; justify-content: space-between; margin-top: 20px; }
+  .reader { font-size: var(--reader-fs, 14.5px); }
+  a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  @media (max-width: 720px) {
+    main { padding: 20px 12px 70px; }
+    .stepper { gap: 5px; }
+    .step { padding: 6px 8px; }
+    .s-label { font-size: 10px; }
+    .card { padding: 16px 14px; }
+    .row { flex-wrap: wrap; }
+    .hero h1 { font-size: 25px; }
+    header .badge { display: none; }
+    .engbadge { max-width: 100%; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
     html { scroll-behavior: auto; }
@@ -581,6 +625,13 @@
   <button class="ghost small" id="themeToggle" title="Toggle light/dark theme" aria-label="Toggle theme">Theme</button>
   <button class="ghost small" onclick="openSettings()" title="AI provider settings">AI settings</button>
 </header>
+
+<div class="errbar" id="errBar" role="alert">
+  <span id="errMsg" style="min-width:0;overflow-wrap:anywhere"></span>
+  <span style="flex:1"></span>
+  <button class="ghost small" id="errRetry" style="display:none">Retry</button>
+  <button class="iconbtn" id="errClose" title="Dismiss">✕</button>
+</div>
 
 <div class="layout">
   <aside>
@@ -609,9 +660,12 @@
     </div>
 
     <div id="workspace" style="display:none">
-      <div style="margin-bottom:20px">
-        <h2 id="projHeading" style="font-size:22px;margin-bottom:4px"></h2>
-        <div class="hint" id="projMeta"></div>
+      <div style="margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="min-width:0">
+          <h2 id="projHeading" style="font-size:22px;margin-bottom:4px"></h2>
+          <div class="hint" id="projMeta"></div>
+        </div>
+        <span class="pill ok" id="savePill" style="display:none;margin-left:auto">Saved in this browser</span>
       </div>
 
       <div class="stepper" id="stepper" aria-label="Workflow progress">
@@ -632,8 +686,8 @@
 
           <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose files">
             <div class="dz-icon">↑</div>
-            <b style="color:var(--text2)">Drop PDF or TXT files here</b><br>
-            <span class="hint">or click to browse — multiple files supported</span>
+            <b style="color:var(--text2)" id="dzTitle">Drop PDF or TXT files here</b><br>
+            <span class="hint" id="dzHint">or click to browse — text is extracted right in your browser, files never leave your device</span>
             <input type="file" id="files" accept=".pdf,.txt" multiple hidden>
           </div>
           <div class="filechips" id="fileChips"></div>
@@ -646,10 +700,6 @@
         </div>
         <hr class="sep">
         <ul class="list" id="sources"></ul>
-        <div class="row" id="processAllRow" style="display:none;margin-top:12px">
-          <span class="hint" style="flex:1">Process all pending sources at once.</span>
-          <button class="ghost" id="processAllBtn">Process all</button>
-        </div>
       </section>
 
       <!-- STEP 2 -->
@@ -731,12 +781,19 @@
           </div>
         </div>
 
+        <div class="readertoolbar" id="readerBar" style="display:none;margin-bottom:16px">
+          <button class="ghost small" id="tocBtn">Contents</button>
+          <button class="ghost small" id="fontMinus" title="Smaller text" aria-label="Decrease font size">A−</button>
+          <button class="ghost small" id="fontPlus" title="Larger text" aria-label="Increase font size">A+</button>
+          <span class="engbadge" id="engineBadge"></span>
+        </div>
+
         <div class="row" id="exports" style="display:none;margin-bottom:16px">
           <span class="hint">Export:</span>
-          <a class="btn" id="expMd" target="_blank" rel="noopener">↓&nbsp;Markdown</a>
-          <a class="btn" id="expHtml" target="_blank" rel="noopener">↓&nbsp;HTML</a>
-          <a class="btn" id="expCsv" target="_blank" rel="noopener" style="display:none">↓&nbsp;Flashcards CSV</a>
-          <a class="btn" id="expJson" target="_blank" rel="noopener">↓&nbsp;JSON</a>
+          <button type="button" class="exportbtn" id="expMd">↓ Markdown</button>
+          <button type="button" class="exportbtn" id="expHtml">↓ HTML</button>
+          <button type="button" class="exportbtn" id="expCsv" style="display:none">↓ Flashcards CSV</button>
+          <button type="button" class="exportbtn" id="expJson">↓ JSON</button>
         </div>
         <div class="genfx" id="genFx">
           <div class="gline skel" style="width:88%"></div>
@@ -807,18 +864,21 @@
   </div>
 </div>
 
+<div class="tocdrawer" id="tocDrawer" aria-label="Table of contents">
+  <div class="toc-head">
+    <b style="font-size:13.5px">Contents</b>
+    <button class="iconbtn" id="tocClose" title="Close contents">✕</button>
+  </div>
+  <div class="toc-list" id="tocList"></div>
+</div>
+
 <div id="toasts" aria-live="polite"></div>
 
 <script>
 'use strict';
 const $ = (id) => document.getElementById(id);
-let projectId = null;
 
 /* ================= helpers ================= */
-window.onerror = function (msg) {
-  try { toast('UI error: ' + msg, 'err'); } catch (_e) {}
-};
-
 function toast(msg, kind) {
   const t = document.createElement('div');
   t.className = 'toast' + (kind ? ' ' + kind : '');
@@ -827,6 +887,26 @@ function toast(msg, kind) {
   setTimeout(() => { t.style.opacity = '0'; }, 3800);
   setTimeout(() => t.remove(), 4300);
 }
+
+let errRetryFn = null;
+function showError(msg, retryFn) {
+  $('errMsg').textContent = String(msg || 'Something went wrong');
+  errRetryFn = typeof retryFn === 'function' ? retryFn : null;
+  $('errRetry').style.display = errRetryFn ? 'inline-flex' : 'none';
+  $('errBar').style.display = 'flex';
+}
+$('errClose').onclick = () => { $('errBar').style.display = 'none'; };
+$('errRetry').onclick = () => {
+  $('errBar').style.display = 'none';
+  const fn = errRetryFn; errRetryFn = null;
+  if (fn) fn();
+};
+window.onerror = function (msg) {
+  try { showError('UI error: ' + msg); } catch (_e) {}
+};
+window.addEventListener('unhandledrejection', (e) => {
+  try { showError('Unexpected error: ' + ((e.reason && e.reason.message) || e.reason)); } catch (_e) {}
+});
 
 async function api(path, opts = {}) {
   const headers = { ...(opts.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), ...(opts.headers || {}) };
@@ -1055,6 +1135,7 @@ function refreshBadge() {
 const flow = { processed: false, analyzed: false, chapters: false };
 
 function updateStepper() {
+  flow.processed = Boolean(ws && ws.sources.length);
   const activeStep = flow.chapters ? 4 : flow.analyzed ? 3 : flow.processed ? 2 : 1;
   document.querySelectorAll('#stepper .step').forEach((el) => {
     const n = Number(el.dataset.step);
@@ -1114,8 +1195,6 @@ function buildNbPanel() {
 }
 
 function syncNbUI() {
-  document.querySelectorAll('.stylecard').forEach((c) =>
-    c.classList.toggle('active', c.dataset.id === nb.style));
   document.querySelectorAll('.fmtbtn').forEach((c) =>
     c.classList.toggle('active', c.dataset.id === nb.format));
   document.querySelectorAll('#depthSeg .segbtn').forEach((b) =>
@@ -1161,42 +1240,104 @@ $('optPages').onchange = () => { nb.includePageNumbers = $('optPages').checked; 
 $('optGaps').onchange = () => { nb.knowledgeGaps = $('optGaps').checked; };
 $('optGlossary').onchange = () => { nb.glossary = $('optGlossary').checked; };
 
-$('nbSave').onclick = async () => {
-  try {
-    busy($('nbSave'), true, 'Saving…', 'Save setup');
-    await api('/api/projects/' + projectId, { method: 'PATCH', body: JSON.stringify({ notebook: nb }) });
-    toast('Notebook setup saved — ' + nbLabel('styles', nb.style) + ' · ' + nbLabel('formats', nb.format), 'ok');
-  } catch (e) { toast(e.message, 'err'); }
-  finally {     busy($('nbSave'), false, '', 'Save setup'); }
+$('nbSave').onclick = () => {
+  if (!ws) { toast('Create a project first', 'err'); return; }
+  busy($('nbSave'), true, 'Saving…', 'Save setup');
+  ws.notebook = { ...nb };
+  saveWs();
+  updateNbChips();
+  busy($('nbSave'), false, '', 'Save setup');
+  toast('Notebook setup saved — ' + nbLabel('formats', nb.format), 'ok');
 };
 
-/* ================= projects ================= */
+/* ================= local workspaces ================= */
+const WS_LIST_KEY = 'pdf2book.workspaces.v1';
+const WS_ACTIVE_KEY = 'pdf2book.activeWorkspace';
+const wsStoreKey = (id) => 'pdf2book.ws.' + id;
+
+let ws = null;
+
+function newWs(title) {
+  return {
+    id: 'ws_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    title: title || 'Untitled Project',
+    author: '',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    sources: [],
+    analysis: null,
+    chapters: null,
+    engine: null,
+    notebook: null
+  };
+}
+
+function wsList() {
+  try { return JSON.parse(localStorage.getItem(WS_LIST_KEY) || '[]'); }
+  catch (_e) { return []; }
+}
+
+let saveTimer = null;
+function saveWs(immediate) {
+  if (!ws) return;
+  ws.updatedAt = new Date().toISOString();
+  const commit = () => {
+    try {
+      localStorage.setItem(wsStoreKey(ws.id), JSON.stringify(ws));
+      const list = wsList().filter((x) => x.id !== ws.id);
+      list.unshift({
+        id: ws.id, title: ws.title, createdAt: ws.createdAt, updatedAt: ws.updatedAt,
+        sources: (ws.sources || []).length, chapters: (ws.chapters || []).length
+      });
+      localStorage.setItem(WS_LIST_KEY, JSON.stringify(list));
+      localStorage.setItem(WS_ACTIVE_KEY, ws.id);
+      flashSavePill();
+    } catch (e) {
+      showError('Could not save locally — storage may be full. Export your book to keep it.');
+    }
+  };
+  if (immediate) { clearTimeout(saveTimer); commit(); return; }
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(commit, 350);
+}
+
+let pillTimer = null;
+function flashSavePill() {
+  const pill = $('savePill');
+  pill.style.display = 'inline-flex';
+  clearTimeout(pillTimer);
+  pillTimer = setTimeout(() => { pill.style.display = 'none'; }, 1600);
+}
+
 async function loadProjects() {
-  const projects = await api('/api/projects');
   const ul = $('projects');
   ul.innerHTML = '';
-  if (!projects.length) {
+  const list = wsList();
+  if (!list.length) {
     const li = document.createElement('li'); li.className = 'static';
     li.innerHTML = '<span class="li-sub">No projects yet — create one above.</span>';
     ul.appendChild(li); return;
   }
-  for (const p of projects) {
+  for (const p of list) {
     const li = document.createElement('li');
-    if (p.id === projectId) li.classList.add('active');
-    li.onclick = () => selectProject(p.id, p.title);
+    if (ws && p.id === ws.id) li.classList.add('active');
+    li.onclick = () => openWorkspace(p.id);
     const name = document.createElement('div'); name.style.minWidth = '0';
     const t = document.createElement('div'); t.className = 'li-title'; t.textContent = p.title;
     const s = document.createElement('div'); s.className = 'li-sub';
-    s.textContent = timeAgo(p.createdAt);
+    s.textContent = timeAgo(p.updatedAt || p.createdAt) +
+      (p.sources ? ' · ' + p.sources + ' src' : '') +
+      (p.chapters ? ' · ' + p.chapters + ' ch' : '');
     name.append(t, s);
     const del = document.createElement('button');
     del.className = 'danger small'; del.textContent = 'Delete';
     del.onclick = async (e) => {
       e.stopPropagation();
-      if (!confirm('Delete "' + p.title + '" and all its data?')) return;
-      await api('/api/projects/' + p.id, { method: 'DELETE' });
+      if (!confirm('Delete "' + p.title + '" from this browser?')) return;
+      localStorage.removeItem(wsStoreKey(p.id));
+      localStorage.setItem(WS_LIST_KEY, JSON.stringify(wsList().filter((x) => x.id !== p.id)));
       toast('Project deleted', 'ok');
-      if (projectId === p.id) { projectId = null; showWorkspace(false); }
+      if (ws && ws.id === p.id) { ws = null; showWorkspace(false); }
       await loadProjects();
     };
     li.append(name, del);
@@ -1204,17 +1345,14 @@ async function loadProjects() {
   }
 }
 
-$('newBtn').onclick = async () => {
-  try {
-    const title = $('projTitle').value.trim() || 'Untitled Project';
-    busy($('newBtn'), true, 'Creating…', 'Create project');
-    const p = await api('/api/projects', json({ title }));
-    $('projTitle').value = '';
-    toast('Project "' + p.title + '" created', 'ok');
-    await loadProjects();
-    selectProject(p.id, p.title);
-  } catch (e) { toast(e.message, 'err'); }
-  finally {     busy($('newBtn'), false, '', 'Create project'); }
+$('newBtn').onclick = () => {
+  const title = $('projTitle').value.trim() || 'Untitled Project';
+  ws = newWs(title);
+  $('projTitle').value = '';
+  saveWs(true);
+  toast('Project "' + title + '" created', 'ok');
+  loadProjects();
+  enterWorkspace();
 };
 
 $('heroCta').onclick = () => {
@@ -1227,26 +1365,37 @@ function showWorkspace(on) {
   $('workspace').style.display = on ? 'block' : 'none';
 }
 
-async function selectProject(id, title) {
-  projectId = id;
-  $('projHeading').textContent = title || id;
-  $('projMeta').textContent = 'Sources → analysis → book · everything stays on your machine/server';
-  showWorkspace(true);
-  document.querySelectorAll('#projects li').forEach((li) => li.classList.remove('active'));
-  const match = [...document.querySelectorAll('#projects li')]
-    .find((li) => li.querySelector('.li-title') && li.querySelector('.li-title').textContent === (title || id));
-  if (match) match.classList.add('active');
-
+function resetWorkflowUi() {
   flow.processed = false; flow.analyzed = false; flow.chapters = false;
-
   $('stats').style.display = 'none'; $('statsSkel').style.display = 'none';
   $('covBar').style.display = 'none';
-  $('covNote').className = 'notice';
+  $('covNote').className = 'notice'; $('covNote').textContent = '';
   $('chapters').innerHTML = '<div class="empty">Run the analysis first, then generate your book.</div>';
   $('exports').style.display = 'none';
+  $('readerBar').style.display = 'none';
+  $('engineBadge').textContent = '';
+}
 
-  await Promise.all([loadSources(), loadBook()]);
+function enterWorkspace() {
+  $('projHeading').textContent = ws.title;
+  $('projMeta').textContent = 'Stored only in this browser · nothing leaves your device except AI prompts';
+  showWorkspace(true);
+  document.querySelectorAll('#projects li').forEach((li) => li.classList.remove('active'));
+  resetWorkflowUi();
+  renderSources();
+  if (ws.notebook) { nb = { ...nb, ...ws.notebook }; syncNbUI(); }
+  if (ws.analysis) applyAnalysis(ws.analysis, true);
+  if (ws.chapters && ws.chapters.length) renderBook(false);
   updateStepper();
+}
+
+function openWorkspace(id) {
+  try {
+    ws = JSON.parse(localStorage.getItem(wsStoreKey(id)) || 'null');
+  } catch (_e) { ws = null; }
+  if (!ws) { toast('That project could not be loaded', 'err'); return; }
+  saveWs(true);
+  enterWorkspace();
 }
 
 /* ================= sources ================= */
@@ -1316,138 +1465,201 @@ $('noteText').addEventListener('input', () => {
     Math.ceil(v.length / 1800) + ' page(s) of source text';
 });
 
-async function loadSources() {
-  const sources = await api('/api/projects/' + projectId + '/sources');
+/* ---------- pdf.js client-side extraction ---------- */
+const PDFJS_VER = '3.11.174';
+let pdfJsLoading = null;
+function loadPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (pdfJsLoading) return pdfJsLoading;
+  pdfJsLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + PDFJS_VER + '/pdf.min.js';
+    s.onload = () => {
+      try {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + PDFJS_VER + '/pdf.worker.min.js';
+        resolve(window.pdfjsLib);
+      } catch (e) { reject(e); }
+    };
+    s.onerror = () => { pdfJsLoading = null; reject(new Error('Could not load the PDF engine — check your internet connection')); };
+    document.head.appendChild(s);
+  });
+  return pdfJsLoading;
+}
+
+function dzHint(msg) { $('dzHint').textContent = msg || 'or click to browse — text is extracted right in your browser, files never leave your device'; }
+
+async function extractPdfPages(file, onProgress) {
+  const pdfjs = await loadPdfJs();
+  const buf = await file.arrayBuffer();
+  const doc = await pdfjs.getDocument({ data: buf }).promise;
+  const pages = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    onProgress && onProgress(i, doc.numPages);
+    const page = await doc.getPage(i);
+    const tc = await page.getTextContent();
+    let text = '';
+    for (const it of tc.items) {
+      if (typeof it.str !== 'string') continue;
+      text += it.str;
+      text += it.hasEOL ? '\n' : ' ';
+    }
+    text = text.replace(/[ \t]+\n/g, '\n').replace(/ {2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+    pages.push({ pageNumber: i, text });
+    if (page.cleanup) page.cleanup();
+  }
+  return pages;
+}
+
+const MAX_SOURCE_CHARS = 600000;
+
+function wsTotalChars() {
+  return (ws.sources || []).reduce((n, s) => n + s.chars, 0);
+}
+
+function pushSource({ title, type, pages }) {
+  const clean = pages.map((p) => ({ pageNumber: p.pageNumber, text: String(p.text || '') })).filter((p) => p.text.trim());
+  if (!clean.length) return false;
+  const chars = clean.reduce((n, p) => n + p.text.length, 0);
+  if (wsTotalChars() + chars > MAX_SOURCE_CHARS) {
+    toast('"' + title + '" skipped — workspace would exceed ~600k characters', 'err');
+    return false;
+  }
+  ws.sources.push({
+    id: 'src_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    title: String(title || 'Source').slice(0, 160),
+    type,
+    pages: clean,
+    chars,
+    addedAt: new Date().toISOString()
+  });
+  return true;
+}
+
+function renderSources() {
   const ul = $('sources');
   ul.innerHTML = '';
-  let pending = 0;
+  const sources = (ws && ws.sources) || [];
   if (!sources.length) {
     const li = document.createElement('li'); li.className = 'static';
-    li.innerHTML = '<span class="li-sub">No sources yet — paste notes or upload PDFs above.</span>';
+    li.innerHTML = '<span class="li-sub">No sources yet — paste notes or drop PDFs above.</span>';
     ul.appendChild(li);
   }
   for (const s of sources) {
-    if (s.status !== 'processed') pending++;
     const li = document.createElement('li'); li.className = 'static';
     const left = document.createElement('div'); left.style.minWidth = '0';
     const t = document.createElement('div'); t.className = 'li-title'; t.textContent = s.title;
     const meta = document.createElement('span'); meta.className = 'li-sub';
     meta.textContent = s.type.toUpperCase() +
-      (s.pageCount ? ' · ' + s.pageCount + ' pages' : '') +
-      (s.status === 'processed' && s.chunkCount ? ' · ' + s.chunkCount + ' chunks' : '');
+      (s.type === 'pdf' ? ' · ' + s.pages.length + ' page(s)' : '') +
+      ' · ' + s.chars.toLocaleString() + ' chars';
     left.append(t, meta);
-    const right = document.createElement('div');
-    right.style.cssText = 'display:flex;align-items:center;gap:8px;';
-    const pill = document.createElement('span');
-    pill.className = 'pill ' + (s.status === 'processed' ? 'ok' : 'pending');
-    pill.textContent = s.status;
-    right.appendChild(pill);
-    if (s.status !== 'processed') {
-      const btn = document.createElement('button');
-      btn.className = 'ghost small'; btn.textContent = 'Process';
-      btn.onclick = () => processSource(s.id, btn);
-      right.appendChild(btn);
-    }
-    li.append(left, right);
+    const rm = document.createElement('button');
+    rm.className = 'danger small'; rm.textContent = 'Remove';
+    rm.onclick = () => {
+      ws.sources = ws.sources.filter((x) => x.id !== s.id);
+      saveWs(); renderSources(); updateStepper();
+    };
+    li.append(left, rm);
     ul.appendChild(li);
   }
-  $('processAllRow').style.display = pending > 1 ? 'flex' : 'none';
-  flow.processed = sources.some((s) => s.status === 'processed');
 }
 
 $('addSrc').onclick = async () => {
+  if (!ws) { toast('Create a project first', 'err'); return; }
+  const text = $('noteText').value.trim();
+  if (!text && !pickedFiles.length) { toast('Add some notes or choose files first', 'err'); return; }
+  const btn = $('addSrc');
+  busy(btn, true, 'Extracting…', '+ Add sources');
+  btn.disabled = true;
+  let added = 0;
   try {
-    if (!projectId) { toast('Create a project first', 'err'); return; }
-    const fd = new FormData();
-    const text = $('noteText').value.trim();
     if (text) {
-      fd.append('text', text);
-      fd.append('title', $('noteTitle').value.trim());
+      if (pushSource({ title: $('noteTitle').value.trim() || 'Pasted Notes', type: 'text', pages: [{ pageNumber: 1, text }] })) added++;
+      $('noteText').value = ''; $('noteTitle').value = ''; $('noteStats').style.display = 'none';
     }
-    for (const f of pickedFiles) fd.append('files', f);
-    if (!text && !pickedFiles.length) throw new Error('Add some notes or choose files first');
-    busy($('addSrc'), true, 'Adding…', '+ Add sources');
-    const created = await api('/api/projects/' + projectId + '/sources', { method: 'POST', body: fd });
-    $('noteText').value = ''; $('noteTitle').value = ''; $('noteStats').style.display = 'none';
-    pickedFiles = []; syncInputFiles(); renderFileChips();
-    toast(created.length + ' source(s) added', 'ok');
-    await loadSources();
-    updateStepper();
-  } catch (e) { toast(e.message || 'Could not add source', 'err'); }
-  finally { busy($('addSrc'), false, '', '+ Add sources'); }
-};
-
-async function processSource(sid, btn) {
-  btn.disabled = true; btn.textContent = 'Processing…';
-  try {
-    const r = await api('/api/projects/' + projectId + '/sources/' + sid + '/process', { method: 'POST' });
-    toast('Processed: ' + r.pages + ' pages → ' + r.chunks + ' chunks', 'ok');
-    await loadSources();
-    updateStepper();
+    for (const f of pickedFiles) {
+      if (/\.pdf$/i.test(f.name)) {
+        busy(btn, true, 'Reading ' + f.name.slice(0, 18) + '…', '+ Add sources');
+        const pages = await extractPdfPages(f, (i, n) => {
+          dzHint('Extracting "' + f.name + '": page ' + i + '/' + n);
+        });
+        if (pushSource({ title: f.name.replace(/\.pdf$/i, ''), type: 'pdf', pages })) added++;
+      } else {
+        const t = await f.text();
+        if (pushSource({ title: f.name.replace(/\.txt$/i, ''), type: 'text', pages: [{ pageNumber: 1, text: t }] })) added++;
+      }
+    }
+    pickedFiles = []; syncInputFiles(); renderFileChips(); dzHint('');
+    if (added) toast(added + ' source(s) added — saved in this browser', 'ok');
+    else toast('No readable text found in the selected file(s)', 'err');
+    renderSources(); updateStepper(); saveWs();
   } catch (e) {
-    toast(e.message, 'err');
-    btn.disabled = false; btn.textContent = 'Retry';
+    dzHint('');
+    showError(e.message || 'Could not add source', () => $('addSrc').click());
+  } finally {
+    busy(btn, false, '', '+ Add sources');
   }
-}
-
-$('processAllBtn').onclick = async () => {
-  try {
-    busy($('processAllBtn'), true, 'Processing…', 'Process all');
-    const sources = await api('/api/projects/' + projectId + '/sources');
-    let done = 0;
-    for (const s of sources.filter((x) => x.status !== 'processed')) {
-      await api('/api/projects/' + projectId + '/sources/' + s.id + '/process', { method: 'POST' });
-      done++;
-    }
-    toast(done + ' source(s) processed', 'ok');
-    await loadSources();
-    updateStepper();
-  } catch (e) { toast(e.message, 'err'); }
-  finally {     busy($('processAllBtn'), false, '', 'Process all'); }
 };
 
 /* ================= analysis ================= */
+function applyAnalysis(analysis, silent) {
+  const cov = (analysis && analysis.coverage) || {};
+  const covScore = cov.score != null ? cov.score : null;
+  const conflicts = analysis.conflictCount || 0;
+
+  $('sTopics').textContent = analysis.topicCount ?? '–';
+  $('sChapters').textContent = analysis.chapterCount ?? '–';
+  $('sDupes').textContent = analysis.duplicateGroups ?? '–';
+  $('sConflicts').textContent = conflicts;
+  $('sCov').textContent = covScore != null ? covScore + '%' : '–';
+
+  $('dupeStat').className = 'stat' + (analysis.duplicateGroups > 0 ? ' warn' : '');
+  $('confStat').className = 'stat' + (conflicts > 0 ? ' bad' : '');
+  $('covStat').className = 'stat' + (covScore == null ? '' : cov.insufficient ? ' warn' : ' good');
+
+  $('statsSkel').style.display = 'none';
+  $('stats').style.display = 'grid';
+  if (covScore != null) {
+    $('covBar').style.display = 'block';
+    $('covBar').querySelector('i').style.width = '0%';
+    requestAnimationFrame(() => {
+      $('covBar').querySelector('i').style.width = Math.min(100, covScore) + '%';
+    });
+  }
+  const note = $('covNote');
+  note.className = 'notice show ' + (cov.insufficient ? '' : 'good');
+  note.textContent = cov.insufficient
+    ? 'Coverage is low (' + covScore + '%). Add more sources on weak topics before generating for better results.'
+    : 'Coverage looks healthy. You are ready to generate the book.';
+  flow.analyzed = true;
+  if (!silent) toast('Analysis complete — ' + analysis.topicCount + ' topics found', 'ok');
+}
+
 $('analyzeBtn').onclick = async () => {
   const btn = $('analyzeBtn');
   try {
     busy(btn, true, 'Analyzing…', 'Run analysis');
     $('stats').style.display = 'none';
     $('statsSkel').style.display = 'grid';
-    const r = await api('/api/knowledge/' + projectId + '/analyze', { method: 'POST' });
-    const cov = r.coverage || {};
-    const covScore = cov.score != null ? cov.score : null;
-    const conflicts = r.conflictCount || 0;
-
-    $('sTopics').textContent = r.topicCount ?? '–';
-    $('sChapters').textContent = r.chapterCount ?? '–';
-    $('sDupes').textContent = r.duplicateGroups ?? '–';
-    $('sConflicts').textContent = conflicts;
-    $('sCov').textContent = covScore != null ? covScore + '%' : '–';
-
-    $('dupeStat').className = 'stat' + (r.duplicateGroups > 0 ? ' warn' : '');
-    $('confStat').className = 'stat' + (conflicts > 0 ? ' bad' : '');
-    $('covStat').className = 'stat' + (covScore == null ? '' : cov.insufficient ? ' warn' : ' good');
-
-    $('statsSkel').style.display = 'none';
-    $('stats').style.display = 'grid';
-    if (covScore != null) {
-      $('covBar').style.display = 'block';
-      $('covBar').querySelector('i').style.width = '0%';
-      requestAnimationFrame(() => {
-        $('covBar').querySelector('i').style.width = Math.min(100, covScore) + '%';
-      });
-    }
-    const note = $('covNote');
-    note.className = 'notice show ' + (cov.insufficient ? '' : 'good');
-    note.textContent = cov.insufficient
-      ? 'Coverage is low (' + covScore + '%). Add more sources on weak topics before generating for better results.'
-      : '✓ Coverage looks healthy. You are ready to generate the book.';
-    flow.analyzed = true;
+    const r = await api('/api/build?json=1', {
+      method: 'POST',
+      headers: aiRequestHeaders() || {},
+      body: JSON.stringify({
+        mode: 'analyze',
+        title: ws.title,
+        author: ws.author,
+        notebook: nb,
+        sources: ws.sources
+      })
+    });
+    ws.analysis = r.analysis;
+    saveWs();
+    applyAnalysis(r.analysis, false);
     updateStepper();
-    toast('Analysis complete — ' + r.topicCount + ' topics found', 'ok');
   } catch (e) {
     $('statsSkel').style.display = 'none';
-    toast(e.message, 'err');
+    showError(e.message, () => $('analyzeBtn').click());
   }
   finally {     busy(btn, false, '', 'Run analysis'); }
 };
@@ -1551,66 +1763,171 @@ function stopGenFx() {
   $('chapters').style.display = '';
 }
 
-$('genBtn').onclick = async () => {
-  const btn = $('genBtn');
-  try {
-    busy(btn, true, 'Writing…', 'Generate book');
-    startGenFx();
-    const r = await api('/api/projects/' + projectId + '/book/generate', {
-      method: 'POST',
-      headers: aiRequestHeaders() || {},
-      body: JSON.stringify({ notebook: nb })
-    });
-    if (r.notebook) { nb = { ...nb, ...r.notebook }; syncNbUI(); }
-    const eng = r.engine || {};
-    const ctx = r.context || {};
-    let msg = 'Book generated — ' + r.chapters + ' chapter(s)';
-    msg += eng.mode === 'ai-polished' ? ' · AI-polished ' + nbLabel('formats', nb.format)
-      : eng.mode === 'ai' ? ' · via ' + (eng.model || eng.provider)
-      : ' · extractive fallback (no AI key)';
-    if (r.cards) msg += ' · ' + r.cards + ' cards';
-    if (ctx.chunksAvailable) {
-      msg += ' · context ' + ctx.chunksUsed + '/' + ctx.chunksAvailable +
-        ' chunks (~' + Math.round(ctx.charsUsed / 1000) + 'k chars)';
+async function buildBookStream(payload, onEvent) {
+  const res = await fetch('/api/build', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(aiRequestHeaders() || {}) },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok || !res.body) {
+    let msg = res.status + ' ' + res.statusText;
+    try { msg = (await res.json()).error || msg; } catch (_e) {}
+    throw new Error(msg);
+  }
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '';
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let idx;
+    while ((idx = buf.indexOf('\n\n')) !== -1) {
+      const frame = buf.slice(0, idx);
+      buf = buf.slice(idx + 2);
+      const lines = frame.split('\n');
+      const evLine = lines.find((l) => l.startsWith('event: '));
+      const dataLine = lines.find((l) => l.startsWith('data: '));
+      if (!evLine || !dataLine) continue;
+      let data;
+      try { data = JSON.parse(dataLine.slice(6)); } catch (_e) { continue; }
+      onEvent(evLine.slice(7), data);
     }
-    toast(msg, 'ok');
-    await loadBook(true);
-  } catch (e) { toast(e.message, 'err'); }
-  finally { stopGenFx();     busy(btn, false, '', 'Generate book'); }
-};
+  }
+}
 
-async function loadBook(scrollTo) {
-  let book;
-  try { book = await api('/api/projects/' + projectId + '/book'); } catch (_e) { return; }
+async function generateBook() {
+  const btn = $('genBtn');
+  if (!ws || !ws.sources.length) { toast('Add at least one source first', 'err'); return; }
+  busy(btn, true, 'Writing…', 'Generate book');
+  startGenFx();
+  try {
+    const payload = {
+      mode: 'full',
+      title: ws.title,
+      author: ws.author,
+      notebook: nb,
+      sources: ws.sources
+    };
+    let sawDone = false;
+    await buildBookStream(payload, (ev, data) => {
+      if (ev === 'phase') {
+        if (data.message) $('genMsg').textContent = data.message;
+      } else if (ev === 'error') {
+        throw new Error(data.error || 'Generation failed');
+      } else if (ev === 'done') {
+        sawDone = true;
+        ws.chapters = data.chapters;
+        ws.engine = data.engine;
+        if (data.notebook) nb = { ...nb, ...data.notebook };
+        ws.notebook = { ...nb };
+        if (data.analysis) ws.analysis = data.analysis;
+        saveWs(true);
+        stopGenFx();
+        syncNbUI();
+        applyAnalysis(ws.analysis, true);
+        renderBook(true);
+        const eng = data.engine || {};
+        let msg = 'Book generated — ' + data.chapters.length + ' chapter(s)';
+        msg += eng.mode === 'ai-polished' ? ' · AI-polished'
+          : eng.mode === 'ai' ? ' · via ' + (eng.model || eng.provider)
+          : ' · offline extractive mode';
+        if (data.cards) msg += ' · ' + data.cards + ' cards';
+        toast(msg, 'ok');
+      }
+    });
+    if (!sawDone) throw new Error('Connection closed before the book finished generating');
+    updateStepper();
+  } catch (e) {
+    stopGenFx();
+    showError(e.message || 'Generation failed', generateBook);
+  }
+  finally { busy(btn, false, '', 'Generate book'); }
+}
+$('genBtn').onclick = generateBook;
+
+function engineBadgeText(eng) {
+  if (!eng || eng.mode === 'extractive-fallback') return 'Offline extractive mode';
+  const label = eng.model || eng.provider || 'AI';
+  return (eng.mode === 'ai-polished' ? 'AI polished · ' : 'AI written · ') + label;
+}
+
+/* ---------- reader ---------- */
+let readerFs = Number(localStorage.getItem('pdf2book.readerSize')) || 14.5;
+function applyReaderFs() {
+  document.documentElement.style.setProperty('--reader-fs', readerFs.toFixed(1) + 'px');
+  localStorage.setItem('pdf2book.readerSize', String(readerFs));
+}
+$('fontPlus').onclick = () => { readerFs = Math.min(21, readerFs + 1); applyReaderFs(); };
+$('fontMinus').onclick = () => { readerFs = Math.max(11, readerFs - 1); applyReaderFs(); };
+applyReaderFs();
+
+$('tocBtn').onclick = () => $('tocDrawer').classList.toggle('open');
+$('tocClose').onclick = () => $('tocDrawer').classList.remove('open');
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') $('tocDrawer').classList.remove('open');
+});
+
+async function exportBook(fmt) {
+  if (!ws || !ws.chapters || !ws.chapters.length) { toast('Generate a book first', 'err'); return; }
+  try {
+    const res = await fetch('/api/export/' + fmt, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project: { title: ws.title, author: ws.author }, chapters: ws.chapters })
+    });
+    if (!res.ok) {
+      let msg = res.status;
+      try { msg = (await res.json()).error || msg; } catch (_e) {}
+      throw new Error(msg);
+    }
+    const blob = await res.blob();
+    const cd = res.headers.get('Content-Disposition') || '';
+    const m = cd.match(/filename="([^"]+)"/);
+    const ext = fmt === 'markdown' ? 'md' : fmt === 'flashcards-csv' ? 'csv' : fmt;
+    const name = m ? m[1] : ((ws.title || 'book').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'book') + '.' + ext;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast('Export downloaded — ' + name, 'ok');
+  } catch (e) {
+    showError(e.message || 'Export failed', () => exportBook(fmt));
+  }
+}
+
+async function renderBook(scrollTo) {
+  const book = ws;
+  const chapters = (book && book.chapters) || [];
   const wrap = $('chapters');
   wrap.innerHTML = '';
 
-  const savedNb = (book.project && book.project.notebook) || null;
-  if (savedNb) { nb = { ...nb, ...savedNb }; syncNbUI(); }
-  const fmt = (book.project && book.project.notebook && book.project.notebook.format) || nb.format;
-
+  const fmt = (book.notebook && book.notebook.format) || nb.format;
   let totalCards = 0;
-  for (const ch of book.chapters) totalCards += (ch.cards && ch.cards.length) || 0;
+  for (const ch of chapters) totalCards += (ch.cards && ch.cards.length) || 0;
   $('expCsv').style.display = totalCards ? 'inline-flex' : 'none';
 
-  if (book.chapters.length) {
-    $('exports').style.display = 'flex';
-    const base = '/api/projects/' + projectId + '/export/';
-    $('expMd').href = base + 'markdown';
-    $('expHtml').href = base + 'html';
-    $('expCsv').href = base + 'flashcards-csv';
-    $('expJson').href = base + 'json';
-  }
+  $('engineBadge').textContent = engineBadgeText(book.engine);
 
-  if (!book.chapters.length) {
+  if (!chapters.length) {
     wrap.innerHTML = '<div class="empty">Run the analysis first, then generate your book.</div>';
+    $('exports').style.display = 'none';
+    $('readerBar').style.display = 'none';
     return;
   }
+
+  $('exports').style.display = 'flex';
+  $('readerBar').style.display = 'flex';
 
   flow.chapters = true;
   flow.analyzed = true;
 
-  book.chapters.forEach((ch) => {
+  const tocList = $('tocList');
+  tocList.innerHTML = '';
+  const chapterEls = [];
+
+  chapters.forEach((ch, ci) => {
     const isAppendix = ch.type === 'appendix';
     const words = ch.content.trim().split(/\s+/).length;
     const mins = Math.max(1, Math.round(words / 220));
@@ -1685,26 +2002,43 @@ async function loadBook(scrollTo) {
       edit.style.display = 'inline-flex';
       save.style.display = 'none'; cancel.style.display = 'none';
     };
-    save.onclick = async () => {
-      save.disabled = true;
-      try {
-        await api('/api/projects/' + projectId + '/book/chapters/' + ch.id, {
-          method: 'PUT', body: JSON.stringify({ content: editor.value })
-        });
-        ch.content = editor.value;
-        if (reader) reader.innerHTML = renderMarkdown(ch.content);
-        toast('Chapter saved', 'ok');
-        cancel.onclick();
-      } catch (e) {
-        toast(e.message, 'err');
-        save.disabled = false;
-      }
+    save.onclick = () => {
+      ch.content = editor.value;
+      if (reader) reader.innerHTML = renderMarkdown(ch.content);
+      saveWs();
+      toast('Chapter saved in this browser', 'ok');
+      cancel.onclick();
     };
 
     row.append(edit, save, cancel);
     head.append(copy, collapse);
     div.append(head, body, row);
     wrap.appendChild(div);
+    chapterEls.push(div);
+
+    const tocItem = document.createElement('button');
+    tocItem.type = 'button'; tocItem.className = 'toc-item'; tocItem.textContent = ch.title;
+    tocItem.onclick = () => {
+      div.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      tocList.querySelectorAll('.toc-item').forEach((x) => x.classList.remove('active'));
+      tocItem.classList.add('active');
+      $('tocDrawer').classList.remove('open');
+    };
+    tocList.appendChild(tocItem);
+
+    if (ci < chapters.length - 1 || ci > 0) {
+      const nav = document.createElement('div'); nav.className = 'navbtns';
+      const prevB = document.createElement('button');
+      prevB.className = 'ghost small'; prevB.textContent = '↑ Previous chapter';
+      prevB.style.visibility = ci > 0 ? 'visible' : 'hidden';
+      prevB.onclick = () => chapterEls[ci - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const nextB = document.createElement('button');
+      nextB.className = 'ghost small'; nextB.textContent = 'Next chapter ↓';
+      nextB.style.visibility = ci < chapters.length - 1 ? 'visible' : 'hidden';
+      nextB.onclick = () => chapterEls[ci + 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      nav.append(prevB, nextB);
+      wrap.appendChild(nav);
+    }
   });
 
   updateStepper();
@@ -1726,12 +2060,13 @@ async function loadBook(scrollTo) {
   try { await loadProviders(); } catch (_e) {}
   refreshBadge();
   loadNotebookMeta();
-  try {
-    await loadProjects();
-    const projects = await api('/api/projects');
-    if (projects.length) selectProject(projects[0].id, projects[0].title);
-    else showWorkspace(false);
-  } catch (e) { toast(e.message, 'err'); }
+  loadProjects();
+  const activeId = localStorage.getItem(WS_ACTIVE_KEY);
+  if (activeId && localStorage.getItem(wsStoreKey(activeId))) {
+    openWorkspace(activeId);
+  } else {
+    showWorkspace(false);
+  }
 })();
 </script>
 </body>

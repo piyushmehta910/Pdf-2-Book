@@ -7,6 +7,7 @@ const sourcesRouter = require('./routes/sources');
 const knowledgeRouter = require('./routes/knowledge');
 const bookRouter = require('./routes/book');
 const providersRouter = require('./routes/providers');
+const buildRouter = require('./routes/build');
 const webui = require('./webui');
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/api/projects', sourcesRouter);
 app.use('/api/projects', bookRouter);
 app.use('/api/knowledge', knowledgeRouter);
 app.use('/api/providers', providersRouter);
+app.use('/api', buildRouter);
 
 const notebookOptions = require('./services/notebookOptions');
 app.get('/api/notebook', (req, res) => {
