@@ -9,6 +9,7 @@ const { computeCoverage } = require('../services/coverageChecker');
 const { synthesizeTopic } = require('../services/synthesizer');
 const { composeChapters, slugify } = require('../services/chapterComposer');
 const aiProvider = require('../services/aiProvider');
+const bookEngine = require('../services/bookEngine');
 const { validateNotebook } = require('../services/notebookOptions');
 const {
   toMarkdown, toHtml, toFlashcardsCsv, toProjectJson
@@ -18,7 +19,7 @@ const router = express.Router();
 
 const MAX_SOURCES = 40;
 const MAX_TOTAL_CHARS = 600000;
-const MAX_TOPICS = 10;
+const MAX_TOPICS = 8;
 const TIME_BUDGET_MS = 42000;
 
 function aiConfigFromRequest(req) {
@@ -63,6 +64,51 @@ function sanitizeSources(input) {
 function httpError(status, message) {
   return Object.assign(new Error(message), { status });
 }
+
+/* ---------- page-to-notes refinement ---------- */
+
+const REFINE_SYSTEM = 'You convert raw page text from research PDFs into clean study notes. For each page output: one short heading line beginning with "## ", then concise bullets capturing key claims, definitions, formulas, numbers and examples from that page only. Be faithful to the source; never invent facts. Keep wording tight and readable.';
+
+function splitRefinedPages(raw, pages) {
+  const out = [];
+  const parts = String(raw).split(/\[\[PAGE\s*(\d+)\s*\]\]/);
+  for (let i = 1; i < parts.length; i += 2) {
+    const pageNumber = parseInt(parts[i], 10);
+    const text = parts[i + 1].trim();
+    if (text) out.push({ pageNumber, text });
+  }
+  if (!out.length) return pages.map((p) => ({ pageNumber: p.pageNumber, text: p.text.trim() }));
+  return out;
+}
+
+router.post('/refine', async (req, res) => {
+  const body = req.body || {};
+  const aiConfig = aiConfigFromRequest(req);
+  const pages = Array.isArray(body.pages) ? body.pages.slice(0, 12) : [];
+  const clean = pages
+    .map((p, i) => ({ pageNumber: Number(p && p.pageNumber) || i + 1, text: String((p && p.text) || '').slice(0, 6000) }))
+    .filter((p) => p.text.trim().length > 20);
+
+  if (!clean.length) return res.status(400).json({ error: 'No page text provided' });
+
+  if (!aiProvider.available(aiConfig)) {
+    return res.json({ refined: false, notes: clean.map((p) => ({ pageNumber: p.pageNumber, text: p.text.trim() })) });
+  }
+
+  try {
+    const sourceTitle = String(body.title || 'Source').slice(0, 160);
+    const bodyText = clean.map((p) => `[[PAGE ${p.pageNumber}]]\n${p.text}`).join('\n\n');
+    const raw = await aiProvider.complete(
+      REFINE_SYSTEM,
+      `Source title: ${sourceTitle}\n\nConvert each page below into study notes. Keep every [[PAGE n]] marker exactly as written and put that page's notes under it.\n\n${bodyText}`,
+      { maxTokens: 2600, temperature: 0.3 },
+      aiConfig
+    );
+    res.json({ refined: true, notes: splitRefinedPages(raw, clean) });
+  } catch (err) {
+    res.status(502).json({ error: err.message });
+  }
+});
 
 async function runBuild(payload, aiConfig, notify) {
   const notebook = validateNotebook(payload.notebook || {});
@@ -203,6 +249,69 @@ router.post('/build', async (req, res) => {
   } finally {
     clearTimeout(ping);
     res.end();
+  }
+});
+
+router.post('/book/blueprint', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const aiConfig = aiConfigFromRequest(req);
+    const sources = Array.isArray(body.sources)
+      ? body.sources.filter((s) => s && String(s.sample || '').trim()).slice(0, MAX_SOURCES)
+      : [];
+    if (!sources.length) return res.status(400).json({ error: 'No source samples provided' });
+    const result = await bookEngine.makeBlueprint({
+      title: String(body.title || 'Untitled').slice(0, 160),
+      tone: body.tone,
+      depth: body.depth,
+      sources: sources.map((s) => ({
+        title: String((s && s.title) || 'Source').slice(0, 160),
+        sample: String((s && s.sample) || '').slice(0, 2000)
+      }))
+    }, aiConfig);
+    res.json(result);
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.post('/book/draft', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const aiConfig = aiConfigFromRequest(req);
+    const pages = Array.isArray(body.pages) ? body.pages : [];
+    if (!pages.length) return res.status(400).json({ error: 'No pages provided for drafting' });
+    const result = await bookEngine.draftBatch({
+      title: String(body.title || 'Untitled').slice(0, 160),
+      blueprint: body.blueprint || null,
+      chapterIndex: Number(body.chapterIndex) || 0,
+      isChapterStart: Boolean(body.isChapterStart),
+      summary: String(body.summary || '').slice(0, 4000),
+      pages
+    }, aiConfig);
+    res.json(result);
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.post('/book/enrich', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const aiConfig = aiConfigFromRequest(req);
+    const evidence = Array.isArray(body.evidence) ? body.evidence : [];
+    const chapterText = String(body.chapterText || '');
+    if (!chapterText.trim() || !evidence.length) {
+      return res.status(400).json({ error: 'Chapter text and evidence are both required' });
+    }
+    const result = await bookEngine.enrichChapter({
+      chapterTitle: String(body.chapterTitle || 'Chapter').slice(0, 160),
+      chapterText,
+      evidence
+    }, aiConfig);
+    res.json(result);
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
   }
 });
 

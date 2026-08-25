@@ -692,8 +692,9 @@
           </div>
           <div class="filechips" id="fileChips"></div>
           <div class="row">
-            <span class="hint" id="fileCount"></span>
+            <label class="nbcheck" title="Uses your AI key to turn each page into clean study notes"><input type="checkbox" id="refineToggle" checked> Convert to smart notes with AI</label>
             <span style="flex:1"></span>
+            <button class="ghost small" id="cancelExtract" style="display:none">Stop</button>
             <button class="ghost small" id="clearFiles" style="display:none">Clear files</button>
             <button id="addSrc">+ Add sources</button>
           </div>
@@ -860,6 +861,21 @@
       <span class="hint" style="flex:1">Changes apply immediately after saving.</span>
       <button class="ghost" onclick="closeSettings()">Cancel</button>
       <button id="saveSettings">Save settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES VIEWER MODAL -->
+<div class="modal-backdrop" id="notesModal">
+  <div class="modal" style="max-width:780px;max-height:88vh;display:flex;flex-direction:column" role="dialog" aria-modal="true" aria-labelledby="notesTitle">
+    <div class="modal-head">
+      <h2 id="notesTitle">Page notes</h2>
+      <button class="danger small" onclick="closeNotesModal()">✕</button>
+    </div>
+    <div class="modal-body" id="notesBody" style="overflow-y:auto"></div>
+    <div class="modal-foot">
+      <span class="hint" style="flex:1">Edits are saved in this browser and used by generation.</span>
+      <button class="ghost" onclick="closeNotesModal()">Close</button>
     </div>
   </div>
 </div>
@@ -1465,37 +1481,82 @@ $('noteText').addEventListener('input', () => {
     Math.ceil(v.length / 1800) + ' page(s) of source text';
 });
 
-/* ---------- pdf.js client-side extraction ---------- */
-const PDFJS_VER = '3.11.174';
+/* ---------- pdf.js client-side extraction (with OCR fallback) ---------- */
 let pdfJsLoading = null;
 function loadPdfJs() {
   if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
   if (pdfJsLoading) return pdfJsLoading;
   pdfJsLoading = new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + PDFJS_VER + '/pdf.min.js';
+    s.src = '/vendor/pdf.min.js';
     s.onload = () => {
       try {
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + PDFJS_VER + '/pdf.worker.min.js';
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdf.worker.min.js';
         resolve(window.pdfjsLib);
       } catch (e) { reject(e); }
     };
-    s.onerror = () => { pdfJsLoading = null; reject(new Error('Could not load the PDF engine — check your internet connection')); };
+    s.onerror = () => { pdfJsLoading = null; reject(new Error('Could not load the PDF engine — try reloading the page')); };
     document.head.appendChild(s);
   });
   return pdfJsLoading;
 }
 
+const OCR_SPARSE = 40;
+let tessLoading = null;
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (tessLoading) return tessLoading;
+  tessLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = '/vendor/tesseract.min.js';
+    s.onload = () => resolve(window.Tesseract);
+    s.onerror = () => { tessLoading = null; reject(new Error('Could not load the OCR engine — check your connection and reload')); };
+    document.head.appendChild(s);
+  });
+  return tessLoading;
+}
+
+let ocrWorkerPromise = null;
+function getOcrWorker() {
+  if (ocrWorkerPromise) return ocrWorkerPromise;
+  ocrWorkerPromise = loadTesseract().then((T) => T.createWorker('eng', 1, {
+    workerPath: '/vendor/tesseract.worker.min.js',
+    corePath: '/vendor/tesseract-core-simd.wasm.js',
+    langPath: '/vendor/lang',
+    logger: () => {}
+  })).catch((e) => { ocrWorkerPromise = null; throw e; });
+  return ocrWorkerPromise;
+}
+
+async function ocrPage(page) {
+  const worker = await getOcrWorker();
+  const base = page.getViewport({ scale: 1 });
+  const targetWidth = Math.min(2200, Math.round(base.width * 2));
+  const viewport = page.getViewport({ scale: targetWidth / base.width });
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(viewport.width);
+  canvas.height = Math.round(viewport.height);
+  const ctx = canvas.getContext('2d');
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+  const { data } = await worker.recognize(blob);
+  canvas.width = 0; canvas.height = 0;
+  return String(data && data.text || '').trim();
+}
+
 function dzHint(msg) { $('dzHint').textContent = msg || 'or click to browse — text is extracted right in your browser, files never leave your device'; }
+
+let extractionCancelled = false;
 
 async function extractPdfPages(file, onProgress) {
   const pdfjs = await loadPdfJs();
   const buf = await file.arrayBuffer();
   const doc = await pdfjs.getDocument({ data: buf }).promise;
   const pages = [];
+  let ocrCount = 0;
   for (let i = 1; i <= doc.numPages; i++) {
-    onProgress && onProgress(i, doc.numPages);
+    if (extractionCancelled) throw Object.assign(new Error('Extraction stopped'), { cancelled: true });
+    onProgress && onProgress(i, doc.numPages, 'reading');
     const page = await doc.getPage(i);
     const tc = await page.getTextContent();
     let text = '';
@@ -1505,10 +1566,19 @@ async function extractPdfPages(file, onProgress) {
       text += it.hasEOL ? '\n' : ' ';
     }
     text = text.replace(/[ \t]+\n/g, '\n').replace(/ {2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+    if (text.length < OCR_SPARSE) {
+      onProgress && onProgress(i, doc.numPages, 'ocr');
+      try {
+        const ocrText = await ocrPage(page);
+        if (ocrText.length > text.length) { text = ocrText; ocrCount++; }
+      } catch (_e) {
+        if (String(_e && _e.message).includes('OCR')) throw _e;
+      }
+    }
     pages.push({ pageNumber: i, text });
     if (page.cleanup) page.cleanup();
   }
-  return pages;
+  return { pages, ocrCount };
 }
 
 const MAX_SOURCE_CHARS = 600000;
@@ -1517,7 +1587,7 @@ function wsTotalChars() {
   return (ws.sources || []).reduce((n, s) => n + s.chars, 0);
 }
 
-function pushSource({ title, type, pages }) {
+function pushSource({ title, type, pages, ocrCount }) {
   const clean = pages.map((p) => ({ pageNumber: p.pageNumber, text: String(p.text || '') })).filter((p) => p.text.trim());
   if (!clean.length) return false;
   const chars = clean.reduce((n, p) => n + p.text.length, 0);
@@ -1531,6 +1601,8 @@ function pushSource({ title, type, pages }) {
     type,
     pages: clean,
     chars,
+    ocrCount: ocrCount || 0,
+    refined: false,
     addedAt: new Date().toISOString()
   });
   return true;
@@ -1549,55 +1621,167 @@ function renderSources() {
     const li = document.createElement('li'); li.className = 'static';
     const left = document.createElement('div'); left.style.minWidth = '0';
     const t = document.createElement('div'); t.className = 'li-title'; t.textContent = s.title;
+    const tags = [
+      s.type.toUpperCase(),
+      s.type === 'pdf' ? s.pages.length + ' page(s)' : null,
+      s.chars.toLocaleString() + ' chars',
+      s.ocrCount > 0 ? 'OCR ×' + s.ocrCount : null,
+      s.refined ? 'AI notes' : null
+    ].filter(Boolean);
     const meta = document.createElement('span'); meta.className = 'li-sub';
-    meta.textContent = s.type.toUpperCase() +
-      (s.type === 'pdf' ? ' · ' + s.pages.length + ' page(s)' : '') +
-      ' · ' + s.chars.toLocaleString() + ' chars';
+    meta.textContent = tags.join(' · ');
     left.append(t, meta);
+    const right = document.createElement('div');
+    right.style.cssText = 'display:flex;align-items:center;gap:6px;';
+    const nb2 = document.createElement('button');
+    nb2.className = 'ghost small'; nb2.textContent = 'Notes';
+    nb2.onclick = () => openNotesModal(s.id);
     const rm = document.createElement('button');
     rm.className = 'danger small'; rm.textContent = 'Remove';
     rm.onclick = () => {
       ws.sources = ws.sources.filter((x) => x.id !== s.id);
       saveWs(); renderSources(); updateStepper();
     };
-    li.append(left, rm);
+    right.append(nb2, rm);
+    li.append(left, right);
     ul.appendChild(li);
   }
 }
+
+/* ---------- AI page-notes refinement ---------- */
+function batchPages(pages, maxChars, maxCount) {
+  const batches = [];
+  let cur = [], chars = 0;
+  for (const p of pages) {
+    if (cur.length && (chars + p.text.length > maxChars || cur.length >= maxCount)) {
+      batches.push(cur); cur = []; chars = 0;
+    }
+    cur.push(p); chars += p.text.length;
+  }
+  if (cur.length) batches.push(cur);
+  return batches;
+}
+
+async function refineSource(src, onStatus) {
+  const usable = src.pages.filter((p) => p.text.trim().length > 20);
+  if (!usable.length) return false;
+  const batches = batchPages(usable, 4000, 6);
+  const byNum = new Map(usable.map((p) => [p.pageNumber, p]));
+  let okBatches = 0;
+  for (let bi = 0; bi < batches.length; bi++) {
+    onStatus('AI notes · ' + src.title.slice(0, 16) + '… ' + (bi + 1) + '/' + batches.length);
+    const res = await fetch('/api/refine', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(aiRequestHeaders() || {}) },
+      body: JSON.stringify({ title: src.title, pages: batches[bi] })
+    });
+    if (!res.ok) throw new Error('Refinement request failed (' + res.status + ')');
+    const data = await res.json();
+    if (data.refined && Array.isArray(data.notes)) {
+      for (const n of data.notes) {
+        const target = byNum.get(Number(n.pageNumber));
+        if (target && String(n.text).trim().length > 40) target.text = String(n.text).trim();
+      }
+      okBatches++;
+    }
+  }
+  src.refined = okBatches > 0;
+  return okBatches > 0;
+}
+
+/* ---------- notes viewer ---------- */
+function openNotesModal(sid) {
+  if (!ws) return;
+  const src = ws.sources.find((x) => x.id === sid);
+  if (!src) return;
+  $('notesTitle').textContent = 'Page notes — ' + src.title;
+  const body = $('notesBody');
+  body.innerHTML = '';
+  src.pages.forEach((p) => {
+    const wrap = document.createElement('div'); wrap.style.marginBottom = '14px';
+    const lab = document.createElement('div'); lab.className = 'nb-label';
+    lab.textContent = src.type === 'pdf' ? 'Page ' + p.pageNumber : 'Full text';
+    const ta = document.createElement('textarea');
+    ta.value = p.text;
+    ta.rows = Math.min(12, Math.max(3, p.text.split('\n').length + 1));
+    ta.oninput = () => {
+      p.text = ta.value;
+      src.chars = src.pages.reduce((n, x) => n + x.text.length, 0);
+      saveWs();
+    };
+    wrap.append(lab, ta);
+    body.appendChild(wrap);
+  });
+  $('notesModal').classList.add('open');
+}
+function closeNotesModal() { $('notesModal').classList.remove('open'); }
+$('notesModal').addEventListener('click', (e) => { if (e.target === $('notesModal')) closeNotesModal(); });
+
+$('cancelExtract').onclick = () => {
+  extractionCancelled = true;
+  dzHint('Stopping after this page…');
+};
 
 $('addSrc').onclick = async () => {
   if (!ws) { toast('Create a project first', 'err'); return; }
   const text = $('noteText').value.trim();
   if (!text && !pickedFiles.length) { toast('Add some notes or choose files first', 'err'); return; }
   const btn = $('addSrc');
-  busy(btn, true, 'Extracting…', '+ Add sources');
+  busy(btn, true, 'Working…', '+ Add sources');
   btn.disabled = true;
-  let added = 0;
+  extractionCancelled = false;
+  $('cancelExtract').style.display = 'inline-flex';
+  const added = [];
   try {
     if (text) {
-      if (pushSource({ title: $('noteTitle').value.trim() || 'Pasted Notes', type: 'text', pages: [{ pageNumber: 1, text }] })) added++;
+      if (pushSource({ title: $('noteTitle').value.trim() || 'Pasted Notes', type: 'text', pages: [{ pageNumber: 1, text }] })) {
+        added.push(ws.sources[ws.sources.length - 1]);
+      }
       $('noteText').value = ''; $('noteTitle').value = ''; $('noteStats').style.display = 'none';
     }
     for (const f of pickedFiles) {
       if (/\.pdf$/i.test(f.name)) {
-        busy(btn, true, 'Reading ' + f.name.slice(0, 18) + '…', '+ Add sources');
-        const pages = await extractPdfPages(f, (i, n) => {
-          dzHint('Extracting "' + f.name + '": page ' + i + '/' + n);
+        const shortName = f.name.length > 18 ? f.name.slice(0, 15) + '…' : f.name;
+        const { pages, ocrCount } = await extractPdfPages(f, (i, n, mode) => {
+          const verb = mode === 'ocr' ? 'OCR page ' : 'page ';
+          busy(btn, true, shortName + ' ' + i + '/' + n, '+ Add sources');
+          dzHint('"' + f.name + '" — ' + verb + i + '/' + n);
         });
-        if (pushSource({ title: f.name.replace(/\.pdf$/i, ''), type: 'pdf', pages })) added++;
+        if (!extractionCancelled && pushSource({ title: f.name.replace(/\.pdf$/i, ''), type: 'pdf', pages, ocrCount })) {
+          added.push(ws.sources[ws.sources.length - 1]);
+        }
       } else {
         const t = await f.text();
-        if (pushSource({ title: f.name.replace(/\.txt$/i, ''), type: 'text', pages: [{ pageNumber: 1, text: t }] })) added++;
+        if (pushSource({ title: f.name.replace(/\.txt$/i, ''), type: 'text', pages: [{ pageNumber: 1, text: t }] })) {
+          added.push(ws.sources[ws.sources.length - 1]);
+        }
       }
     }
+
+    const wantRefine = Boolean(aiRequestHeaders()) && $('refineToggle').checked;
+    for (const src of added) {
+      if (!wantRefine) break;
+      try {
+        await refineSource(src, (m) => busy(btn, true, m, '+ Add sources'));
+      } catch (_e) {
+        toast('AI notes failed for "' + src.title + '" — kept raw text', 'err');
+      }
+    }
+
     pickedFiles = []; syncInputFiles(); renderFileChips(); dzHint('');
-    if (added) toast(added + ' source(s) added — saved in this browser', 'ok');
-    else toast('No readable text found in the selected file(s)', 'err');
-    renderSources(); updateStepper(); saveWs();
+    if (added.length) {
+      saveWs(true); renderSources(); updateStepper();
+      toast(added.length + ' source(s) ready' + (wantRefine ? ' with AI notes' : ''), 'ok');
+    } else {
+      toast(extractionCancelled ? 'Extraction stopped — nothing added' : 'No readable text found in the selected file(s)', 'err');
+    }
   } catch (e) {
     dzHint('');
-    showError(e.message || 'Could not add source', () => $('addSrc').click());
-  } finally {
+    if (e && e.cancelled) toast('Extraction stopped', 'err');
+    else showError(e.message || 'Could not add source', () => $('addSrc').click());
+  }
+  finally {
+    $('cancelExtract').style.display = 'none';
     busy(btn, false, '', '+ Add sources');
   }
 };
@@ -1796,53 +1980,309 @@ async function buildBookStream(payload, onEvent) {
   }
 }
 
+/* ================= book engine orchestrator ================= */
+async function apiPost(url, body) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(aiRequestHeaders() || {}) },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    let msg = res.status + ' ' + res.statusText;
+    try { msg = (await res.json()).error || msg; } catch (_e) {}
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+function wsBookState() {
+  if (!ws.bookState) {
+    ws.bookState = {
+      stage: 'idle',
+      primaryId: null,
+      blueprint: null,
+      mode: null,
+      summary: '',
+      chapters: [],
+      batchIdx: 0,
+      lastChIdx: -1,
+      enrichCursor: { srcIdx: 0, batchIdx: 0 },
+      enrichCalls: 0
+    };
+  }
+  return ws.bookState;
+}
+
+function resetBookState() {
+  delete ws.bookState;
+}
+
+function usablePages(src) {
+  return src.pages.filter((p) => p.text.trim().length > 40);
+}
+
+const STOP_WORDS = new Set(('the a an and or of in on to for with by from as is are was were be been being this that these those it its their his her our your not no but if then than so such which who whom whose what when where how why all any each few more most other some only own same too very can will just should now'.split(' ')));
+function keywordsOf(text) {
+  const counts = new Map();
+  const words = String(text).toLowerCase().match(/[a-z][a-z'-]{3,}/g) || [];
+  for (const w of words) {
+    if (STOP_WORDS.has(w)) continue;
+    counts.set(w, (counts.get(w) || 0) + 1);
+  }
+  return counts;
+}
+function bestChapterFor(evidenceText, chapters) {
+  const kw = keywordsOf(evidenceText.slice(0, 3000));
+  let best = 0, bestScore = -1;
+  chapters.forEach((c, i) => {
+    const ck = keywordsOf((c.title + ' ' + c.content.slice(0, 2500)));
+    let score = 0;
+    for (const [w, n] of kw) score += Math.min(ck.get(w) || 0, 4) * n * 0.25 + (ck.has(w) ? 1 : 0);
+    if (score > bestScore) { bestScore = score; best = i; }
+  });
+  return best;
+}
+
+let genRunning = false;
+let genPaused = false;
+
+function setGenBtn(mode) {
+  const btn = $('genBtn');
+  busy(btn, false, '', 'Generate book');
+  if (mode === 'pause') { btn.textContent = 'Pause'; }
+  else if (mode === 'resume') { btn.textContent = 'Resume'; }
+  else { btn.textContent = 'Generate book'; }
+}
+
+function engineAvailable() {
+  return Boolean(aiRequestHeaders());
+}
+
+async function runBookEngine() {
+  const st = wsBookState();
+  const primary = ws.sources.find((s) => s.id === st.primaryId) || ws.sources[0];
+  st.primaryId = primary.id;
+
+  const sampleOf = (s) => usablePages(s).slice(0, 4)
+    .map((p) => '[p' + p.pageNumber + '] ' + p.text.slice(0, 400)).join('\n');
+
+  /* ---- stage: blueprint ---- */
+  if (!st.blueprint) {
+    $('genMsg').textContent = 'Designing your book structure…';
+    const res = await apiPost('/api/book/blueprint', {
+      title: ws.title,
+      tone: nb.tone,
+      depth: nb.depth,
+      sources: ws.sources.map((s) => ({ title: s.title, sample: sampleOf(s) }))
+    });
+    st.blueprint = res.blueprint;
+    st.mode = res.mode;
+    st.stage = 'draft';
+    saveWs(true);
+  }
+
+  /* ---- stage: draft ---- */
+  if (!st.chapters.length && st.blueprint && st.blueprint.chapters.length) {
+    st.chapters = st.blueprint.chapters.map((c) => ({ title: c.title, content: '' }));
+  }
+  const batches = batchPages(usablePages(primary), 3500, 4);
+  while (st.batchIdx < batches.length) {
+    if (genPaused) return false;
+    const chCount = st.chapters.length || 1;
+    const chIdx = Math.min(Math.floor(st.batchIdx * chCount / batches.length), chCount - 1);
+    const isStart = chIdx !== st.lastChIdx;
+    $('genMsg').textContent = 'Writing "' + st.chapters[chIdx].title.slice(0, 40) + '"… batch ' +
+      (st.batchIdx + 1) + '/' + batches.length;
+    const res = await apiPost('/api/book/draft', {
+      title: ws.title,
+      blueprint: st.blueprint,
+      chapterIndex: chIdx,
+      isChapterStart: isStart,
+      summary: st.summary,
+      pages: batches[st.batchIdx].map((p) => ({
+        title: primary.title,
+        pageNumber: p.pageNumber,
+        text: p.text.slice(0, 3500)
+      }))
+    });
+    if (res.prose) {
+      st.chapters[chIdx].content += (st.chapters[chIdx].content ? '\n\n' : '') + res.prose.trim();
+      st.lastChIdx = chIdx;
+    }
+    if (res.summary) st.summary = String(res.summary).slice(0, 4000);
+    st.batchIdx++;
+    saveWs(true);
+  }
+
+  /* ---- stage: enrich ---- */
+  const secondaries = [];
+  ws.sources.forEach((s, i) => { if (s.id !== primary.id) secondaries.push({ src: s, idx: i }); });
+  const MAX_ENRICH = 30;
+  outer: for (let si = st.enrichCursor.srcIdx; si < secondaries.length; si++) {
+    const { src } = secondaries[si];
+    const ebatches = batchPages(usablePages(src), 3500, 4);
+    for (let bi = st.enrichCursor.batchIdx; bi < ebatches.length; bi++) {
+      if (genPaused) { st.enrichCursor.srcIdx = si; st.enrichCursor.batchIdx = bi; return false; }
+      if (st.enrichCalls >= MAX_ENRICH) break outer;
+      const target = bestChapterFor(ebatches[bi].map((p) => p.text).join('\n'), st.chapters);
+      $('genMsg').textContent = 'Enriching "' + st.chapters[target].title.slice(0, 34) + '" from ' +
+        src.title.slice(0, 22) + '… (' + (bi + 1) + '/' + ebatches.length + ')';
+      try {
+        const res = await apiPost('/api/book/enrich', {
+          chapterTitle: st.chapters[target].title,
+          chapterText: st.chapters[target].content.slice(0, 12000),
+          evidence: ebatches[bi].map((p) => ({
+            title: src.title,
+            pageNumber: p.pageNumber,
+            text: p.text.slice(0, 2200)
+          }))
+        });
+        if (res.text && res.text.length > st.chapters[target].content.length * 0.5) {
+          st.chapters[target].content = res.text.trim();
+        }
+        st.enrichCalls++;
+      } catch (_e) {
+        st.enrichCalls++;
+      }
+      st.enrichCursor.batchIdx = bi + 1;
+      st.enrichCursor.srcIdx = si;
+      saveWs(true);
+    }
+    st.enrichCursor.batchIdx = 0;
+    st.enrichCursor.srcIdx = si + 1;
+    saveWs(true);
+  }
+
+  /* ---- stage: finalize ---- */
+  $('genMsg').textContent = 'Assembling front matter and index…';
+  const finalChapters = [];
+  if (st.blueprint && st.blueprint.preface) {
+    finalChapters.push({ title: 'Preface', content: st.blueprint.preface.trim() });
+  }
+  for (const c of st.chapters) {
+    if (c.content.trim().length > 80) finalChapters.push({ title: c.title, content: c.content.trim() });
+  }
+  const indexTerms = new Map();
+  finalChapters.forEach((c, ci) => {
+    for (const [w, n] of keywordsOf(c.content)) {
+      if (n >= 4 && !indexTerms.has(w)) indexTerms.set(w, []);
+      if (n >= 4 && indexTerms.get(w).length < 6 && !indexTerms.get(w).includes(ci + 1)) indexTerms.get(w).push(ci + 1);
+    }
+  });
+  const indexLines = [...indexTerms.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+    .slice(0, 60)
+    .map(([w, refs]) => '- **' + w + '** — ' + refs.map((r) => 'Ch. ' + r).join(', '));
+  if (indexLines.length) {
+    finalChapters.push({
+      type: 'appendix',
+      title: 'Index of Terms',
+      content: indexLines.join('\n')
+    });
+  }
+  if (!finalChapters.some((c) => !c.type)) throw new Error('The engine could not write any chapters — check your AI key or try again');
+
+  ws.chapters = finalChapters;
+  ws.engine = {
+    mode: st.mode === 'ai' ? 'ai' : 'extractive-fallback',
+    provider: 'book-engine',
+    enriched: st.enrichCalls
+  };
+  st.stage = 'done';
+  saveWs(true);
+  return true;
+}
+
+async function quickGenerate() {
+  const payload = {
+    mode: 'full',
+    title: ws.title,
+    author: ws.author,
+    notebook: nb,
+    sources: ws.sources
+  };
+  let sawDone = false;
+  await buildBookStream(payload, (ev, data) => {
+    if (ev === 'phase') {
+      if (data.message) $('genMsg').textContent = data.message;
+    } else if (ev === 'error') {
+      throw new Error(data.error || 'Generation failed');
+    } else if (ev === 'done') {
+      sawDone = true;
+      ws.chapters = data.chapters;
+      ws.engine = data.engine;
+      if (data.notebook) nb = { ...nb, ...data.notebook };
+      ws.notebook = { ...nb };
+      if (data.analysis) ws.analysis = data.analysis;
+      saveWs(true);
+      stopGenFx();
+      syncNbUI();
+      applyAnalysis(ws.analysis, true);
+      renderBook(true);
+      const eng = data.engine || {};
+      let msg = 'Book generated — ' + data.chapters.length + ' chapter(s)';
+      msg += eng.mode === 'ai-polished' ? ' · AI-polished'
+        : eng.mode === 'ai' ? ' · via ' + (eng.model || eng.provider)
+        : ' · offline extractive mode';
+      if (data.cards) msg += ' · ' + data.cards + ' cards';
+      toast(msg, 'ok');
+    }
+  });
+  if (!sawDone) throw new Error('Connection closed before the book finished generating');
+}
+
 async function generateBook() {
   const btn = $('genBtn');
   if (!ws || !ws.sources.length) { toast('Add at least one source first', 'err'); return; }
-  busy(btn, true, 'Writing…', 'Generate book');
+
+  if (genRunning) {
+    genPaused = true;
+    busy(btn, true, 'Pausing after this step…', '');
+    return;
+  }
+
+  const st = wsBookState();
+  if (st.stage === 'done') resetBookState();
+  const useEngine = ['book', 'wiki'].includes(nb.format) && engineAvailable();
+  if (!useEngine && st.stage !== 'idle') resetBookState();
+
+  genRunning = true;
+  genPaused = false;
+  setGenBtn('pause');
   startGenFx();
   try {
-    const payload = {
-      mode: 'full',
-      title: ws.title,
-      author: ws.author,
-      notebook: nb,
-      sources: ws.sources
-    };
-    let sawDone = false;
-    await buildBookStream(payload, (ev, data) => {
-      if (ev === 'phase') {
-        if (data.message) $('genMsg').textContent = data.message;
-      } else if (ev === 'error') {
-        throw new Error(data.error || 'Generation failed');
-      } else if (ev === 'done') {
-        sawDone = true;
-        ws.chapters = data.chapters;
-        ws.engine = data.engine;
-        if (data.notebook) nb = { ...nb, ...data.notebook };
-        ws.notebook = { ...nb };
-        if (data.analysis) ws.analysis = data.analysis;
-        saveWs(true);
+    if (useEngine) {
+      const finished = await runBookEngine();
+      if (!finished) {
         stopGenFx();
-        syncNbUI();
-        applyAnalysis(ws.analysis, true);
-        renderBook(true);
-        const eng = data.engine || {};
-        let msg = 'Book generated — ' + data.chapters.length + ' chapter(s)';
-        msg += eng.mode === 'ai-polished' ? ' · AI-polished'
-          : eng.mode === 'ai' ? ' · via ' + (eng.model || eng.provider)
-          : ' · offline extractive mode';
-        if (data.cards) msg += ' · ' + data.cards + ' cards';
-        toast(msg, 'ok');
+        setGenBtn('resume');
+        toast('Paused — progress saved. Click Resume to continue.', 'ok');
+        updateStepper();
+        return;
       }
-    });
-    if (!sawDone) throw new Error('Connection closed before the book finished generating');
+      stopGenFx();
+      applyAnalysis(ws.analysis, true);
+      renderBook(true);
+      const engMsg = (ws.engine.enriched ? ' · enriched ×' + ws.engine.enriched : '')
+        + (ws.engine.mode === 'extractive-fallback' ? ' · offline fallback' : '');
+      toast('Book complete — ' + ws.chapters.length + ' section(s)' + engMsg, 'ok');
+    } else {
+      await quickGenerate();
+    }
     updateStepper();
+    setGenBtn('normal');
   } catch (e) {
     stopGenFx();
+    const st2 = wsBookState();
+    const canResume = st2.stage !== 'idle' && st2.stage !== 'done';
+    setGenBtn(canResume ? 'resume' : 'normal');
     showError(e.message || 'Generation failed', generateBook);
   }
-  finally { busy(btn, false, '', 'Generate book'); }
+  finally {
+    genRunning = false;
+    genPaused = false;
+    const s = ws.bookState;
+    if (s && s.stage !== 'done' && s.stage !== 'idle') setGenBtn('resume');
+  }
 }
 $('genBtn').onclick = generateBook;
 

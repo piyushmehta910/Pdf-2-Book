@@ -60,6 +60,114 @@ describe('POST /api/build (stateless)', () => {
   });
 });
 
+describe('POST /api/refine', () => {
+  test('returns refined:false unchanged pages when no AI key', async () => {
+    const pages = [
+      { pageNumber: 1, text: 'Mechanical tension drives hypertrophy. Progressive overload is the core driver of adaptation.' },
+      { pageNumber: 2, text: 'Volume equated frequency studies show similar outcomes across weekly splits.' }
+    ];
+    const res = await request(app)
+      .post('/api/refine')
+      .send({ title: 'Doc', pages });
+    expect(res.status).toBe(200);
+    expect(res.body.refined).toBe(false);
+    expect(res.body.notes[0].pageNumber).toBe(1);
+    expect(res.body.notes[0].text).toBe(pages[0].text);
+  });
+
+  test('rejects empty pages with 400', async () => {
+    const res = await request(app)
+      .post('/api/refine')
+      .send({ title: 'Doc', pages: [] });
+    expect(res.status).toBe(400);
+  });
+
+  test('caps oversized single page input', async () => {
+    const big = { pageNumber: 1, text: 'x'.repeat(9000) };
+    const res = await request(app)
+      .post('/api/refine')
+      .send({ title: 'Doc', pages: [big] });
+    expect([200, 502]).toContain(res.status);
+    if (res.status === 200) {
+      expect(res.body.notes[0].text.length).toBeLessThanOrEqual(6000);
+    }
+  });
+});
+
+describe('POST /api/book/* (stateless book engine)', () => {
+  const longSample = Array.from({ length: 12 }, (_, i) =>
+    `Section ${i + 1}. ${SAMPLE}`).join('\n\n');
+
+  test('blueprint returns chapters without a key (fallback mode)', async () => {
+    const res = await request(app)
+      .post('/api/book/blueprint')
+      .send({
+        title: 'Training Science',
+        sources: [{ title: 'Notes', sample: longSample.slice(0, 1500) }]
+      });
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.blueprint.chapters)).toBe(true);
+    expect(res.body.blueprint.chapters.length).toBeGreaterThanOrEqual(2);
+    expect(typeof res.body.mode).toBe('string');
+  });
+
+  test('blueprint rejects missing sources', async () => {
+    const res = await request(app)
+      .post('/api/book/blueprint')
+      .send({ title: 'X', sources: [] });
+    expect(res.status).toBe(400);
+  });
+
+  test('draft returns prose and rolling summary without a key', async () => {
+    const bp = await request(app)
+      .post('/api/book/blueprint')
+      .send({ title: 'T', sources: [{ title: 'N', sample: SAMPLE }] });
+    const blueprint = bp.body.blueprint;
+    const res = await request(app)
+      .post('/api/book/draft')
+      .send({
+        title: 'T',
+        blueprint,
+        chapterIndex: 0,
+        isChapterStart: true,
+        summary: '',
+        pages: [{ title: 'N', pageNumber: 1, text: SAMPLE }]
+      });
+    expect(res.status).toBe(200);
+    expect(typeof res.body.prose).toBe('string');
+    expect(res.body.prose.length).toBeGreaterThan(80);
+    expect(typeof res.body.summary).toBe('string');
+    expect(res.body.prose).toMatch(/p\.\s*1/);
+  });
+
+  test('draft rejects empty pages', async () => {
+    const res = await request(app)
+      .post('/api/book/draft')
+      .send({ title: 'T', blueprint: null, chapterIndex: 0, pages: [] });
+    expect(res.status).toBe(400);
+  });
+
+  test('enrich appends evidence details without a key', async () => {
+    const res = await request(app)
+      .post('/api/book/enrich')
+      .send({
+        chapterTitle: 'Training Principles',
+        chapterText: 'Progressive overload matters most for hypertrophy.',
+        evidence: [{ title: 'Study B', pageNumber: 3, text: 'New findings: rest intervals of two minutes maximize volume load.' }]
+      });
+    expect(res.status).toBe(200);
+    expect(res.body.text).toContain('Further details');
+    expect(res.body.text).toMatch(/Study B/i);
+  });
+
+  test('enrich rejects empty inputs', async () => {
+    const res = await request(app)
+      .post('/api/book/enrich')
+      .send({ chapterTitle: '', chapterText: '', evidence: [] });
+    expect(res.status).toBe(400);
+  });
+});
+
 describe('POST /api/export/:format (stateless)', () => {
   let chapters;
   beforeAll(async () => {

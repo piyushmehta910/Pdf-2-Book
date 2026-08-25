@@ -16,7 +16,8 @@ module.exports = [
         Buffer: 'readonly',
         __dirname: 'readonly',
         setTimeout: 'readonly',
-        clearTimeout: 'readonly'
+        clearTimeout: 'readonly',
+        AbortController: 'readonly'
       }
     },
     rules: {

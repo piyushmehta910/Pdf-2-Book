@@ -53,6 +53,10 @@ async function chat(systemPrompt, userPrompt, options = {}, override = {}) {
   const resolved = normalizeOverride(override);
   if (!resolved.client) throw new Error('AI_PROVIDER_UNAVAILABLE');
 
+  const timeoutMs = Number(options.timeoutMs) > 0 ? Number(options.timeoutMs) : 20000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     const response = await resolved.client.chat.completions.create({
       model: resolved.model,
@@ -62,11 +66,13 @@ async function chat(systemPrompt, userPrompt, options = {}, override = {}) {
       ],
       temperature: options.temperature ?? 0.4,
       max_tokens: options.maxTokens ?? 1500
-    });
+    }, { signal: controller.signal });
     return response.choices[0].message.content.trim();
   } catch (err) {
     logger.error(`AI chat failed (${resolved.provider}/${resolved.model}): ${err.message}`);
     throw err;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
