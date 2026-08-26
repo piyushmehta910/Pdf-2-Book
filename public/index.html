@@ -1301,7 +1301,7 @@ async function kbGet(wsId) {
   try { const db = await kbIdb(); return new Promise((resolve, reject) => { const tx = db.transaction('kb', 'readonly'); const rq = tx.objectStore('kb').get(wsId); rq.onsuccess = () => resolve(rq.result || null); rq.onerror = () => reject(rq.error); }); } catch (_e) { return null; }
 }
 
-/* ---------- clean Ocr (client mirror of ocrCleaner for deterministic offline use) ---------- */
+/* ---------- clean OCR (client mirror of ocrCleaner for deterministic offline use) ---------- */
 function clientCleanOcr(raw) {
   let t = String(raw == null ? '' : raw).replace(/\r\n?/g, '\n');
   // eslint-disable-next-line no-control-regex
