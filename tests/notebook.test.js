@@ -247,10 +247,8 @@ describe('project notebook persistence API', () => {
     expect(stored.notebook.crossRefDensity).toBe('medium');
   });
 
-  test('GET /api/notebook returns registry', async () => {
+  test('GET /api/notebook is retired (presets supersede quick modes)', async () => {
     const res = await request(app).get('/api/notebook');
-    expect(res.status).toBe(200);
-    expect(res.body.styles.map((s) => s.id)).toEqual(['scholar', 'builder', 'storyteller', 'architect', 'minimalist']);
-    expect(res.body.formats).toHaveLength(5);
+    expect(res.status).toBe(404);
   });
 });

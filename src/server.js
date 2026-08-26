@@ -8,7 +8,7 @@ const sourcesRouter = require('./routes/sources');
 const knowledgeRouter = require('./routes/knowledge');
 const bookRouter = require('./routes/book');
 const providersRouter = require('./routes/providers');
-const buildRouter = require('./routes/build');
+const engineRouter = require('./routes/engine');
 const webui = require('./webui');
 
 const app = express();
@@ -29,14 +29,9 @@ app.get('/health', (req, res) => {
 app.use('/api/projects', projectsRouter);
 app.use('/api/projects', sourcesRouter);
 app.use('/api/projects', bookRouter);
-app.use('/api/knowledge', knowledgeRouter);
+app.use('/api/knowledge-legacy', knowledgeRouter);
 app.use('/api/providers', providersRouter);
-app.use('/api', buildRouter);
-
-const notebookOptions = require('./services/notebookOptions');
-app.get('/api/notebook', (req, res) => {
-  res.json(notebookOptions.describe());
-});
+app.use('/api', engineRouter);
 
 app.use((err, req, res, _next) => {
   logger.error(err.message);
