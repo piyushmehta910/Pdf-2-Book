@@ -721,6 +721,10 @@
         </div>
         <div class="bar" id="kbBar" style="display:none;margin-top:14px"><i></i></div>
         <div class="notice" id="kbNote"></div>
+        <div id="logPanel" style="display:none;margin-top:12px;max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:.82em;font-family:monospace;background:var(--card)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>Event log</b><button class="ghost small" id="clearLog">Clear</button></div>
+          <div id="logEntries"></div>
+        </div>
       </section>
 
       <!-- STEP 3 -->
@@ -816,6 +820,67 @@
       <div class="testline" id="testLine" style="display:none">
         <button class="ghost small" id="testBtn">Test connection</button>
         <span class="testresult" id="testResult"></span>
+      </div>
+
+      <hr class="sep" style="margin:14px 0">
+
+      <div class="field">
+        <label>OCR language <span class="labelhint">for scanned pages</span></label>
+        <select id="setOcrLang" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text2)">
+          <option value="eng">English</option>
+          <option value="fra">French</option>
+          <option value="deu">German</option>
+          <option value="spa">Spanish</option>
+          <option value="ita">Italian</option>
+          <option value="por">Portuguese</option>
+          <option value="rus">Russian</option>
+          <option value="jpn">Japanese</option>
+          <option value="chi_sim">Chinese (Simplified)</option>
+          <option value="chi_tra">Chinese (Traditional)</option>
+          <option value="kor">Korean</option>
+          <option value="ara">Arabic</option>
+          <option value="hin">Hindi</option>
+          <option value="nld">Dutch</option>
+          <option value="swe">Swedish</option>
+          <option value="pol">Polish</option>
+          <option value="tur">Turkish</option>
+          <option value="vie">Vietnamese</option>
+          <option value="tha">Thai</option>
+          <option value="ind">Indonesian</option>
+        </select>
+        <div class="ctxinfo">Choose the primary language of your PDF. Multiple languages can be selected later.</div>
+      </div>
+
+      <div class="field">
+        <label>Extraction batch size <span class="labelhint">pages per extraction batch</span></label>
+        <div class="seg" id="batchSeg">
+          <button type="button" class="segbtn" data-batch="1">1</button>
+          <button type="button" class="segbtn" data-batch="2">2</button>
+          <button type="button" class="segbtn" data-batch="3">3</button>
+          <button type="button" class="segbtn" data-batch="5">5</button>
+        </div>
+        <div class="ctxinfo">Larger batches extract faster but use more tokens at once.</div>
+      </div>
+
+      <div class="field">
+        <label>Similarity threshold <span class="labelhint">duplicate detection sensitivity</span></label>
+        <div class="seg" id="simSeg">
+          <button type="button" class="segbtn" data-sim="0.7">Loose<small>0.7</small></button>
+          <button type="button" class="segbtn" data-sim="0.8">Balanced<small>0.8</small></button>
+          <button type="button" class="segbtn" data-sim="0.9">Strict<small>0.9</small></button>
+        </div>
+        <div class="ctxinfo">Higher = fewer duplicates detected, lower = more aggressive merging.</div>
+      </div>
+
+      <div class="field">
+        <label>Sliding context window <span class="labelhint">recent pages kept in memory</span></label>
+        <div class="seg" id="ctxWinSeg">
+          <button type="button" class="segbtn" data-win="3">3 pages</button>
+          <button type="button" class="segbtn" data-win="5">5 pages</button>
+          <button type="button" class="segbtn" data-win="8">8 pages</button>
+          <button type="button" class="segbtn" data-win="10">10 pages</button>
+        </div>
+        <div class="ctxinfo">More pages = better continuity but more tokens per extraction.</div>
       </div>
     </div>
     <div class="modal-foot">
@@ -976,7 +1041,7 @@ applyTheme(
 
 /* ================= AI provider settings ================= */
 const CFG_KEY = 'pdf2book.aiConfig';
-let aiCfg = { provider: 'zen', apiKey: '', model: '', contextBudget: 12000 };
+let aiCfg = { provider: 'zen', apiKey: '', model: '', contextBudget: 12000, ocrLang: 'eng', batchSize: 2, similarityThreshold: 0.8, contextWindowSize: 5 };
 let providerMeta = [];
 const keysByProvider = {};
 
@@ -985,7 +1050,7 @@ try {
   if (saved && typeof saved === 'object') aiCfg = { ...aiCfg, ...saved };
 } catch (_e) {}
 if (!['zen', 'nvidia'].includes(aiCfg.provider)) {
-  aiCfg = { provider: 'zen', apiKey: '', model: '', contextBudget: aiCfg.contextBudget || 12000 };
+  aiCfg = { provider: 'zen', apiKey: '', model: '', contextBudget: aiCfg.contextBudget || 12000, ocrLang: aiCfg.ocrLang || 'eng', batchSize: aiCfg.batchSize || 2, similarityThreshold: aiCfg.similarityThreshold || 0.8, contextWindowSize: aiCfg.contextWindowSize || 5 };
 }
 
 function saveAiCfg() { localStorage.setItem(CFG_KEY, JSON.stringify(aiCfg)); }
@@ -1077,6 +1142,10 @@ function openSettings() {
   lastFocused = document.activeElement;
   $('setKey').value = aiCfg.apiKey;
   $('setModel').value = aiCfg.model;
+  $('setOcrLang').value = aiCfg.ocrLang || 'eng';
+  [...$('batchSeg').children].forEach((b) => b.classList.toggle('active', Number(b.dataset.batch) === Number(aiCfg.batchSize)));
+  [...$('simSeg').children].forEach((b) => b.classList.toggle('active', Number(b.dataset.sim) === Number(aiCfg.similarityThreshold)));
+  [...$('ctxWinSeg').children].forEach((b) => b.classList.toggle('active', Number(b.dataset.win) === Number(aiCfg.contextWindowSize)));
   renderSettings();
   $('settingsModal').classList.add('open');
   setTimeout(() => { try { $('setKey').focus(); } catch (_e) {} }, 60);
@@ -1102,7 +1171,28 @@ $('ctxSeg').addEventListener('click', (e) => {
   const btn = e.target.closest('.segbtn');
   if (!btn) return;
   aiCfg.contextBudget = Number(btn.dataset.budget);
-  renderSettings();
+  [...$('ctxSeg').children].forEach((b) => b.classList.toggle('active', b === btn));
+});
+
+$('batchSeg').addEventListener('click', (e) => {
+  const btn = e.target.closest('.segbtn');
+  if (!btn) return;
+  aiCfg.batchSize = Number(btn.dataset.batch);
+  [...$('batchSeg').children].forEach((b) => b.classList.toggle('active', b === btn));
+});
+
+$('simSeg').addEventListener('click', (e) => {
+  const btn = e.target.closest('.segbtn');
+  if (!btn) return;
+  aiCfg.similarityThreshold = Number(btn.dataset.sim);
+  [...$('simSeg').children].forEach((b) => b.classList.toggle('active', b === btn));
+});
+
+$('ctxWinSeg').addEventListener('click', (e) => {
+  const btn = e.target.closest('.segbtn');
+  if (!btn) return;
+  aiCfg.contextWindowSize = Number(btn.dataset.win);
+  [...$('ctxWinSeg').children].forEach((b) => b.classList.toggle('active', b === btn));
 });
 
 $('testBtn').onclick = async () => {
@@ -1126,12 +1216,13 @@ $('testBtn').onclick = async () => {
 $('saveSettings').onclick = () => {
   aiCfg.apiKey = $('setKey').value.trim();
   aiCfg.model = $('setModel').value.trim();
+  aiCfg.ocrLang = $('setOcrLang').value || 'eng';
   keysByProvider[aiCfg.provider] = aiCfg.apiKey;
   saveAiCfg();
   closeSettings();
   refreshBadge();
   toast('AI set to ' + (currentProviderMeta()?.label || aiCfg.provider) +
-    (aiCfg.model ? ' Â· ' + aiCfg.model : ''), 'ok');
+    (aiCfg.model ? ' \u00b7 ' + aiCfg.model : ''), 'ok');
 };
 
 function refreshBadge() {
@@ -1174,7 +1265,7 @@ function updateStepper() {
 /* ================= presets ================= */
 const PRESETS_STORE_KEY = 'pdf2book.preset';
 let activePresetId = 'textbook';
-const clientPresets = { textbook:{id:'textbook',label:'Textbook',blurb:'Definition-forward chapters with worked examples.',include:{examples:true,exercises:true,summary:true,glossary:true,sources:true,index:true,toc:true}}, studyguide:{id:'studyguide',label:'Study Notes',blurb:'Condensed scannable revision material.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:false,index:false,toc:true}}, examprep:{id:'examprep',label:'Exam Prep',blurb:'High-yield facts, pitfalls and practice Q&A.',include:{examples:true,exercises:true,summary:true,glossary:false,sources:false,index:false,toc:true}}, beginner:{id:'beginner',label:'Beginner Guide',blurb:'Plain-language journey assuming no prior knowledge.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:false,index:false,toc:true}}, handbook:{id:'handbook',label:'Handbook',blurb:'Practitioner reference with procedures and best practices.',include:{examples:true,exercises:false,summary:false,glossary:true,sources:true,index:true,toc:true}}, reference:{id:'reference',label:'Reference',blurb:'Terse lookup-friendly entries and tables.',include:{examples:false,exercises:false,summary:false,glossary:true,sources:true,index:true,toc:true}}, tutorial:{id:'tutorial',label:'Tutorial',blurb:'Learn-by-doing walkthroughs building one running project.',include:{examples:true,exercises:true,summary:true,glossary:false,sources:false,index:false,toc:true}}, research:{id:'research',label:'Research Digest',blurb:'Literature-review synthesis with methodology awareness.',include:{examples:false,exercises:false,summary:true,glossary:true,sources:true,index:true,toc:true}}, custom:{id:'custom',label:'Custom',blurb:'Your own saved combination of options.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:true,index:true,toc:true}} };
+const clientPresets = { academic:{id:'academic',label:'Academic',blurb:'Formal citations, structured sections, abstract, index.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:true,index:true,toc:true}}, textbook:{id:'textbook',label:'Textbook',blurb:'Definition-forward chapters with worked examples.',include:{examples:true,exercises:true,summary:true,glossary:true,sources:true,index:true,toc:true}}, novel:{id:'novel',label:'Novel',blurb:'Flowing narrative, minimal headings, literary style.',include:{examples:true,exercises:false,summary:false,glossary:false,sources:false,index:false,toc:true}}, minimalist:{id:'minimalist',label:'Minimalist',blurb:'Clean, pure content, no decorations.',include:{examples:false,exercises:false,summary:false,glossary:false,sources:false,index:false,toc:true}}, visual:{id:'visual',label:'Visual',blurb:'Color blocks, callouts, relationship diagrams.',include:{examples:true,exercises:true,summary:true,glossary:true,sources:false,index:false,toc:true}}, studyguide:{id:'studyguide',label:'Study Notes',blurb:'Condensed scannable revision material.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:false,index:false,toc:true}}, examprep:{id:'examprep',label:'Exam Prep',blurb:'High-yield facts, pitfalls and practice Q&A.',include:{examples:true,exercises:true,summary:true,glossary:false,sources:false,index:false,toc:true}}, beginner:{id:'beginner',label:'Beginner Guide',blurb:'Plain-language journey assuming no prior knowledge.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:false,index:false,toc:true}}, handbook:{id:'handbook',label:'Handbook',blurb:'Practitioner reference with procedures and best practices.',include:{examples:true,exercises:false,summary:false,glossary:true,sources:true,index:true,toc:true}}, reference:{id:'reference',label:'Reference',blurb:'Terse lookup-friendly entries and tables.',include:{examples:false,exercises:false,summary:false,glossary:true,sources:true,index:true,toc:true}}, tutorial:{id:'tutorial',label:'Tutorial',blurb:'Learn-by-doing walkthroughs building one running project.',include:{examples:true,exercises:true,summary:true,glossary:false,sources:false,index:false,toc:true}}, research:{id:'research',label:'Research Digest',blurb:'Literature-review synthesis with methodology awareness.',include:{examples:false,exercises:false,summary:true,glossary:true,sources:true,index:true,toc:true}}, custom:{id:'custom',label:'Custom',blurb:'Your own saved combination of options.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:true,index:true,toc:true}} };
 const defaultPreset = clientPresets.textbook;
 
 function currentPreset() { return clientPresets[activePresetId] || defaultPreset; }
@@ -1562,9 +1653,16 @@ function loadTesseract() {
 }
 
 let ocrWorkerPromise = null;
+let ocrWorkerLang = 'eng';
 function getOcrWorker() {
-  if (ocrWorkerPromise) return ocrWorkerPromise;
-  ocrWorkerPromise = loadTesseract().then((T) => T.createWorker('eng', 1, {
+  const desiredLang = (aiCfg && aiCfg.ocrLang) || 'eng';
+  if (ocrWorkerPromise && ocrWorkerLang === desiredLang) return ocrWorkerPromise;
+  if (ocrWorkerPromise) {
+    try { ocrWorkerPromise.then((w) => w.terminate()); } catch (_e) {}
+    ocrWorkerPromise = null;
+  }
+  ocrWorkerLang = desiredLang;
+  ocrWorkerPromise = loadTesseract().then((T) => T.createWorker(desiredLang, 1, {
     workerPath: '/vendor/tesseract.worker.min.js',
     corePath: '/vendor/tesseract-core-simd.wasm.js',
     langPath: '/vendor/lang',
@@ -1586,7 +1684,9 @@ async function ocrPage(page) {
   const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
   const { data } = await worker.recognize(blob);
   canvas.width = 0; canvas.height = 0;
-  return String(data && data.text || '').trim();
+  const text = String(data && data.text || '').trim();
+  const confidence = (data && typeof data.confidence === 'number') ? data.confidence : null;
+  return { text, confidence };
 }
 
 function dzHint(msg) { $('dzHint').textContent = msg || 'or click to browse â€” text is extracted right in your browser, files never leave your device'; }
@@ -1601,6 +1701,7 @@ async function extractPdfPages(file, onProgress) {
   let ocrCount = 0;
   let ocrFailed = 0;
   let ocrError = '';
+  const shortPages = [];
   for (let i = 1; i <= doc.numPages; i++) {
     if (extractionCancelled) throw Object.assign(new Error('Extraction stopped'), { cancelled: true });
     onProgress && onProgress(i, doc.numPages, 'reading');
@@ -1616,17 +1717,23 @@ async function extractPdfPages(file, onProgress) {
     if (text.length < OCR_SPARSE) {
       onProgress && onProgress(i, doc.numPages, 'ocr');
       try {
-        const ocrText = await ocrPage(page);
+        const { text: ocrText, confidence } = await ocrPage(page);
         if (ocrText.length > text.length) { text = ocrText; ocrCount++; }
+        if (confidence !== null && confidence < 50) {
+          shortPages.push({ page: i, chars: text.length, confidence });
+        }
       } catch (e) {
         ocrFailed++;
         if (!ocrError) ocrError = String((e && e.message) || e).slice(0, 140);
       }
     }
+    if (text.length < 100 && !shortPages.find((sp) => sp.page === i)) {
+      shortPages.push({ page: i, chars: text.length, confidence: null });
+    }
     pages.push({ pageNumber: i, text });
     if (page.cleanup) page.cleanup();
   }
-  return { pages, ocrCount, ocrFailed, ocrError };
+  return { pages, ocrCount, ocrFailed, ocrError, shortPages };
 }
 
 const MAX_SOURCE_CHARS = 600000;
@@ -1749,14 +1856,18 @@ $('addSrc').onclick = async () => {
     for (const f of pickedFiles) {
       if (/\.pdf$/i.test(f.name)) {
         const shortName = f.name.length > 18 ? f.name.slice(0, 15) + 'â€¦' : f.name;
-        const { pages, ocrCount, ocrFailed, ocrError } = await extractPdfPages(f, (i, n, mode) => {
+        const { pages, ocrCount, ocrFailed, ocrError, shortPages } = await extractPdfPages(f, (i, n, mode) => {
           const verb = mode === 'ocr' ? 'OCR page ' : 'page ';
           busy(btn, true, shortName + ' ' + i + '/' + n, '+ Add sources');
-          dzHint('"' + f.name + '" â€” ' + verb + i + '/' + n);
+          dzHint('"' + f.name + '" \u2014 ' + verb + i + '/' + n);
         });
         if (ocrFailed > 0) {
           toast(ocrFailed + ' scanned page(s) in "' + f.name.slice(0, 24) + '" could not be OCR-read' +
             (ocrError ? ': ' + ocrError : ''), 'err');
+        }
+        if (shortPages && shortPages.length) {
+          const spList = shortPages.slice(0, 5).map((sp) => 'p' + sp.page + '(' + sp.chars + 'ch)').join(', ');
+          toast(shortPages.length + ' page(s) under 100 chars: ' + spList + (shortPages.length > 5 ? '...' : ''), 'err');
         }
         if (!extractionCancelled && pushSource({ title: f.name.replace(/\.pdf$/i, ''), type: 'pdf', pages, ocrCount })) {
           added.push(ws.sources[ws.sources.length - 1]);
@@ -1832,21 +1943,29 @@ async function buildKb() {
   const total = allPages.length;
   let kb = ws.kb || {};
   let pagesRead = 0;
-  busy(btn, true, 'Starting extractionâ€¦', 'Extract knowledge');
+  busy(btn, true, 'Starting extraction\u2026', 'Extract knowledge');
   $('stats').style.display = 'none';
   $('kbBar').style.display = 'block';
   $('kbBar').querySelector('i').style.width = '0%';
+  logEvent('Extraction started: ' + total + ' page(s) from ' + ws.sources.length + ' source(s)');
   try {
     for (const { src, page } of allPages) {
       try {
+        const prevTopicIds = new Set((kb.topics || []).map((t) => t.id));
         const res = await apiPost('/api/knowledge/extract', {
           pageText: page.text, kb, documentId: src.id,
           pageNumber: page.pageNumber, fileName: src.title,
           docContext: ws.title,
+          contextWindowSize: aiCfg.contextWindowSize || 5,
           recentTopics: (kb.topics || []).slice(-5).map((t) => t.canonical_name)
         });
         kb = res.kb || kb;
-      } catch (_e) { /* skip failed pages */ }
+        const newTopics = (kb.topics || []).filter((t) => !prevTopicIds.has(t.id));
+        const dupTopics = (res.extraction && res.extraction.mode === 'merged') || (res.extraction && res.extraction.mode === 'resolved_duplicate');
+        if (newTopics.length) logEvent('Page ' + page.pageNumber + ': +' + newTopics.length + ' new topic(s)');
+        else if (dupTopics) logEvent('Page ' + page.pageNumber + ': merged into existing topic(s)');
+        if (pagesRead % 10 === 0 && pagesRead > 0) logEvent('Page ' + pagesRead + '/' + total + ' \u2014 ' + (kb.topics || []).length + ' topics');
+      } catch (_e) { logEvent('Page ' + page.pageNumber + ' failed: ' + (_e.message || 'error').slice(0, 80), 'err'); }
       pagesRead++;
       const pct = Math.round((pagesRead / total) * 100);
       $('kbBar').querySelector('i').style.width = pct + '%';
@@ -1871,7 +1990,8 @@ async function buildKb() {
     saveWs(true);
     applyKbStats(kb, total);
     updateStepper();
-    toast('Knowledge base built â€” ' + (kb.topics || []).length + ' topic(s)', 'ok');
+    logEvent('KB built: ' + (kb.topics || []).length + ' topic(s), ' + Object.keys(kb.glossary || {}).length + ' glossary terms', 'ok');
+    toast('Knowledge base built â€" ' + (kb.topics || []).length + ' topic(s)', 'ok');
   } catch (e) {
     showError(e.message || 'Extraction failed', buildKb);
   } finally {
@@ -1933,6 +2053,21 @@ function renderBlocks(blocks) {
       case 'warning': html += '<div class="notice warn">' + inlineMd(b.text || '') + '</div>'; break;
       case 'note': html += '<div class="notice">' + inlineMd(b.text || '') + '</div>'; break;
       case 'summary': html += '<div class="notice good">' + inlineMd(b.text || '') + '</div>'; break;
+      case 'relationship_map': {
+        const rels = b.relationships || [];
+        if (rels.length) {
+          html += '<div class="notice" style="margin:12px 0"><strong>Relationships:</strong><ul style="margin:6px 0 0 16px">';
+          for (const r of rels) html += '<li><strong>' + inlineMd(r.from) + '</strong> <span style="color:var(--muted)">' + inlineMd(r.type || 'related') + '</span> <strong>' + inlineMd(r.to) + '</strong>' + (r.label ? ' (' + inlineMd(r.label) + ')' : '') + '</li>';
+          html += '</ul></div>';
+        }
+        break;
+      }
+      case 'importance': {
+        const lvl = b.level || 'medium';
+        const cls = lvl === 'high' ? 'warn' : lvl === 'low' ? '' : 'good';
+        html += '<div class="notice ' + cls + '"><strong>[' + lvl.toUpperCase() + ']</strong> ' + inlineMd(b.text || '') + '</div>';
+        break;
+      }
       default: if (b.text) html += '<p>' + inlineMd(b.text) + '</p>';
     }
   }
@@ -1976,6 +2111,7 @@ async function generateBook() {
   if (!ws.kb || !(ws.kb.topics || []).length) { toast('Build the knowledge base first', 'err'); return; }
   const preset = currentPreset();
   startGenFx();
+  logEvent('Book generation started: preset=' + preset.id + ', ' + (ws.kb.topics || []).length + ' topics');
   try {
     $('genMsg').textContent = 'Planning book structureâ€¦';
     const digest = kbDigestFromKb(ws.kb);
@@ -1984,6 +2120,7 @@ async function generateBook() {
     if (!plan || !plan.chapters || !plan.chapters.length) {
       throw new Error('The planner could not produce chapters â€” add more topics or adjust the preset');
     }
+    logEvent('Plan ready: ' + plan.chapters.length + ' chapters planned');
     const chapterResults = [];
     const recentSummaries = [];
     for (let i = 0; i < plan.chapters.length; i++) {
@@ -1997,12 +2134,15 @@ async function generateBook() {
       });
       chapterResults.push({ plan: ch, result: writeRes });
       if (writeRes.summary) recentSummaries.push(writeRes.summary);
+      if (writeRes.openQuestions && writeRes.openQuestions.length) logEvent('Chapter ' + (i + 1) + ' raised ' + writeRes.openQuestions.length + ' open question(s)');
       if (recentSummaries.length > 6) recentSummaries.shift();
       saveWs(true);
     }
     const chapters = chapterResults.map((cr) => ({
       title: cr.plan.title, purpose: cr.plan.purpose,
       sections: cr.result.sections || [],
+      openQuestions: cr.result.openQuestions || [],
+      continuityNote: cr.result.continuityNote || '',
       content: (cr.result.sections || []).map((s) =>
         (s.title ? '### ' + s.title + '\n\n' : '') +
         (s.blocks || []).map((b) => {
@@ -2014,6 +2154,10 @@ async function generateBook() {
           if (b.type === 'warning') return '> ' + (b.text || '');
           if (b.type === 'note') return '> ' + (b.text || '');
           if (b.type === 'summary') return '> **Summary:** ' + (b.text || '');
+          if (b.type === 'importance') return '**[' + (b.level || 'medium').toUpperCase() + ']** ' + (b.text || '');
+          if (b.type === 'relationship_map') {
+            return (b.relationships || []).map((r) => '- **' + (r.from || '') + '** ' + (r.type || 'related') + ' **' + (r.to || '') + '**' + (r.label ? ' (' + r.label + ')' : '')).join('\n');
+          }
           return b.text || '';
         }).join('\n')
       ).join('\n')
@@ -2034,6 +2178,7 @@ async function generateBook() {
     stopGenFx();
     renderBook(true);
     updateStepper();
+    logEvent('Book complete: ' + chapters.length + ' chapter(s), QA=' + qaRes.status, qaRes.status === 'fail' ? 'err' : 'ok');
     let msg = 'Book complete â€” ' + chapters.length + ' chapter(s)';
     if (qaRes.status === 'warn') msg += ' Â· ' + (qaRes.warnings || []).length + ' warning(s)';
     if (qaRes.status === 'fail') msg += ' Â· ' + (qaRes.errors || []).length + ' issue(s)';
@@ -2336,6 +2481,19 @@ $('qaExportAnyway').onclick = () => { closeQa(); exportBook('markdown'); };
 function esc(s) { const d = document.createElement('span'); d.textContent = s || ''; return d.innerHTML; }
 
 /* ================= health + boot ================= */
+function logEvent(msg, kind) {
+  const el = $('logEntries');
+  if (!el) return;
+  $('logPanel').style.display = 'block';
+  const d = document.createElement('div');
+  const t = new Date().toLocaleTimeString();
+  const color = kind === 'err' ? 'var(--danger)' : kind === 'ok' ? 'var(--green)' : 'var(--muted)';
+  d.innerHTML = '<span style="color:' + color + '">[' + t + ']</span> ' + esc(msg);
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
+}
+$('clearLog').onclick = () => { $('logEntries').innerHTML = ''; $('logPanel').style.display = 'none'; };
+
 (async () => {
   try {
     await api('/health');

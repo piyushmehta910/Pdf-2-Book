@@ -79,6 +79,22 @@ function runQa(book, kb) {
     warnings.push(`${stats.unresolved_references} unresolved references remain — consider reviewing the Knowledge Manager`);
   }
 
+  // spec new-field checks
+  let openQCount = 0;
+  let relMapCount = 0;
+  let importanceCount = 0;
+  for (const ch of (book.chapters || [])) {
+    for (const sec of (ch.sections || [])) {
+      for (const b of (sec.blocks || [])) {
+        if (b.type === 'relationship_map') relMapCount++;
+        if (b.type === 'importance') importanceCount++;
+      }
+    }
+    openQCount += (ch.openQuestions || []).length;
+  }
+  if (!openQCount) warnings.push('No open questions surfaced by the writer — continuity may be thin');
+  if (relMapCount === 0 && stats.topics >= 5) warnings.push('No relationship maps generated despite multiple topics');
+
   const status = errors.length ? 'fail' : warnings.length ? 'warn' : 'pass';
   return { status, errors, warnings, statistics: stats };
 }

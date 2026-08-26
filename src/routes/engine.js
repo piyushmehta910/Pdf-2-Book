@@ -15,7 +15,20 @@ const { runQa } = require('../services/bookQa');
 const bookPresets = require('../services/bookPresets');
 const { slugify, toMarkdown, toHtml, toProjectJson } = require('../services/exporterv2');
 
+const { SlidingWindow } = require('../services/contextManager');
+
 const router = express.Router();
+
+/** Per-session sliding context windows, keyed by documentId. */
+const slidingWindows = new Map();
+function getSlidingWindow(docId, windowSize) {
+  const ws = Number(windowSize) || 5;
+  const key = docId + '_w' + ws;
+  if (!slidingWindows.has(key)) {
+    slidingWindows.set(key, new SlidingWindow({ windowSize: ws }));
+  }
+  return slidingWindows.get(key);
+}
 
 function aiConfigFromRequest(req) {
   const raw = req.headers['x-ai-config'];
@@ -56,14 +69,22 @@ router.post('/knowledge/extract', async (req, res) => {
       file_name: String(body.fileName || '').slice(0, 160)
     };
 
+    const docId = String(body.documentId || 'doc').slice(0, 80);
+    const sw = getSlidingWindow(docId, body.contextWindowSize);
+    const slidingCtx = sw.buildContextPayload();
+
     const { extraction, mode, degraded, reason } = await extractFromPage(
       {
         pageText: cleaned.cleaned,
         docContext: body.docContext,
-        recentTopics: Array.isArray(body.recentTopics) ? body.recentTopics.map((t) => String(t).slice(0, 80)).slice(0, 30) : []
+        recentTopics: Array.isArray(body.recentTopics) ? body.recentTopics.map((t) => String(t).slice(0, 80)).slice(0, 30) : [],
+        slidingWindow: slidingCtx
       },
       aiConfigFromRequest(req)
     );
+
+    // Record this page in the sliding window
+    sw.recordPage(extraction);
 
     const result = knowledgeBase.applyExtraction(kb, extraction, meta);
     res.json({

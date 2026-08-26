@@ -36,6 +36,10 @@ function blockToMarkdown(b) {
       const rows = b.rows.map((r) => `| ${r.join(' | ')} |`).join('\n');
       return `${header}${rows ? '\n' + rows : ''}`;
     }
+    case 'importance':
+      return `**[${(b.level || 'medium').toUpperCase()}]** ${b.text}`;
+    case 'relationship_map':
+      return (b.relationships || []).map((r) => `- **${r.from}** ${r.type || 'related'} **${r.to}**${r.label ? ` (${r.label})` : ''}`).join('\n');
     default:
       return '';
   }
@@ -85,6 +89,12 @@ function blockToHtml(b) {
       return '<table>' +
         (b.headers.length ? `<thead><tr>${b.headers.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead>` : '') +
         `<tbody>${b.rows.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    case 'importance':
+      return `<div class="block importance"><strong>[${(b.level || 'medium').toUpperCase()}]</strong> ${esc(b.text)}</div>`;
+    case 'relationship_map':
+      return '<div class="block relationships"><strong>Relationships:</strong><ul>' +
+        (b.relationships || []).map((r) => `<li><strong>${esc(r.from)}</strong> ${esc(r.type || 'related')} <strong>${esc(r.to)}</strong>${r.label ? ` (${esc(r.label)})` : ''}</li>`).join('') +
+        '</ul></div>';
     default:
       return '';
   }

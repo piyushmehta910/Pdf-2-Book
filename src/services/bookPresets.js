@@ -1,22 +1,79 @@
 /**
  * BookPresets — configurable generation profiles (master spec §18, §22).
- * Each preset shapes blueprint planning, chapter writing and enrichment.
+ * Five core presets per spec: Academic, Textbook, Novel, Minimalist, Visual.
+ * Additional presets retained for flexibility.
  */
 
 const PRESETS = {
+  academic: {
+    id: 'academic',
+    label: 'Academic',
+    blurb: 'Formal citations, structured sections, abstract, index.',
+    tone: 'formal scholarly',
+    readingLevel: 'graduate researcher',
+    depthHint: 'rigorous 600-1000 words per topic, evidence-weighted',
+    exampleDensity: 'studies, data, and primary sources as evidence',
+    definitionDensity: 'precise scholarly definitions with context',
+    include: { examples: true, exercises: false, summary: true, glossary: true, sources: true, index: true, toc: true },
+    structure: 'formal sections with abstract, literature review style, footnotes, conclusion; citations inline',
+    blueprintAddendum: 'Plan as a formal academic work: each chapter opens with an abstract, body uses structured argumentation, closes with conclusions and references. Include cross-references between chapters.',
+    draftAddendum: 'Write academic prose: use formal register, attribute claims to sources, present evidence before conclusions, use hedged language for uncertain claims ("evidence suggests..."). Include a brief abstract per chapter.'
+  },
   textbook: {
     id: 'textbook',
     label: 'Textbook',
-    blurb: 'Formal, definition-forward chapters with worked examples.',
+    blurb: 'Definition-forward chapters with worked examples.',
     tone: 'educational and precise',
     readingLevel: 'undergraduate',
     depthHint: 'thorough explanations, 700-1100 words per major topic',
     exampleDensity: 'one worked example per major concept',
     definitionDensity: 'every technical term defined at first use',
     include: { examples: true, exercises: true, summary: true, glossary: true, sources: true, index: true, toc: true },
-    structure: 'chapters open with objectives, close with a summary; sections build from foundations to applications',
+    structure: 'chapters open with learning objectives, close with a summary; sections build from foundations to applications',
     blueprintAddendum: 'Plan as a rigorous textbook: order chapters so prerequisites always precede dependents. Include chapter purposes and flag where worked examples belong.',
-    draftAddendum: 'Write textbook prose: define terms formally at first use, give one worked example per major idea, end each chapter with a short "Summary" paragraph.'
+    draftAddendum: 'Write textbook prose: define terms formally at first use, give one worked example per major idea, end each chapter with a short "Summary" paragraph and optional exercises.'
+  },
+  novel: {
+    id: 'novel',
+    label: 'Novel',
+    blurb: 'Flowing narrative, drop caps, named chapters, minimal headings.',
+    tone: 'literary narrative',
+    readingLevel: 'general reader',
+    depthHint: 'flowing 500-900 words per chapter section, narrative-driven',
+    exampleDensity: 'woven naturally into the narrative',
+    definitionDensity: 'terms explained contextually within the flow',
+    include: { examples: true, exercises: false, summary: false, glossary: false, sources: false, index: false, toc: true },
+    structure: 'named chapters with literary openings, flowing paragraphs without subheadings, narrative arcs that carry the reader forward',
+    blueprintAddendum: 'Plan chapters like a book: each chapter tells a complete story arc. Avoid subheadings. Create narrative tension and resolution within each chapter.',
+    draftAddendum: 'Write in a literary style: open each chapter with a hook or scene-setting. Use flowing paragraphs without bullet points or definitions. Weave concepts into narrative. Avoid subheadings — let the prose carry the structure.'
+  },
+  minimalist: {
+    id: 'minimalist',
+    label: 'Minimalist',
+    blurb: 'Clean, 65-character max width, no decorations, pure content.',
+    tone: 'clean and direct',
+    readingLevel: 'general adult',
+    depthHint: 'concise 350-650 words per topic, no filler',
+    exampleDensity: 'only when essential for understanding',
+    definitionDensity: 'inline at point of use, no callout boxes',
+    include: { examples: false, exercises: false, summary: false, glossary: false, sources: false, index: false, toc: true },
+    structure: 'flat hierarchy, short paragraphs, generous whitespace, no decorative elements',
+    blueprintAddendum: 'Plan lean chapters with flat structure: no subsections, no decorative elements, just clean prose organized by topic. Keep chapters short.',
+    draftAddendum: 'Write minimal prose: short paragraphs (3-5 sentences max), no bullet lists, no definitions blocks, no warnings or callouts. Every sentence must earn its place. Clean transitions between ideas.'
+  },
+  visual: {
+    id: 'visual',
+    label: 'Visual',
+    blurb: 'Color blocks, emoji icons, callouts, relationship diagrams.',
+    tone: 'engaging and visual',
+    readingLevel: 'visual learner',
+    depthHint: 'bite-sized 300-500 word blocks with visual anchors',
+    exampleDensity: 'illustrated examples with visual cues',
+    definitionDensity: 'highlighted definition boxes',
+    include: { examples: true, exercises: true, summary: true, glossary: true, sources: false, index: false, toc: true },
+    structure: 'color-coded sections, emoji-prefixed headings, callout boxes for key concepts, visual relationship indicators',
+    blueprintAddendum: 'Plan visually-rich chapters: group related concepts into color-coded sections, include callout boxes for key definitions, use emoji prefixes for section types.',
+    draftAddendum: 'Write visually-engaging content: prefix headings with relevant emoji, use callout-style notes and warnings, include relationship indicators (arrows, "leads to", "contrasts with"). Short punchy paragraphs with visual breathing room.'
   },
   studyguide: {
     id: 'studyguide',
@@ -30,7 +87,7 @@ const PRESETS = {
     include: { examples: true, exercises: false, summary: true, glossary: true, sources: false, index: false, toc: true },
     structure: 'topic-per-section with "Key points" bullet blocks and quick recall questions',
     blueprintAddendum: 'Plan compact study notes: group topics into digestible units that each fit one sitting, ordered by typical course sequence.',
-    draftAddendum: 'Write condensed study notes: lead each section with Key points bullets (bold key terms), keep prose minimal, add 2-3 recall questions per section ("Q: ... A: ..." lines).'
+    draftAddendum: 'Write condensed study notes: lead each section with Key points bullets (bold key terms), keep prose minimal, add 2-3 recall questions per section.'
   },
   examprep: {
     id: 'examprep',
@@ -57,7 +114,7 @@ const PRESETS = {
     definitionDensity: 'technical terms introduced slowly with plain paraphrase',
     include: { examples: true, exercises: false, summary: true, glossary: true, sources: false, index: false, toc: true },
     structure: 'story-like progression from simplest to more advanced, recaps when returning to ideas',
-    blueprintAddendum: 'Plan a gentle learning journey: start from the most concrete, familiar idea in the material and escalate gradually. Never assume prior terminology.',
+    blueprintAddendum: 'Plan a gentle learning journey: start from the most concrete, familiar idea in the material and escalate gradually.',
     draftAddendum: 'Write for absolute beginners: prefer everyday analogies before technical phrasing, define any term the reader cannot be assumed to know, keep sentences short.'
   },
   handbook: {
@@ -71,7 +128,7 @@ const PRESETS = {
     definitionDensity: 'define only operational vocabulary',
     include: { examples: true, exercises: false, summary: false, glossary: true, sources: true, index: true, toc: true },
     structure: 'task-oriented chapters: what it is, when to use it, how to do it step by step, pitfalls',
-    blueprintAddendum: 'Plan task-oriented chapters around what practitioners need to DO; group by workflow stage rather than academic taxonomy.',
+    blueprintAddendum: 'Plan task-oriented chapters around what practitioners need to DO.',
     draftAddendum: 'Write practitioner prose: for every concept cover what/when/how, render procedures as numbered steps, call out pitfalls in warning-style notes.'
   },
   reference: {
@@ -85,8 +142,8 @@ const PRESETS = {
     definitionDensity: 'every entry self-contained',
     include: { examples: false, exercises: false, summary: false, glossary: true, sources: true, index: true, toc: true },
     structure: 'alphabetical-or-thematic entries, heavy use of tables and bullet lists',
-    blueprintAddendum: 'Plan reference entries: one section per concept, ordered thematically, each independently readable without narrative flow.',
-    draftAddendum: 'Write terse reference entries: prefer tables and bullet lists to paragraphs, no transitions needed between entries, each entry must stand alone.'
+    blueprintAddendum: 'Plan reference entries: one section per concept, each independently readable.',
+    draftAddendum: 'Write terse reference entries: prefer tables and bullet lists, no transitions needed, each entry must stand alone.'
   },
   tutorial: {
     id: 'tutorial',
@@ -99,13 +156,13 @@ const PRESETS = {
     definitionDensity: 'explain exactly when first encountered mid-build',
     include: { examples: true, exercises: true, summary: true, glossary: false, sources: false, index: false, toc: true },
     structure: 'lessons that each produce visible progress; checkpoints recapping what was built',
-    blueprintAddendum: 'Plan sequential lessons that build on each other like chapters of one project; specify what the learner accomplishes per lesson.',
-    draftAddendum: 'Write tutorial lessons: follow a learn-by-doing arc ("In this step you will..."), number actionable steps, end each lesson with a checkpoint recap.'
+    blueprintAddendum: 'Plan sequential lessons that build on each other.',
+    draftAddendum: 'Write tutorial lessons: follow a learn-by-doing arc, number actionable steps, end each lesson with a checkpoint recap.'
   },
   research: {
     id: 'research',
     label: 'Research Digest',
-    blurb: 'Literature-review style synthesis with methodology awareness.',
+    blurb: 'Literature-review synthesis with methodology awareness.',
     tone: 'scholarly, evidence-weighted',
     readingLevel: 'graduate researcher',
     depthHint: 'analytical 600-900 words per theme, comparisons foregrounded',
@@ -113,8 +170,8 @@ const PRESETS = {
     definitionDensity: 'precise scholarly definitions',
     include: { examples: false, exercises: false, summary: true, glossary: true, sources: true, index: true, toc: true },
     structure: 'thematic chapters comparing claims across documents, disagreements explicit',
-    blueprintAddendum: 'Plan thematic review chapters that compare what different sources claim; surface agreements, extensions and contradictions as organizing structure.',
-    draftAddendum: 'Write literature-digest prose: attribute claims to sources inline, compare positions explicitly, never blend conflicting findings into false consensus — present both with citations.'
+    blueprintAddendum: 'Plan thematic review chapters that compare what different sources claim.',
+    draftAddendum: 'Write literature-digest prose: attribute claims to sources inline, compare positions explicitly.'
   },
   custom: {
     id: 'custom',

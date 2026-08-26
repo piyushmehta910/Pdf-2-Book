@@ -10,7 +10,7 @@ const { parseJsonLoose, isStr, isArr, isObj } = require('./jsonUtils');
 const WRITE_SYSTEM =
   'You are an expert educational author and technical editor. You receive ONE CHAPTER PLAN, the BOOK PRESET rules, a CANONICAL KNOWLEDGE SLICE (verified facts with sources), and RECENT CHAPTER SUMMARIES for continuity.\n' +
   'Convert this into finished book content. You must NOT invent factual information — every claim must come from the knowledge slice. When a concept was already explained in earlier summaries, prefer a brief reminder or cross-reference over repeating the definition. If two sources conflict, present both positions explicitly instead of blending them into false certainty.\n\n' +
-  'Reply with STRICT JSON only: {"sections":[{"title":string,"blocks":[<block>]}]} where each block is one of:\n' +
+  'Reply with STRICT JSON only: {"sections":[{"title":string,"blocks":[<block>]}],"openQuestions":[string],"continuityNote":string} where each block is one of:\n' +
   '{"type":"paragraph","text":string}\n' +
   '{"type":"definition","term":string,"definition":string}\n' +
   '{"type":"bullet_list","items":[string]}\n' +
@@ -19,9 +19,14 @@ const WRITE_SYSTEM =
   '{"type":"table","headers":[string],"rows":[[string]]}\n' +
   '{"type":"warning","text":string}\n' +
   '{"type":"note","text":string}\n' +
-  'Finish the last section with a "summary" block type if the preset requests summaries.';
+  '{"type":"relationship_map","relationships":[{"from":string,"to":string,"type":string,"label":string}]}\n' +
+  '{"type":"importance","level":"high|medium|low","text":string}\n' +
+  'Finish the last section with a "summary" block type if the preset requests summaries.\n' +
+  'Include a "relationship_map" block if the chapter covers 3+ related concepts.\n' +
+  'Use "importance" blocks to highlight key takeaways marked high/medium/low.\n' +
+  'At the top-level JSON, include "openQuestions" (string array) and "continuityNote" (string) for cross-chapter coherence.';
 
-const BLOCK_TYPES = new Set(['paragraph', 'definition', 'bullet_list', 'example', 'formula', 'table', 'warning', 'note', 'summary']);
+const BLOCK_TYPES = new Set(['paragraph', 'definition', 'bullet_list', 'example', 'formula', 'table', 'warning', 'note', 'summary', 'relationship_map', 'importance']);
 
 /** Validate + repair one AI-returned section list. Drops only unusable items. */
 function sanitizeBlocks(rawSections) {
@@ -67,6 +72,27 @@ function sanitizeBlocks(rawSections) {
           if (!headers.length && !rows.length) continue;
           out.headers = headers;
           out.rows = rows;
+          break;
+        }
+        case 'relationship_map': {
+          const rels = (isArr(b.relationships) ? b.relationships : [])
+            .filter((r) => isObj(r) && isStr(r.from) && isStr(r.to))
+            .slice(0, 20)
+            .map((r) => ({
+              from: r.from.trim().slice(0, 80),
+              to: r.to.trim().slice(0, 80),
+              type: isStr(r.type) ? r.type.trim().slice(0, 40) : 'related',
+              label: isStr(r.label) ? r.label.trim().slice(0, 80) : ''
+            }));
+          if (!rels.length) continue;
+          out.relationships = rels;
+          break;
+        }
+        case 'importance': {
+          const level = ['high', 'medium', 'low'].includes(b.level) ? b.level : 'medium';
+          if (!isStr(b.text)) continue;
+          out.level = level;
+          out.text = b.text.trim().slice(0, 500);
           break;
         }
       }
@@ -158,7 +184,11 @@ async function writeChapter({ title, chapter, presetId, kbSlice, recentSummaries
       .filter((b) => b.type === 'summary')
       .map((b) => b.text)[0] ||
       `${chapter.title}: covered ${slice.map((t) => t.name).join(', ')}.`;
-    return { sections, summary: String(summaryLine).slice(0, 700), mode: 'ai' };
+    const openQuestions = isArr(parsed.openQuestions)
+      ? parsed.openQuestions.filter(isStr).map((s) => s.slice(0, 300)).slice(0, 10)
+      : [];
+    const continuityNote = isStr(parsed.continuityNote) ? parsed.continuityNote.slice(0, 500) : '';
+    return { sections, summary: String(summaryLine).slice(0, 700), openQuestions, continuityNote, mode: 'ai' };
   } catch (_err) {
     return {
       sections: deterministicSections(chapter, slice, preset),

@@ -1,42 +1,89 @@
 /**
- * KnowledgeExtractor — one page -> strict §8 extraction JSON.
- * AI path enforces schema via constrained retry; keyless path falls back to a
- * deterministic heuristic pass so the pipeline still produces KB content.
+ * KnowledgeExtractor — one page -> spec §8 extraction JSON.
+ * AI path enforces the exact spec schema via constrained retry; keyless path
+ * falls back to a deterministic heuristic pass.
  */
 const aiProvider = require('./aiProvider');
 const { parseJsonLoose, isStr, isArr, isObj, strArray } = require('./jsonUtils');
 
 const EXTRACT_SYSTEM =
-  'You extract structured knowledge from one page of an academic/technical PDF for a canonical knowledge base. Extract ONLY information explicitly present on the page. Never invent content. Use the page\'s own terminology. Topic names should be short canonical concept names (1-4 words).\n\n' +
+  'You are an elite academic knowledge extraction system. Convert the provided text into rigorous, structured notes.\n\n' +
+  'EXTRACTION PHILOSOPHY:\n' +
+  '- DEPTH over breadth: Capture nuanced arguments, not just surface facts\n' +
+  '- PRECISION: Preserve original terminology, formulas, and quantitative data\n' +
+  '- STRUCTURE: Organize hierarchically (topic, subtopic, key points, evidence)\n' +
+  '- CONNECTIONS: Explicitly map relationships between concepts\n' +
+  '- CRITICAL LENS: Identify assumptions, limitations, and open questions\n\n' +
+  'CONTEXT AWARENESS — CRITICAL:\n' +
+  'You have already covered these topics in previous pages: [DYNAMIC_LIST].\n' +
+  '- If a topic reappears, ONLY add NEW information, deeper insights, or different perspectives.\n' +
+  '- NEVER duplicate content from previous pages.\n' +
+  '- Maintain narrative continuity — reference how this page connects to previous discussions.\n' +
+  '- Flag contradictions or updates to previously stated information.\n\n' +
   'Reply with STRICT JSON only, shaped exactly:\n' +
-  '{"topics":[string],\n' +
-  '"page_summary":string,\n' +
-  '"definitions":[{"topic":string,"term":string,"definition":string}],\n' +
-  '"new_information":[{"topic":string,"text":string}],\n' +
-  '"key_facts":[string],\n' +
-  '"examples":[{"topic":string,"title":string,"text":string}],\n' +
-  '"formulas":[{"topic":string,"expression":string}],\n' +
-  '"procedures":[{"topic":string,"name":string,"steps":[string]}],\n' +
-  '"relationships":[{"from":string,"to":string,"type":"prerequisite|related|contrasts","note":string}],\n' +
-  '"terminology":[{"term":string,"definition":string}],\n' +
-  '"contradictions":[{"topic":string,"claims":[string]}],\n' +
-  '"unresolved_references":[string],\n' +
-  '"future_references":[string],\n' +
-  '"duplicate_candidates":[{"a":string,"b":string}]}\n\n' +
-  'Rules: topics lists every distinct concept this page teaches or uses substantially. new_information items each carry the "topic" they belong to. procedures use "steps" as an ordered string array. Leave arrays empty when nothing qualifies — never pad.';
+  '{\n' +
+  '  "pageNum": <number>,\n' +
+  '  "mainTopic": "The central theme (5-8 words)",\n' +
+  '  "topics": ["topic1", "topic2", "topic3"],\n' +
+  '  "summary": "2-3 sentences capturing the essence and significance",\n' +
+  '  "keyPoints": [\n' +
+  '    {\n' +
+  '      "point": "Specific, substantive insight (not generic)",\n' +
+  '      "category": "definition|concept|example|formula|insight|quote",\n' +
+  '      "importance": "high|medium|low",\n' +
+  '      "relatedTo": ["connected topic names"]\n' +
+  '    }\n' +
+  '  ],\n' +
+  '  "definitions": [\n' +
+  '    {"term": "Precise term", "definition": "Exact definition from text"}\n' +
+  '  ],\n' +
+  '  "relationships": [\n' +
+  '    {"from": "Concept A", "to": "Concept B", "type": "causes|enables|contradicts|extends|example_of|prerequisite_of"}\n' +
+  '  ],\n' +
+  '  "openQuestions": ["Genuine gaps or questions raised"],\n' +
+  '  "continuityNote": "How this connects to prior context",\n' +
+  '  "newInsights": ["Novel contributions not seen before"],\n' +
+  '  "confidence": "high|medium|low"\n' +
+  '}\n\n' +
+  'QUALITY CRITERIA:\n' +
+  '- Each key point must be specific enough to be useful for study/review\n' +
+  '- Include page-specific examples, numbers, and direct quotes when present\n' +
+  '- Flag uncertain information with low confidence\n' +
+  '- Identify logical structure (premise, argument, conclusion)\n' +
+  '- Note methodological approaches if academic text\n' +
+  '- mainTopic should be a single concise phrase (5-8 words)\n' +
+  '- topics should list every distinct concept this page teaches or uses substantially\n' +
+  '- keyPoints.category must be exactly one of: definition, concept, example, formula, insight, quote\n' +
+  '- keyPoints.importance must be exactly one of: high, medium, low\n' +
+  '- relationships.type must be exactly one of: causes, enables, contradicts, extends, example_of, prerequisite_of\n' +
+  '- Leave arrays empty when nothing qualifies — never pad';
 
-/** Shape arbitrary parsed JSON into the exact extraction contract. */
+/** Shape arbitrary parsed JSON into the spec extraction contract. */
 function normalizeExtraction(raw) {
+  const VALID_CATEGORIES = new Set(['definition', 'concept', 'example', 'formula', 'insight', 'quote']);
+  const VALID_IMPORTANCE = new Set(['high', 'medium', 'low']);
+  const VALID_REL_TYPES = new Set(['causes', 'enables', 'contradicts', 'extends', 'example_of', 'prerequisite_of']);
+  const VALID_CONFIDENCE = new Set(['high', 'medium', 'low']);
+
   const out = {
+    pageNum: null,
+    mainTopic: '',
     topics: [],
-    page_summary: '',
+    summary: '',
+    keyPoints: [],
     definitions: [],
+    relationships: [],
+    openQuestions: [],
+    continuityNote: '',
+    newInsights: [],
+    confidence: 'medium',
+    // backward-compat fields for the KB ingestion pipeline
+    page_summary: '',
     new_information: [],
     key_facts: [],
     examples: [],
     formulas: [],
     procedures: [],
-    relationships: [],
     terminology: [],
     contradictions: [],
     unresolved_references: [],
@@ -44,99 +91,80 @@ function normalizeExtraction(raw) {
     duplicate_candidates: []
   };
   if (!isObj(raw)) return out;
+
+  // Spec fields
+  if (typeof raw.pageNum === 'number') out.pageNum = raw.pageNum;
+  if (isStr(raw.mainTopic)) out.mainTopic = raw.mainTopic.trim().slice(0, 120);
   out.topics = strArray(raw.topics, 10);
-  if (isStr(raw.page_summary)) out.page_summary = raw.page_summary.trim().slice(0, 900);
+  if (isStr(raw.summary)) out.summary = raw.summary.trim().slice(0, 900);
+  if (isStr(raw.continuityNote)) out.continuityNote = raw.continuityNote.trim().slice(0, 500);
+  if (VALID_CONFIDENCE.has(raw.confidence)) out.confidence = raw.confidence;
 
-  const pickText = (v, keys) => {
-    if (isStr(v)) return v.trim();
-    if (isObj(v)) {
-      for (const k of keys) if (isStr(v[k]) && v[k].trim()) return v[k].trim();
+  if (isArr(raw.keyPoints)) {
+    for (const kp of raw.keyPoints.slice(0, 20)) {
+      if (!isObj(kp)) continue;
+      const point = isStr(kp.point) ? kp.point.trim() : '';
+      if (!point) continue;
+      const cat = isStr(kp.category) && VALID_CATEGORIES.has(kp.category) ? kp.category : 'insight';
+      const imp = isStr(kp.importance) && VALID_IMPORTANCE.has(kp.importance) ? kp.importance : 'medium';
+      const rel = isArr(kp.relatedTo) ? kp.relatedTo.filter(isStr).map((s) => s.trim().slice(0, 80)).slice(0, 6) : [];
+      out.keyPoints.push({ point: point.slice(0, 800), category: cat, importance: imp, relatedTo: rel });
     }
-    return '';
-  };
-  const topicOf = (v) => (isObj(v) && isStr(v.topic) ? v.topic.trim().slice(0, 80) : '');
-
-  for (const d of isArr(raw.definitions) ? raw.definitions.slice(0, 12) : []) {
-    const text = pickText(d, ['definition', 'meaning', 'text']);
-    if (!text) continue;
-    out.definitions.push({
-      topic: topicOf(d),
-      term: isObj(d) && isStr(d.term) ? d.term.trim().slice(0, 120) : '',
-      definition: text
-    });
   }
 
-  const infoSources = [].concat(isArr(raw.new_information) ? raw.new_information : [], isArr(raw.key_facts) ? raw.key_facts : []);
-  for (const f of infoSources.slice(0, 24)) {
-    const text = pickText(f, ['text', 'fact', 'claim', 'information']);
-    if (!text) continue;
-    if (isStr(f)) { out.key_facts.push(f.trim().slice(0, 400)); continue; }
-    const rec = { text: text.slice(0, 500) };
-    const t = topicOf(f);
-    if (t) rec.topic = t;
-    out.new_information.push(rec);
+  if (isArr(raw.definitions)) {
+    for (const d of raw.definitions.slice(0, 15)) {
+      if (!isObj(d)) continue;
+      const term = isStr(d.term) ? d.term.trim() : '';
+      const def = isStr(d.definition) ? d.definition.trim() : '';
+      if (!term && !def) continue;
+      out.definitions.push({ term: term.slice(0, 120), definition: def.slice(0, 600) });
+    }
   }
 
-  for (const e of isArr(raw.examples) ? raw.examples.slice(0, 8) : []) {
-    const text = pickText(e, ['text', 'content']);
-    if (!text) continue;
-    out.examples.push({ topic: topicOf(e), title: isObj(e) && isStr(e.title) ? e.title.trim().slice(0, 140) : '', text: text.slice(0, 1500) });
+  if (isArr(raw.relationships)) {
+    for (const r of raw.relationships.slice(0, 15)) {
+      if (!isObj(r)) continue;
+      const from = isStr(r.from) ? r.from.trim() : '';
+      const to = isStr(r.to) ? r.to.trim() : '';
+      if (!from || !to) continue;
+      const type = isStr(r.type) && VALID_REL_TYPES.has(r.type) ? r.type : 'extends';
+      out.relationships.push({ from: from.slice(0, 80), to: to.slice(0, 80), type });
+    }
   }
 
-  for (const f of isArr(raw.formulas) ? raw.formulas.slice(0, 10) : []) {
-    const expr = pickText(f, ['expression', 'formula', 'text']);
-    if (!expr) continue;
-    out.formulas.push({ topic: topicOf(f), expression: expr.slice(0, 300) });
+  out.openQuestions = strArray(raw.openQuestions, 8).map((s) => s.slice(0, 300));
+  out.newInsights = strArray(raw.newInsights, 10).map((s) => s.slice(0, 300));
+
+  // Backward-compat: map spec fields to legacy KB fields
+  if (out.mainTopic && !out.topics.includes(out.mainTopic)) {
+    out.topics.unshift(out.mainTopic);
+  }
+  out.page_summary = out.summary;
+
+  for (const kp of out.keyPoints) {
+    const topicName = (kp.relatedTo && kp.relatedTo[0]) || (out.topics[0] || '');
+    if (kp.category === 'definition') {
+      const parts = kp.point.split(/[:–—]\s*/);
+      if (parts.length >= 2) {
+        const term = parts[0].trim();
+        const existing = out.definitions.find((d) => d.term.toLowerCase() === term.toLowerCase().slice(0, 60));
+        if (!existing) {
+          out.definitions.push({ term: term.slice(0, 120), definition: parts.slice(1).join(': ').trim().slice(0, 600) });
+        }
+      } else {
+        out.new_information.push({ topic: topicName, text: kp.point });
+      }
+    } else if (kp.category === 'formula') {
+      out.formulas.push({ topic: topicName, expression: kp.point });
+    } else if (kp.category === 'example') {
+      out.examples.push({ topic: topicName, title: kp.point.slice(0, 100), text: kp.point });
+    } else {
+      out.new_information.push({ topic: topicName, text: kp.point });
+    }
   }
 
-  for (const p of isArr(raw.procedures) ? raw.procedures.slice(0, 6) : []) {
-    const steps = strArray(isObj(p) ? p.steps : null, 15).map((s) => s.slice(0, 300));
-    const name = isObj(p) && isStr(p.name) ? p.name.trim().slice(0, 160) : '';
-    if (!steps.length && !name) continue;
-    out.procedures.push({
-      topic: topicOf(p),
-      name,
-      steps,
-      // flat text form so the KB can store procedures as single records
-      text: steps.map((s, i) => `${i + 1}. ${s}`).join(' | ')
-    });
-  }
-
-  for (const r of isArr(raw.relationships) ? raw.relationships.slice(0, 12) : []) {
-    if (!isObj(r)) continue;
-    const from = isStr(r.from) ? r.from.trim() : '';
-    const to = isStr(r.to) ? r.to.trim() : '';
-    if (!from || !to) continue;
-    out.relationships.push({
-      from: from.slice(0, 80),
-      to: to.slice(0, 80),
-      type: isStr(r.type) ? r.type : 'related',
-      note: isStr(r.note) ? r.note.slice(0, 300) : ''
-    });
-  }
-
-  for (const t of isArr(raw.terminology) ? raw.terminology.slice(0, 20) : []) {
-    const term = pickText(t, ['term', 'name']);
-    if (!term) continue;
-    out.terminology.push({ term: term.slice(0, 60), definition: pickText(t, ['definition', 'meaning']).slice(0, 400) });
-  }
-
-  for (const c of isArr(raw.contradictions) ? raw.contradictions.slice(0, 6) : []) {
-    if (!isObj(c)) continue;
-    const claims = strArray(c.claims, 4).map((s) => s.slice(0, 500));
-    if (claims.length < 2) continue;
-    out.contradictions.push({ topic: isStr(c.topic) ? c.topic : '', claims });
-  }
-
-  out.unresolved_references = strArray(raw.unresolved_references, 6).map((s) => s.slice(0, 240));
-  out.future_references = strArray(raw.future_references, 6).map((s) => s.slice(0, 240));
-
-  for (const dc of isArr(raw.duplicate_candidates) ? raw.duplicate_candidates.slice(0, 5) : []) {
-    if (!isObj(dc)) continue;
-    const a = isStr(dc.a) ? dc.a.trim() : '';
-    const b = isStr(dc.b) ? dc.b.trim() : '';
-    if (a && b) out.duplicate_candidates.push({ a: a.slice(0, 80), b: b.slice(0, 80) });
-  }
+  out.unresolved_references = out.openQuestions.map((q) => q.slice(0, 240));
 
   return out;
 }
@@ -147,9 +175,11 @@ function normalizeExtraction(raw) {
  */
 function heuristicExtraction(pageText) {
   const ext = {
-    topics: [], page_summary: '', definitions: [], new_information: [],
-    key_facts: [], examples: [], formulas: [], procedures: [],
-    relationships: [], terminology: [], contradictions: [],
+    pageNum: null, mainTopic: '', topics: [], summary: '', keyPoints: [],
+    definitions: [], relationships: [], openQuestions: [], continuityNote: '',
+    newInsights: [], confidence: 'low',
+    page_summary: '', new_information: [], key_facts: [], examples: [],
+    formulas: [], procedures: [], terminology: [], contradictions: [],
     unresolved_references: [], future_references: [], duplicate_candidates: []
   };
   const sentences = String(pageText || '')
@@ -161,16 +191,23 @@ function heuristicExtraction(pageText) {
   for (const s of trimmed) {
     const m = s.match(/^([A-Z][A-Za-z0-9 -]{2,50}?)\s+(?:is|are)\s+(a|an|the)\s+([^.!?]{10,240})[.!?]?$/);
     if (m) {
-      ext.definitions.push({ topic: m[1].trim(), term: m[1].trim(), definition: `${m[1].trim()} is ${m[2]} ${m[3].trim()}.` });
-      if (!ext.topics.includes(m[1].trim())) ext.topics.push(m[1].trim());
+      const term = m[1].trim();
+      const def = `${term} is ${m[2]} ${m[3].trim()}.`;
+      ext.definitions.push({ term, definition: def });
+      ext.keyPoints.push({ point: `${term}: ${def}`, category: 'definition', importance: 'medium', relatedTo: [] });
+      if (!ext.topics.includes(term)) ext.topics.push(term);
     }
   }
 
   // facts: informative-looking sentences
-  ext.key_facts = trimmed
+  const facts = trimmed
     .filter((s) => /\d|[a-z]{3,}\s+[a-z]{3,}/.test(s))
     .slice(0, 8)
     .map((s) => (s.endsWith('.') ? s : s + '.'));
+  ext.key_facts = facts;
+  for (const f of facts) {
+    ext.keyPoints.push({ point: f, category: 'insight', importance: 'medium', relatedTo: [] });
+  }
 
   // formulas / expressions: capture "<lhs> = <rhs>" inside prose lines
   for (const line of String(pageText || '').split('\n')) {
@@ -181,7 +218,9 @@ function heuristicExtraction(pageText) {
       const lhs = m[1].trim();
       const rhs = m[2].trim();
       if (/[A-Za-z0-9]/.test(lhs) && /[A-Za-z0-9]/.test(rhs)) {
-        ext.formulas.push({ expression: `${lhs} = ${rhs}`.slice(0, 300) });
+        const expr = `${lhs} = ${rhs}`.slice(0, 300);
+        ext.formulas.push({ expression: expr });
+        ext.keyPoints.push({ point: expr, category: 'formula', importance: 'high', relatedTo: [] });
       }
     }
   }
@@ -199,18 +238,48 @@ function heuristicExtraction(pageText) {
     }
   }
 
-  if (trimmed.length) ext.page_summary = trimmed.slice(0, 2).join(' ').slice(0, 700);
+  ext.mainTopic = ext.topics[0] || 'Untitled page';
+  if (trimmed.length) ext.summary = trimmed.slice(0, 2).join(' ').slice(0, 700);
+  ext.page_summary = ext.summary;
+  ext.confidence = trimmed.length > 3 ? 'medium' : 'low';
+
+  // open questions from interrogative sentences
+  for (const s of trimmed) {
+    if (/\?$/.test(s) && /^(?:what|how|why|when|where|which|who|can|does|is|are|do|should)/i.test(s)) {
+      ext.openQuestions.push(s);
+      ext.unresolved_references.push(s);
+      if (ext.openQuestions.length >= 4) break;
+    }
+  }
+
   return ext;
 }
 
-async function extractFromPage({ pageText, docContext, recentTopics }, aiConfig) {
+async function extractFromPage({ pageText, docContext, recentTopics, slidingWindow }, aiConfig) {
   if (!aiProvider.available(aiConfig)) {
     return { extraction: heuristicExtraction(pageText), mode: 'heuristic' };
   }
-  const contextBlock = [
-    docContext ? `DOCUMENT CONTEXT (title/subject): ${String(docContext).slice(0, 600)}` : '',
-    recentTopics && recentTopics.length ? `TOPICS EXTRACTED EARLIER IN THIS DOCUMENT (reuse these names when appropriate): ${recentTopics.slice(0, 25).join(', ')}` : ''
-  ].filter(Boolean).join('\n');
+
+  const contextParts = [];
+  if (docContext) contextParts.push(`DOCUMENT CONTEXT (title/subject): ${String(docContext).slice(0, 600)}`);
+  if (recentTopics && recentTopics.length) {
+    contextParts.push('ALREADY COVERED TOPICS (DO NOT DUPLICATE):\n' + recentTopics.slice(0, 30).map((t) => `  - ${t}`).join('\n'));
+  }
+  if (slidingWindow) {
+    const windowParts = [];
+    if (slidingWindow.recentSummaries && slidingWindow.recentSummaries.length) {
+      windowParts.push('SUMMARY OF RECENT PAGES:\n' + slidingWindow.recentSummaries.map((s, i) => `  [Page ${slidingWindow.startPage + i}]: ${s}`).join('\n'));
+    }
+    if (slidingWindow.openQuestions && slidingWindow.openQuestions.length) {
+      windowParts.push('OPEN QUESTIONS FROM EARLIER:\n' + slidingWindow.openQuestions.map((q) => `  - ${q}`).join('\n'));
+    }
+    if (windowParts.length) {
+      contextParts.push('SLIDING CONTEXT WINDOW:\n' + windowParts.join('\n'));
+    }
+  }
+  contextParts.push('RULES:\n- If a listed topic reappears, ONLY add NEW information, deeper analysis, or contrasting viewpoints.\n- NEVER repeat definitions, examples, or explanations already given.\n- Maintain narrative flow — show how this page connects to previous discussions.\n- Note if this page answers a previously open question.');
+
+  const contextBlock = contextParts.join('\n\n');
 
   let lastErr = null;
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -219,11 +288,11 @@ async function extractFromPage({ pageText, docContext, recentTopics }, aiConfig)
       const raw = await aiProvider.complete(
         EXTRACT_SYSTEM,
         `${contextBlock}\n\nPAGE TEXT:\n${String(pageText || '').slice(0, 24000)}${retryNote}`,
-        { maxTokens: 2200, temperature: 0.2, timeoutMs: 35000 },
+        { maxTokens: 2400, temperature: 0.2, timeoutMs: 35000 },
         aiConfig
       );
       const normalized = normalizeExtraction(parseJsonLoose(raw));
-      if (normalized.topics.length || normalized.key_facts.length || normalized.definitions.length) {
+      if (normalized.topics.length || normalized.keyPoints.length || normalized.definitions.length || normalized.key_facts.length) {
         return { extraction: normalized, mode: 'ai' };
       }
       lastErr = new Error('empty extraction');
