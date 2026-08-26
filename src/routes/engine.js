@@ -99,7 +99,7 @@ router.post('/knowledge/adjudicate', async (req, res) => {
       { maxTokens: 300, temperature: 0.1, timeoutMs: 25000 },
       aiConfig
     );
-    const parsed = JSON.parse(require('../services/jsonUtils').parseJsonLoose(raw));
+    const parsed = require('../services/jsonUtils').parseJsonLoose(raw);
     const verdict = parsed.verdict === 'merge' ? 'merge' : 'separate';
     const confidence = Number(parsed.confidence);
     res.json({

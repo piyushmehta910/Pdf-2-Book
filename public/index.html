@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="pdf2book — turn scattered research papers and notes into a coherent knowledge book.">
-<title>pdf2book — Knowledge Book Studio</title>
+<meta name="description" content="pdf2book â€” turn scattered research papers and notes into a coherent knowledge book.">
+<title>pdf2book â€” Knowledge Book Studio</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='18' y='30' width='64' height='44' rx='6' fill='%236d7cff'/><rect x='26' y='22' width='64' height='44' rx='6' fill='none' stroke='%239a6bff' stroke-width='5'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -621,7 +621,7 @@
 <header>
   <div class="logo">pdf<b>2</b>book <small>Knowledge Book Studio</small></div>
   <div class="spacer"></div>
-  <span class="badge" id="aiBadge"><span class="dot" id="provDot"></span><span id="provider">connecting…</span></span>
+  <span class="badge" id="aiBadge"><span class="dot" id="provDot"></span><span id="provider">connectingâ€¦</span></span>
   <button class="ghost small" id="themeToggle" title="Toggle light/dark theme" aria-label="Toggle theme">Theme</button>
   <button class="ghost small" onclick="openSettings()" title="AI provider settings">AI settings</button>
 </header>
@@ -630,14 +630,14 @@
   <span id="errMsg" style="min-width:0;overflow-wrap:anywhere"></span>
   <span style="flex:1"></span>
   <button class="ghost small" id="errRetry" style="display:none">Retry</button>
-  <button class="iconbtn" id="errClose" title="Dismiss">✕</button>
+  <button class="iconbtn" id="errClose" title="Dismiss">âœ•</button>
 </div>
 
 <div class="layout">
   <aside>
     <h3>Projects</h3>
     <div class="stack" style="margin-bottom:18px">
-      <input type="text" id="projTitle" placeholder="New project title…" maxlength="120"
+      <input type="text" id="projTitle" placeholder="New project titleâ€¦" maxlength="120"
              onkeydown="if(event.key==='Enter')document.getElementById('newBtn').click()">
       <button id="newBtn">Create project</button>
     </div>
@@ -652,7 +652,7 @@
         <p>pdf2book reads your papers and notes, maps the knowledge inside, resolves contradictions, and writes coherent chapters you can edit and export.</p>
         <button id="heroCta">+ Create your first project</button>
         <div class="features">
-        <div class="feature"><b>Add anything</b><span>Drop PDFs or paste raw notes — everything stays local.</span></div>
+        <div class="feature"><b>Add anything</b><span>Drop PDFs or paste raw notes â€” everything stays local.</span></div>
         <div class="feature"><b>Smart analysis</b><span>Detects topics, merges duplicates, flags conflicting claims.</span></div>
         <div class="feature"><b>Readable output</b><span>Grounded chapters with your choice of free AI models.</span></div>
         </div>
@@ -671,9 +671,9 @@
       <div class="stepper" id="stepper" aria-label="Workflow progress">
         <div class="step" data-step="1"><span class="s-num">1</span><span class="s-label">Add sources</span></div>
         <div class="s-line"></div>
-        <div class="step" data-step="2"><span class="s-num">2</span><span class="s-label">Analyze</span></div>
+        <div class="step" data-step="2"><span class="s-num">2</span><span class="s-label">Build knowledge base</span></div>
         <div class="s-line"></div>
-        <div class="step" data-step="3"><span class="s-num">3</span><span class="s-label">Generate book</span></div>
+        <div class="step" data-step="3"><span class="s-num">3</span><span class="s-label">Write &amp; export book</span></div>
       </div>
 
       <!-- STEP 1 -->
@@ -681,18 +681,17 @@
         <div class="card-head"><h2><span class="step-num">1</span>Add sources</h2></div>
         <div class="stack">
           <input type="text" id="noteTitle" placeholder="Title for pasted notes (optional)">
-          <textarea id="noteText" rows="4" placeholder="Paste research notes, paper excerpts, summaries…"></textarea>
+          <textarea id="noteText" rows="4" placeholder="Paste research notes, paper excerpts, summariesâ€¦"></textarea>
           <div class="hint" id="noteStats" style="display:none"></div>
 
           <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose files">
-            <div class="dz-icon">↑</div>
+            <div class="dz-icon">â†‘</div>
             <b style="color:var(--text2)" id="dzTitle">Drop PDF or TXT files here</b><br>
-            <span class="hint" id="dzHint">or click to browse — text is extracted right in your browser, files never leave your device</span>
+            <span class="hint" id="dzHint">or click to browse â€” text is extracted right in your browser, files never leave your device</span>
             <input type="file" id="files" accept=".pdf,.txt" multiple hidden>
           </div>
           <div class="filechips" id="fileChips"></div>
           <div class="row">
-            <label class="nbcheck" title="Uses your AI key to turn each page into clean study notes"><input type="checkbox" id="refineToggle" checked> Convert to smart notes with AI</label>
             <span style="flex:1"></span>
             <button class="ghost small" id="cancelExtract" style="display:none">Stop</button>
             <button class="ghost small" id="clearFiles" style="display:none">Clear files</button>
@@ -706,107 +705,69 @@
       <!-- STEP 2 -->
       <section class="card" id="card2">
         <div class="card-head">
-          <h2><span class="step-num">2</span>Analyze knowledge</h2>
-          <button id="analyzeBtn">Run analysis</button>
+          <h2><span class="step-num">2</span>Build knowledge base</h2>
+          <span style="flex:1"></span>
+          <button class="ghost small" id="kmBtn">Knowledge manager</button>
+          <button id="analyzeBtn">Extract knowledge</button>
         </div>
-        <div class="gate-hint" id="gate2">Add at least one source and process it to unlock analysis.</div>
-        <p class="hint" style="margin-top:0">Detects topics across sources, merges duplicates, flags contradictions, and checks coverage so no topic is left behind.</p>
-        <div class="stats skel" id="statsSkel" style="height:84px;display:none"></div>
+        <div class="gate-hint" id="gate2">Add at least one source to unlock extraction.</div>
+        <p class="hint" style="margin-top:0">Reads every page, extracts canonical topics with facts, definitions and formulas, merges duplicates across documents and tracks contradictions â€” all checkpointed page by page.</p>
         <div class="stats" id="stats" style="display:none">
-          <div class="stat good"><b id="sTopics">–</b><span>Topics</span></div>
-          <div class="stat"><b id="sChapters">–</b><span>Outline chapters</span></div>
-          <div class="stat" id="dupeStat"><b id="sDupes">–</b><span>Duplicate groups</span></div>
-          <div class="stat" id="confStat"><b id="sConflicts">–</b><span>Conflicts</span></div>
-          <div class="stat" id="covStat"><b id="sCov">–</b><span>Coverage</span></div>
+          <div class="stat good"><b id="sTopics">0</b><span>Topics</span></div>
+          <div class="stat"><b id="sFacts">0</b><span>Facts</span></div>
+          <div class="stat"><b id="sGloss">0</b><span>Glossary terms</span></div>
+          <div class="stat" id="confStat"><b id="sConflicts">0</b><span>Conflicts</span></div>
+          <div class="stat" id="pagesStat"><b id="sPages">0</b><span>Pages read</span></div>
         </div>
-        <div class="bar" id="covBar" style="display:none;margin-top:14px"><i></i></div>
-        <div class="notice" id="covNote"></div>
+        <div class="bar" id="kbBar" style="display:none;margin-top:14px"><i></i></div>
+        <div class="notice" id="kbNote"></div>
       </section>
 
       <!-- STEP 3 -->
       <section class="card" id="card3">
         <div class="card-head">
-          <h2><span class="step-num">3</span>Generate your book</h2>
+          <h2><span class="step-num">3</span>Write your book</h2>
         <button class="ghost small" onclick="openSettings()" title="AI provider settings">AI</button>
-        <button id="genBtn">Generate book</button>
+        <button id="genBtn">Write book</button>
         </div>
-        <div class="gate-hint" id="gate3">Run the analysis first — the book is generated from detected topics.</div>
+        <div class="gate-hint" id="gate3">Build the knowledge base first â€” chapters are planned from extracted topics.</div>
 
-        <div class="nb-panel" id="nbPanel" style="display:none">
-          <div class="nb-head" id="nbHead">
-            <span class="nb-title">Notebook setup</span>
-            <span class="nb-chips" id="nbChips"></span>
-            <button type="button" class="iconbtn" id="nbChevron"><span class="chev">▾</span></button>
-          </div>
-          <div id="nbBody">
-            <div class="row" style="align-items:flex-start;gap:18px;margin-top:8px">
-              <div style="flex:1.2;min-width:230px">
-                <div class="nb-label">Format</div>
-                <div class="fmtgrid" id="fmtSeg"></div>
-              </div>
-              <div style="flex:1;min-width:200px">
-                <div class="nb-label">Depth</div>
-                <div class="seg" id="depthSeg" style="grid-template-columns:repeat(3,1fr);gap:6px">
-                  <button type="button" class="segbtn" data-depth="brief">Brief<small>~400w/topic</small></button>
-                  <button type="button" class="segbtn" data-depth="standard">Standard<small>~750w/topic</small></button>
-                  <button type="button" class="segbtn" data-depth="deep">Deep Dive<small>~1400w/topic</small></button>
-                </div>
-                <div class="nb-label">Tone</div>
-                <select id="toneSel">
-                  <option value="neutral">Neutral &amp; objective</option>
-                  <option value="enthusiastic">Enthusiastic</option>
-                  <option value="critical">Critical &amp; skeptical</option>
-                  <option value="simplified">Simplified (beginner-friendly)</option>
-                </select>
-              </div>
-            </div>
-            <div class="nb-label">Fine-tuning</div>
-            <div class="row" style="gap:16px">
-              <div class="nbtoggles">
-                <label class="nbcheck"><input type="checkbox" id="optQuotes"> Verbatim quotes</label>
-                <label class="nbcheck"><input type="checkbox" id="optPages"> Page numbers</label>
-                <label class="nbcheck"><input type="checkbox" id="optGaps"> Knowledge-gaps appendix</label>
-                <label class="nbcheck"><input type="checkbox" id="optGlossary"> Glossary appendix</label>
-              </div>
-              <span class="hint">Cross-refs</span>
-              <div class="crossseg" id="crossSeg">
-                <button type="button" class="crossbtn" data-cross="low">Low</button>
-                <button type="button" class="crossbtn" data-cross="medium">Med</button>
-                <button type="button" class="crossbtn" data-cross="high">High</button>
-              </div>
-            </div>
-            <div class="row" style="margin-top:14px">
-              <span class="hint" style="flex:1">Setup is saved to this project and reused on every generation.</span>
-              <button class="ghost small" id="nbSave">Save setup</button>
-            </div>
-          </div>
+        <div class="nb-label">Book preset</div>
+        <div class="fmtgrid" id="presetGrid" style="margin-bottom:10px"></div>
+        <div class="row" id="presetOptsRow" style="gap:16px;margin-bottom:6px">
+          <label class="nbcheck"><input type="checkbox" id="optSources" checked> Show sources</label>
+          <label class="nbcheck"><input type="checkbox" id="optToc" checked> Table of contents</label>
+          <button class="ghost small" id="customPresetBtn" title="Save current options as your custom preset">Save as custom</button>
         </div>
 
         <div class="readertoolbar" id="readerBar" style="display:none;margin-bottom:16px">
           <button class="ghost small" id="tocBtn">Contents</button>
-          <button class="ghost small" id="fontMinus" title="Smaller text" aria-label="Decrease font size">A−</button>
+          <button class="ghost small" id="fontMinus" title="Smaller text" aria-label="Decrease font size">Aâˆ’</button>
           <button class="ghost small" id="fontPlus" title="Larger text" aria-label="Increase font size">A+</button>
           <span class="engbadge" id="engineBadge"></span>
         </div>
 
-        <div class="row" id="exports" style="display:none;margin-bottom:16px">
+        <div class="row" id="exports" style="display:none;margin-bottom:16px;flex-wrap:wrap">
           <span class="hint">Export:</span>
-          <button type="button" class="exportbtn" id="expMd">↓ Markdown</button>
-          <button type="button" class="exportbtn" id="expHtml">↓ HTML</button>
-          <button type="button" class="exportbtn" id="expCsv" style="display:none">↓ Flashcards CSV</button>
-          <button type="button" class="exportbtn" id="expJson">↓ JSON</button>
+          <button type="button" class="exportbtn" id="expMd">â†“ Markdown</button>
+          <button type="button" class="exportbtn" id="expHtml">â†“ HTML</button>
+          <button type="button" class="exportbtn" id="expPdf">â†“ PDF</button>
+          <button type="button" class="exportbtn" id="expPrint">ðŸ–¨ Print view</button>
+          <button type="button" class="exportbtn" id="expEpub">â†“ EPUB</button>
+          <button type="button" class="exportbtn" id="expDocx">â†“ DOCX</button>
+          <button type="button" class="exportbtn" id="expJson">â†“ JSON</button>
         </div>
         <div class="genfx" id="genFx">
           <div class="gline skel" style="width:88%"></div>
           <div class="gline skel" style="width:96%"></div>
           <div class="gline skel" style="width:72%"></div>
           <div class="gline skel" style="width:91%"></div>
-          <div class="gmsg"><span class="spin"></span><span id="genMsg">Warming up the author…</span></div>
+          <div class="gmsg"><span class="spin"></span><span id="genMsg">Warming up the authorâ€¦</span></div>
         </div>
-        <div id="chapters"><div class="empty">Run the analysis first, then generate your book.</div></div>
+        <div id="chapters"><div class="empty">Build the knowledge base first, then write your book.</div></div>
       </section>
 
-      <footer>pdf2book · local-first knowledge synthesis engine</footer>
+      <footer>pdf2book Â· local-first knowledge synthesis engine</footer>
     </div>
   </main>
 </div>
@@ -816,7 +777,7 @@
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <div class="modal-head">
       <h2 id="setTitle">AI settings</h2>
-      <button class="danger small" onclick="closeSettings()">✕</button>
+      <button class="danger small" onclick="closeSettings()">âœ•</button>
     </div>
     <div class="modal-body">
 
@@ -827,17 +788,17 @@
 
       <div class="field" id="keyField" style="display:none">
         <label>API key
-          <a class="provlink" id="keyLink" target="_blank" rel="noopener" style="margin-left:auto">Get free key ↗</a>
+          <a class="provlink" id="keyLink" target="_blank" rel="noopener" style="margin-left:auto">Get free key â†—</a>
         </label>
         <div class="keywrap">
-          <input type="password" id="setKey" placeholder="Paste your API key…" autocomplete="off" spellcheck="false">
+          <input type="password" id="setKey" placeholder="Paste your API keyâ€¦" autocomplete="off" spellcheck="false">
           <button type="button" class="keytoggle" id="showKey">SHOW</button>
         </div>
-        <div class="ctxinfo">Stored only in this browser (localStorage) — sent per request when generating, never saved on the server.</div>
+        <div class="ctxinfo">Stored only in this browser (localStorage) â€” sent per request when generating, never saved on the server.</div>
       </div>
 
       <div class="field" id="modelField" style="display:none">
-        <label>Model <span class="labelhint">free picks pre-listed · custom IDs allowed</span></label>
+        <label>Model <span class="labelhint">free picks pre-listed Â· custom IDs allowed</span></label>
         <input type="text" id="setModel" list="modelList" placeholder="" autocomplete="off" spellcheck="false">
         <datalist id="modelList"></datalist>
       </div>
@@ -870,7 +831,7 @@
   <div class="modal" style="max-width:780px;max-height:88vh;display:flex;flex-direction:column" role="dialog" aria-modal="true" aria-labelledby="notesTitle">
     <div class="modal-head">
       <h2 id="notesTitle">Page notes</h2>
-      <button class="danger small" onclick="closeNotesModal()">✕</button>
+      <button class="danger small" onclick="closeNotesModal()">âœ•</button>
     </div>
     <div class="modal-body" id="notesBody" style="overflow-y:auto"></div>
     <div class="modal-foot">
@@ -880,10 +841,45 @@
   </div>
 </div>
 
+<!-- KNOWLEDGE MANAGER MODAL -->
+<div class="modal-backdrop" id="kmModal">
+  <div class="modal" style="max-width:960px;max-height:90vh;display:flex;flex-direction:column" role="dialog" aria-modal="true" aria-labelledby="kmTitle">
+    <div class="modal-head">
+      <h2 id="kmTitle">Knowledge manager</h2>
+      <button class="danger small" id="kmClose">âœ•</button>
+    </div>
+    <div class="modal-body" style="display:grid;grid-template-columns:290px minmax(0,1fr);gap:0;padding:0;overflow:hidden;flex:1">
+      <div style="border-right:1px solid var(--border);overflow-y:auto;padding:14px" id="kmList"></div>
+      <div style="overflow-y:auto;padding:18px" id="kmDetail"><div class="empty">Select a topic to inspect and edit it.</div></div>
+    </div>
+    <div class="modal-foot">
+      <span class="hint" style="flex:1">Edits persist in this browser and shape every regeneration.</span>
+      <button class="ghost" id="kmConsolidate">Merge duplicates</button>
+      <button class="ghost" onclick="closeKm()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- QA REPORT MODAL -->
+<div class="modal-backdrop" id="qaModal">
+  <div class="modal" style="max-width:640px;max-height:88vh;display:flex;flex-direction:column" role="dialog" aria-modal="true" aria-labelledby="qaTitle">
+    <div class="modal-head">
+      <h2 id="qaTitle">Quality check</h2>
+      <button class="danger small" id="qaClose">âœ•</button>
+    </div>
+    <div class="modal-body" id="qaBody" style="overflow-y:auto"></div>
+    <div class="modal-foot">
+      <span class="hint" style="flex:1">Fix issues or export anyway â€” your call.</span>
+      <button class="ghost" id="qaExportAnyway">Export anyway</button>
+      <button id="qaOk">Back to book</button>
+    </div>
+  </div>
+</div>
+
 <div class="tocdrawer" id="tocDrawer" aria-label="Table of contents">
   <div class="toc-head">
     <b style="font-size:13.5px">Contents</b>
-    <button class="iconbtn" id="tocClose" title="Close contents">✕</button>
+    <button class="iconbtn" id="tocClose" title="Close contents">âœ•</button>
   </div>
   <div class="toc-list" id="tocList"></div>
 </div>
@@ -1029,7 +1025,7 @@ async function loadProviders() {
       : 'Free tier credits';
     info.append(name, sub);
 
-    const check = document.createElement('span'); check.className = 'pcheck'; check.textContent = '✓';
+    const check = document.createElement('span'); check.className = 'pcheck'; check.textContent = 'âœ“';
 
     card.addEventListener('click', () => selectProvider(p.id));
     card.append(icon, info, check);
@@ -1111,7 +1107,7 @@ $('ctxSeg').addEventListener('click', (e) => {
 
 $('testBtn').onclick = async () => {
   const resEl = $('testResult');
-  busy($('testBtn'), true, 'Testing…', 'Test connection');
+  busy($('testBtn'), true, 'Testingâ€¦', 'Test connection');
   resEl.className = 'testresult'; resEl.textContent = '';
   try {
     const r = await api('/api/providers/test', json({
@@ -1120,7 +1116,7 @@ $('testBtn').onclick = async () => {
       model: $('setModel').value.trim()
     }));
     resEl.className = 'testresult ok';
-    resEl.textContent = 'Connected' + (r.model ? ' — ' + r.model : '');
+    resEl.textContent = 'Connected' + (r.model ? ' â€” ' + r.model : '');
   } catch (e) {
     resEl.className = 'testresult err';
     resEl.textContent = 'Failed: ' + e.message;
@@ -1135,38 +1131,38 @@ $('saveSettings').onclick = () => {
   closeSettings();
   refreshBadge();
   toast('AI set to ' + (currentProviderMeta()?.label || aiCfg.provider) +
-    (aiCfg.model ? ' · ' + aiCfg.model : ''), 'ok');
+    (aiCfg.model ? ' Â· ' + aiCfg.model : ''), 'ok');
 };
 
 function refreshBadge() {
   const el = $('provider');
   if (aiCfg.apiKey) {
     el.textContent = 'AI: ' + (currentProviderMeta()?.label || aiCfg.provider) +
-      (aiCfg.model ? ' · ' + aiCfg.model : '');
+      (aiCfg.model ? ' Â· ' + aiCfg.model : '');
     $('provDot').classList.add('ok');
   }
 }
 
 /* ================= workflow state ================= */
-const flow = { processed: false, analyzed: false, chapters: false };
+const flow = { processed: false, kbBuilt: false, chapters: false };
 
 function updateStepper() {
   flow.processed = Boolean(ws && ws.sources.length);
-  const activeStep = flow.chapters ? 4 : flow.analyzed ? 3 : flow.processed ? 2 : 1;
+  const activeStep = flow.chapters ? 4 : flow.kbBuilt ? 3 : flow.processed ? 2 : 1;
   document.querySelectorAll('#stepper .step').forEach((el) => {
     const n = Number(el.dataset.step);
     el.classList.toggle('done', activeStep === 4 || n < activeStep);
     el.classList.toggle('active', activeStep !== 4 && n === activeStep);
   });
-  const lines = document.querySelectorAll('#stepper .s-line');
-  lines.forEach((ln, i) => ln.classList.toggle('done', activeStep === 4 || i + 1 < activeStep));
+  document.querySelectorAll('#stepper .s-line').forEach((ln, i) =>
+    ln.classList.toggle('done', activeStep === 4 || i + 1 < activeStep));
 
   $('card1').classList.toggle('live', activeStep === 1);
   $('card2').classList.toggle('live', activeStep === 2);
   $('card3').classList.toggle('live', activeStep >= 3);
 
   const lock2 = !flow.processed;
-  const lock3 = !flow.analyzed;
+  const lock3 = !flow.kbBuilt;
   $('analyzeBtn').disabled = lock2;
   $('genBtn').disabled = lock3;
   $('gate2').style.display = lock2 ? 'block' : 'none';
@@ -1175,95 +1171,44 @@ function updateStepper() {
   $('card3').classList.toggle('locked', lock3);
 }
 
-/* ================= notebook setup ================= */
-let NB_META = null;
-let nb = { style: 'scholar', format: 'book', depth: 'standard', tone: 'neutral',
-  includeQuotes: true, includePageNumbers: true, crossRefDensity: 'medium',
-  knowledgeGaps: true, glossary: false };
+/* ================= presets ================= */
+const PRESETS_STORE_KEY = 'pdf2book.preset';
+let activePresetId = 'textbook';
+const clientPresets = { textbook:{id:'textbook',label:'Textbook',blurb:'Definition-forward chapters with worked examples.',include:{examples:true,exercises:true,summary:true,glossary:true,sources:true,index:true,toc:true}}, studyguide:{id:'studyguide',label:'Study Notes',blurb:'Condensed scannable revision material.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:false,index:false,toc:true}}, examprep:{id:'examprep',label:'Exam Prep',blurb:'High-yield facts, pitfalls and practice Q&A.',include:{examples:true,exercises:true,summary:true,glossary:false,sources:false,index:false,toc:true}}, beginner:{id:'beginner',label:'Beginner Guide',blurb:'Plain-language journey assuming no prior knowledge.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:false,index:false,toc:true}}, handbook:{id:'handbook',label:'Handbook',blurb:'Practitioner reference with procedures and best practices.',include:{examples:true,exercises:false,summary:false,glossary:true,sources:true,index:true,toc:true}}, reference:{id:'reference',label:'Reference',blurb:'Terse lookup-friendly entries and tables.',include:{examples:false,exercises:false,summary:false,glossary:true,sources:true,index:true,toc:true}}, tutorial:{id:'tutorial',label:'Tutorial',blurb:'Learn-by-doing walkthroughs building one running project.',include:{examples:true,exercises:true,summary:true,glossary:false,sources:false,index:false,toc:true}}, research:{id:'research',label:'Research Digest',blurb:'Literature-review synthesis with methodology awareness.',include:{examples:false,exercises:false,summary:true,glossary:true,sources:true,index:true,toc:true}}, custom:{id:'custom',label:'Custom',blurb:'Your own saved combination of options.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:true,index:true,toc:true}} };
+const defaultPreset = clientPresets.textbook;
 
-function nbLabel(map, id, key) {
-  const hit = ((NB_META || {})[map] || []).find((x) => x.id === id);
-  return hit ? (key ? hit[key] : hit.label) : id;
+function currentPreset() { return clientPresets[activePresetId] || defaultPreset; }
+
+function loadSavedPreset() {
+  try { const s = JSON.parse(localStorage.getItem(PRESETS_STORE_KEY)); if (s && clientPresets[s.id]) { activePresetId = s.id; } else if (s && s.id === 'custom' && s.include) { clientPresets.custom = { ...clientPresets.custom, ...s, isCustom: true }; activePresetId = 'custom'; } } catch (_e) {}
 }
 
-async function loadNotebookMeta() {
-  try {
-    NB_META = await api('/api/notebook');
-    buildNbPanel();
-    syncNbUI();
-  } catch (_e) {}
+function savePresetPrefs() {
+  const p = currentPreset();
+  localStorage.setItem(PRESETS_STORE_KEY, JSON.stringify({ id: activePresetId, label: p.label, include: { ...p.include }, custom: activePresetId === 'custom' ? p : undefined }));
+  $('optSources').checked = Boolean(p.include.sources);
+  $('optToc').checked = Boolean(p.include.toc);
 }
 
-function buildNbPanel() {
-  if (!NB_META) return;
-  const fs2 = $('fmtSeg'); fs2.innerHTML = '';
-  for (const f of NB_META.formats) {
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'fmtbtn'; btn.dataset.id = f.id;
+function renderPresetGrid() {
+  const grid = $('presetGrid'); grid.innerHTML = '';
+  for (const [id, p] of Object.entries(clientPresets)) {
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fmtbtn';
+    if (id === activePresetId) btn.classList.add('active');
+    btn.dataset.id = id; btn.title = p.blurb;
     btn.innerHTML = '<span class="fi2"></span><span class="fl"></span>';
-    btn.querySelector('.fi2').textContent = f.icon;
-    btn.querySelector('.fl').textContent = f.label.split(' ').slice(-1)[0];
-    btn.title = f.label;
-    btn.onclick = () => { nb.format = f.id; syncNbUI(); };
-    fs2.appendChild(btn);
+    btn.querySelector('.fi2').textContent = p.label.charAt(0);
+    btn.querySelector('.fl').textContent = p.label;
+    btn.onclick = () => { activePresetId = id; renderPresetGrid(); savePresetPrefs(); };
+    grid.appendChild(btn);
   }
-  $('nbPanel').style.display = 'block';
 }
 
-function syncNbUI() {
-  document.querySelectorAll('.fmtbtn').forEach((c) =>
-    c.classList.toggle('active', c.dataset.id === nb.format));
-  document.querySelectorAll('#depthSeg .segbtn').forEach((b) =>
-    b.classList.toggle('active', b.dataset.depth === nb.depth));
-  document.querySelectorAll('#crossSeg .crossbtn').forEach((b) =>
-    b.classList.toggle('active', b.dataset.cross === nb.crossRefDensity));
-  $('toneSel').value = nb.tone;
-  $('optQuotes').checked = !!nb.includeQuotes;
-  $('optPages').checked = !!nb.includePageNumbers;
-  $('optGaps').checked = !!nb.knowledgeGaps;
-  $('optGlossary').checked = !!nb.glossary;
-  updateNbChips();
-}
-
-function updateNbChips() {
-  const chips = $('nbChips');
-  if (!NB_META) { chips.innerHTML = ''; return; }
-  const items = [
-    nbLabel('formats', nb.format),
-    nb.depth,
-    nb.tone
-  ];
-  chips.innerHTML = items.map((t) => '<span class="nb-chip">' + t + '</span>').join('');
-}
-
-$('nbHead').onclick = (e) => {
-  if (e.target.closest('#nbSave')) return;
-  $('nbBody').classList.toggle('collapsed');
-  $('nbChevron').querySelector('.chev').classList.toggle('closed');
-};
-
-$('depthSeg').addEventListener('click', (e) => {
-  const btn = e.target.closest('.segbtn'); if (!btn) return;
-  nb.depth = btn.dataset.depth; syncNbUI();
-});
-$('crossSeg').addEventListener('click', (e) => {
-  const btn = e.target.closest('.crossbtn'); if (!btn) return;
-  nb.crossRefDensity = btn.dataset.cross; syncNbUI();
-});
-$('toneSel').onchange = () => { nb.tone = $('toneSel').value; updateNbChips(); };
-$('optQuotes').onchange = () => { nb.includeQuotes = $('optQuotes').checked; };
-$('optPages').onchange = () => { nb.includePageNumbers = $('optPages').checked; };
-$('optGaps').onchange = () => { nb.knowledgeGaps = $('optGaps').checked; };
-$('optGlossary').onchange = () => { nb.glossary = $('optGlossary').checked; };
-
-$('nbSave').onclick = () => {
-  if (!ws) { toast('Create a project first', 'err'); return; }
-  busy($('nbSave'), true, 'Saving…', 'Save setup');
-  ws.notebook = { ...nb };
-  saveWs();
-  updateNbChips();
-  busy($('nbSave'), false, '', 'Save setup');
-  toast('Notebook setup saved — ' + nbLabel('formats', nb.format), 'ok');
+$('optSources').onchange = () => { currentPreset().include.sources = $('optSources').checked; savePresetPrefs(); };
+$('optToc').onchange = () => { currentPreset().include.toc = $('optToc').checked; savePresetPrefs(); };
+$('customPresetBtn').onclick = () => {
+  clientPresets.custom = { ...clientPresets.custom, id: 'custom', isCustom: true, label: (ws && ws.title) ? ws.title.slice(0, 32) + ' Custom' : 'Custom', include: { examples: true, exercises: false, summary: true, glossary: true, sources: $('optSources').checked, index: true, toc: $('optToc').checked } };
+  activePresetId = 'custom'; renderPresetGrid(); savePresetPrefs(); toast('Custom preset saved', 'ok');
 };
 
 /* ================= local workspaces ================= */
@@ -1293,7 +1238,7 @@ function wsList() {
   catch (_e) { return []; }
 }
 
-/* ---------- IndexedDB for heavy page text ---------- */
+/* ---------- IndexedDB for page text + KB ---------- */
 let idbPromise = null;
 function idb() {
   if (!('indexedDB' in window)) return Promise.reject(new Error('IndexedDB unavailable'));
@@ -1306,6 +1251,19 @@ function idb() {
     }).catch((e) => { idbPromise = null; throw e; });
   }
   return idbPromise;
+}
+let kbIdbPromise = null;
+function kbIdb() {
+  if (!('indexedDB' in window)) return Promise.reject(new Error('IndexedDB unavailable'));
+  if (!kbIdbPromise) {
+    kbIdbPromise = new Promise((resolve, reject) => {
+      const req = indexedDB.open('pdf2book-kb', 1);
+      req.onupgradeneeded = () => { req.result.createObjectStore('kb'); };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error || new Error('IndexedDB open failed'));
+    }).catch((e) => { kbIdbPromise = null; throw e; });
+  }
+  return kbIdbPromise;
 }
 async function idbSet(key, val) {
   const db = await idb();
@@ -1336,6 +1294,26 @@ async function idbDel(key) {
     });
   } catch (_e) {}
 }
+async function kbSet(wsId, kb) {
+  try { const db = await kbIdb(); await new Promise((resolve, reject) => { const tx = db.transaction('kb', 'readwrite'); tx.objectStore('kb').put(kb, wsId); tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); }); } catch (_e) {}
+}
+async function kbGet(wsId) {
+  try { const db = await kbIdb(); return new Promise((resolve, reject) => { const tx = db.transaction('kb', 'readonly'); const rq = tx.objectStore('kb').get(wsId); rq.onsuccess = () => resolve(rq.result || null); rq.onerror = () => reject(rq.error); }); } catch (_e) { return null; }
+}
+
+/* ---------- clean Ocr (client mirror of ocrCleaner for deterministic offline use) ---------- */
+function clientCleanOcr(raw) {
+  let t = String(raw == null ? '' : raw).replace(/\r\n?/g, '\n');
+  // eslint-disable-next-line no-control-regex
+  t = t.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+  t = t.replace(/[\u00AD\u200B\u200C\uFEFF]/g, '').replace(/\u200D/g, '');
+  t = t.replace(/([A-Za-z]{2,})-\n([a-z]{1,})/g, (_, a, b) => a + b);
+  t = t.replace(/^[ \t]*[\u2022\u00B7\u25AA\u25E6*][ \t]+/gm, '- ');
+  t = t.replace(/[ \t]+$/gm, '');
+  t = t.replace(/\n{3,}/g, '\n\n');
+  t = t.replace(/([^\n])[ \t]{2,}/g, '$1 ');
+  return t.trim();
+}
 
 function wsLite() {
   const copy = { ...ws, _idb: true };
@@ -1353,16 +1331,16 @@ function saveWs(immediate) {
       const list = wsList().filter((x) => x.id !== ws.id);
       list.unshift({
         id: ws.id, title: ws.title, createdAt: ws.createdAt, updatedAt: ws.updatedAt,
-        sources: (ws.sources || []).length, chapters: (ws.chapters || []).length
+        sources: (ws.sources || []).length, chapters: (ws.bookJSON && ws.bookJSON.chapters || []).length
       });
       localStorage.setItem(WS_LIST_KEY, JSON.stringify(list));
       localStorage.setItem(WS_ACTIVE_KEY, ws.id);
       flashSavePill();
     } catch (e) {
-      showError('Could not save locally — storage may be full. Export your book to keep it.');
+      showError('Could not save locally â€” storage may be full. Export your book to keep it.');
     }
-    idbSet('pages.' + ws.id, (ws.sources || []).map((s) => ({ id: s.id, pages: s.pages })))
-      .catch(() => {});
+    idbSet('pages.' + ws.id, (ws.sources || []).map((s) => ({ id: s.id, pages: s.pages }))).catch(() => {});
+    if (ws.kb) kbSet(ws.id, ws.kb).catch(() => {});
   };
   if (immediate) { clearTimeout(saveTimer); commit(); return; }
   clearTimeout(saveTimer);
@@ -1383,7 +1361,7 @@ async function loadProjects() {
   const list = wsList();
   if (!list.length) {
     const li = document.createElement('li'); li.className = 'static';
-    li.innerHTML = '<span class="li-sub">No projects yet — create one above.</span>';
+    li.innerHTML = '<span class="li-sub">No projects yet â€” create one above.</span>';
     ul.appendChild(li); return;
   }
   for (const p of list) {
@@ -1394,8 +1372,8 @@ async function loadProjects() {
     const t = document.createElement('div'); t.className = 'li-title'; t.textContent = p.title;
     const s = document.createElement('div'); s.className = 'li-sub';
     s.textContent = timeAgo(p.updatedAt || p.createdAt) +
-      (p.sources ? ' · ' + p.sources + ' src' : '') +
-      (p.chapters ? ' · ' + p.chapters + ' ch' : '');
+      (p.sources ? ' Â· ' + p.sources + ' src' : '') +
+      (p.chapters ? ' Â· ' + p.chapters + ' ch' : '');
     name.append(t, s);
     const del = document.createElement('button');
     del.className = 'danger small'; del.textContent = 'Delete';
@@ -1435,26 +1413,22 @@ function showWorkspace(on) {
 }
 
 function resetWorkflowUi() {
-  flow.processed = false; flow.analyzed = false; flow.chapters = false;
-  $('stats').style.display = 'none'; $('statsSkel').style.display = 'none';
-  $('covBar').style.display = 'none';
-  $('covNote').className = 'notice'; $('covNote').textContent = '';
-  $('chapters').innerHTML = '<div class="empty">Run the analysis first, then generate your book.</div>';
-  $('exports').style.display = 'none';
-  $('readerBar').style.display = 'none';
-  $('engineBadge').textContent = '';
+  flow.processed = false; flow.kbBuilt = false; flow.chapters = false;
+  $('stats').style.display = 'none'; $('kbBar').style.display = 'none'; $('kbNote').textContent = '';
+  $('chapters').innerHTML = '<div class="empty">Build the knowledge base first, then write your book.</div>';
+  $('exports').style.display = 'none'; $('readerBar').style.display = 'none'; $('engineBadge').textContent = '';
+  renderPresetGrid(); savePresetPrefs();
 }
 
 function enterWorkspace() {
   $('projHeading').textContent = ws.title;
-  $('projMeta').textContent = 'Stored only in this browser · nothing leaves your device except AI prompts';
+  $('projMeta').textContent = 'Stored only in this browser Â· nothing leaves your device except AI prompts';
   showWorkspace(true);
   document.querySelectorAll('#projects li').forEach((li) => li.classList.remove('active'));
   resetWorkflowUi();
   renderSources();
-  if (ws.notebook) { nb = { ...nb, ...ws.notebook }; syncNbUI(); }
-  if (ws.analysis) applyAnalysis(ws.analysis, true);
-  if (ws.chapters && ws.chapters.length) renderBook(false);
+  if (ws.kb && ws.kb.topics && ws.kb.topics.length) { flow.kbBuilt = true; applyKbStats(ws.kb); }
+  if (ws.bookJSON && ws.bookJSON.chapters && ws.bookJSON.chapters.length) renderBook(false);
   updateStepper();
 }
 
@@ -1475,13 +1449,11 @@ async function openWorkspace(id) {
         missing++;
         return false;
       });
-      if (missing) toast(missing + ' source(s) could not be restored — re-add the file', 'err');
+      if (missing) toast(missing + ' source(s) could not be restored â€” re-add the file', 'err');
+      w.kb = w.kb || await kbGet(id);
     } catch (_e) {
-      const kept = (w.sources || []).filter((s) => Array.isArray(s.pages));
-      if (kept.length !== (w.sources || []).length) {
-        toast('Storage error — some sources were dropped. Re-add their files.', 'err');
-      }
-      w.sources = kept;
+      w.sources = (w.sources || []).filter((s) => Array.isArray(s.pages));
+      toast('Storage error â€” some sources were dropped. Re-add their files.', 'err');
     }
   }
   saveWs(true);
@@ -1509,7 +1481,7 @@ function renderFileChips() {
     const icon = document.createElement('span'); icon.className = 'ficon'; icon.textContent = fileIcon(f.name);
     const name = document.createElement('span'); name.className = 'fname'; name.textContent = f.name;
     const size = document.createElement('span'); size.className = 'fsize'; size.textContent = fmtSize(f.size);
-    const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = '✕'; rm.title = 'Remove';
+    const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = 'âœ•'; rm.title = 'Remove';
     rm.onclick = () => { pickedFiles.splice(i, 1); syncInputFiles(); renderFileChips(); };
     chip.append(icon, name, size, rm);
     wrap.appendChild(chip);
@@ -1533,7 +1505,7 @@ function setPickedFiles(fileList) {
   }
   syncInputFiles();
   renderFileChips();
-  if (skipped > 0) toast(skipped + ' file(s) skipped — only PDF and TXT are supported', 'err');
+  if (skipped > 0) toast(skipped + ' file(s) skipped â€” only PDF and TXT are supported', 'err');
 }
 
 dz.onclick = () => fileInput.click();
@@ -1550,7 +1522,7 @@ $('noteText').addEventListener('input', () => {
   if (!v.trim()) { stats.style.display = 'none'; return; }
   stats.style.display = 'block';
   const words = v.trim().split(/\s+/).length;
-  stats.textContent = v.length.toLocaleString() + ' chars · ' + words.toLocaleString() + ' words · ~' +
+  stats.textContent = v.length.toLocaleString() + ' chars Â· ' + words.toLocaleString() + ' words Â· ~' +
     Math.ceil(v.length / 1800) + ' page(s) of source text';
 });
 
@@ -1568,7 +1540,7 @@ function loadPdfJs() {
         resolve(window.pdfjsLib);
       } catch (e) { reject(e); }
     };
-    s.onerror = () => { pdfJsLoading = null; reject(new Error('Could not load the PDF engine — try reloading the page')); };
+    s.onerror = () => { pdfJsLoading = null; reject(new Error('Could not load the PDF engine â€” try reloading the page')); };
     document.head.appendChild(s);
   });
   return pdfJsLoading;
@@ -1583,7 +1555,7 @@ function loadTesseract() {
     const s = document.createElement('script');
     s.src = '/vendor/tesseract.min.js';
     s.onload = () => resolve(window.Tesseract);
-    s.onerror = () => { tessLoading = null; reject(new Error('Could not load the OCR engine — check your connection and reload')); };
+    s.onerror = () => { tessLoading = null; reject(new Error('Could not load the OCR engine â€” check your connection and reload')); };
     document.head.appendChild(s);
   });
   return tessLoading;
@@ -1617,7 +1589,7 @@ async function ocrPage(page) {
   return String(data && data.text || '').trim();
 }
 
-function dzHint(msg) { $('dzHint').textContent = msg || 'or click to browse — text is extracted right in your browser, files never leave your device'; }
+function dzHint(msg) { $('dzHint').textContent = msg || 'or click to browse â€” text is extracted right in your browser, files never leave your device'; }
 
 let extractionCancelled = false;
 
@@ -1668,7 +1640,7 @@ function pushSource({ title, type, pages, ocrCount }) {
   if (!clean.length) return false;
   const chars = clean.reduce((n, p) => n + p.text.length, 0);
   if (wsTotalChars() + chars > MAX_SOURCE_CHARS) {
-    toast('"' + title + '" skipped — workspace would exceed ~600k characters', 'err');
+    toast('"' + title + '" skipped â€” workspace would exceed ~600k characters', 'err');
     return false;
   }
   ws.sources.push({
@@ -1690,7 +1662,7 @@ function renderSources() {
   const sources = (ws && ws.sources) || [];
   if (!sources.length) {
     const li = document.createElement('li'); li.className = 'static';
-    li.innerHTML = '<span class="li-sub">No sources yet — paste notes or drop PDFs above.</span>';
+    li.innerHTML = '<span class="li-sub">No sources yet â€” paste notes or drop PDFs above.</span>';
     ul.appendChild(li);
   }
   for (const s of sources) {
@@ -1701,11 +1673,11 @@ function renderSources() {
       s.type.toUpperCase(),
       s.type === 'pdf' ? s.pages.length + ' page(s)' : null,
       s.chars.toLocaleString() + ' chars',
-      s.ocrCount > 0 ? 'OCR ×' + s.ocrCount : null,
+      s.ocrCount > 0 ? 'OCR Ã—' + s.ocrCount : null,
       s.refined ? 'AI notes' : null
     ].filter(Boolean);
     const meta = document.createElement('span'); meta.className = 'li-sub';
-    meta.textContent = tags.join(' · ');
+    meta.textContent = tags.join(' Â· ');
     left.append(t, meta);
     const right = document.createElement('div');
     right.style.cssText = 'display:flex;align-items:center;gap:6px;';
@@ -1724,53 +1696,12 @@ function renderSources() {
   }
 }
 
-/* ---------- AI page-notes refinement ---------- */
-function batchPages(pages, maxChars, maxCount) {
-  const batches = [];
-  let cur = [], chars = 0;
-  for (const p of pages) {
-    if (cur.length && (chars + p.text.length > maxChars || cur.length >= maxCount)) {
-      batches.push(cur); cur = []; chars = 0;
-    }
-    cur.push(p); chars += p.text.length;
-  }
-  if (cur.length) batches.push(cur);
-  return batches;
-}
-
-async function refineSource(src, onStatus) {
-  const usable = src.pages.filter((p) => p.text.trim().length > 20);
-  if (!usable.length) return false;
-  const batches = batchPages(usable, 4000, 6);
-  const byNum = new Map(usable.map((p) => [p.pageNumber, p]));
-  let okBatches = 0;
-  for (let bi = 0; bi < batches.length; bi++) {
-    onStatus('AI notes · ' + src.title.slice(0, 16) + '… ' + (bi + 1) + '/' + batches.length);
-    const res = await fetch('/api/refine', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(aiRequestHeaders() || {}) },
-      body: JSON.stringify({ title: src.title, pages: batches[bi] })
-    });
-    if (!res.ok) throw new Error('Refinement request failed (' + res.status + ')');
-    const data = await res.json();
-    if (data.refined && Array.isArray(data.notes)) {
-      for (const n of data.notes) {
-        const target = byNum.get(Number(n.pageNumber));
-        if (target && String(n.text).trim().length > 40) target.text = String(n.text).trim();
-      }
-      okBatches++;
-    }
-  }
-  src.refined = okBatches > 0;
-  return okBatches > 0;
-}
-
 /* ---------- notes viewer ---------- */
 function openNotesModal(sid) {
   if (!ws) return;
   const src = ws.sources.find((x) => x.id === sid);
   if (!src) return;
-  $('notesTitle').textContent = 'Page notes — ' + src.title;
+  $('notesTitle').textContent = 'Page notes â€” ' + src.title;
   const body = $('notesBody');
   body.innerHTML = '';
   src.pages.forEach((p) => {
@@ -1795,7 +1726,7 @@ $('notesModal').addEventListener('click', (e) => { if (e.target === $('notesModa
 
 $('cancelExtract').onclick = () => {
   extractionCancelled = true;
-  dzHint('Stopping after this page…');
+  dzHint('Stopping after this pageâ€¦');
 };
 
 $('addSrc').onclick = async () => {
@@ -1803,7 +1734,7 @@ $('addSrc').onclick = async () => {
   const text = $('noteText').value.trim();
   if (!text && !pickedFiles.length) { toast('Add some notes or choose files first', 'err'); return; }
   const btn = $('addSrc');
-  busy(btn, true, 'Working…', '+ Add sources');
+  busy(btn, true, 'Workingâ€¦', '+ Add sources');
   btn.disabled = true;
   extractionCancelled = false;
   $('cancelExtract').style.display = 'inline-flex';
@@ -1817,11 +1748,11 @@ $('addSrc').onclick = async () => {
     }
     for (const f of pickedFiles) {
       if (/\.pdf$/i.test(f.name)) {
-        const shortName = f.name.length > 18 ? f.name.slice(0, 15) + '…' : f.name;
+        const shortName = f.name.length > 18 ? f.name.slice(0, 15) + 'â€¦' : f.name;
         const { pages, ocrCount, ocrFailed, ocrError } = await extractPdfPages(f, (i, n, mode) => {
           const verb = mode === 'ocr' ? 'OCR page ' : 'page ';
           busy(btn, true, shortName + ' ' + i + '/' + n, '+ Add sources');
-          dzHint('"' + f.name + '" — ' + verb + i + '/' + n);
+          dzHint('"' + f.name + '" â€” ' + verb + i + '/' + n);
         });
         if (ocrFailed > 0) {
           toast(ocrFailed + ' scanned page(s) in "' + f.name.slice(0, 24) + '" could not be OCR-read' +
@@ -1838,22 +1769,12 @@ $('addSrc').onclick = async () => {
       }
     }
 
-    const wantRefine = Boolean(aiRequestHeaders()) && $('refineToggle').checked;
-    for (const src of added) {
-      if (!wantRefine) break;
-      try {
-        await refineSource(src, (m) => busy(btn, true, m, '+ Add sources'));
-      } catch (_e) {
-        toast('AI notes failed for "' + src.title + '" — kept raw text', 'err');
-      }
-    }
-
     pickedFiles = []; syncInputFiles(); renderFileChips(); dzHint('');
     if (added.length) {
       saveWs(true); renderSources(); updateStepper();
-      toast(added.length + ' source(s) ready' + (wantRefine ? ' with AI notes' : ''), 'ok');
+      toast(added.length + ' source(s) added â€” go to step 2 to build the knowledge base', 'ok');
     } else {
-      toast(extractionCancelled ? 'Extraction stopped — nothing added' : 'No readable text found in the selected file(s)', 'err');
+      toast(extractionCancelled ? 'Extraction stopped â€” nothing added' : 'No readable text found in the selected file(s)', 'err');
     }
   } catch (e) {
     dzHint('');
@@ -1866,160 +1787,167 @@ $('addSrc').onclick = async () => {
   }
 };
 
-/* ================= analysis ================= */
-function applyAnalysis(analysis, silent) {
-  const cov = (analysis && analysis.coverage) || {};
-  const covScore = cov.score != null ? cov.score : null;
-  const conflicts = analysis.conflictCount || 0;
-
-  $('sTopics').textContent = analysis.topicCount ?? '–';
-  $('sChapters').textContent = analysis.chapterCount ?? '–';
-  $('sDupes').textContent = analysis.duplicateGroups ?? '–';
-  $('sConflicts').textContent = conflicts;
-  $('sCov').textContent = covScore != null ? covScore + '%' : '–';
-
-  $('dupeStat').className = 'stat' + (analysis.duplicateGroups > 0 ? ' warn' : '');
-  $('confStat').className = 'stat' + (conflicts > 0 ? ' bad' : '');
-  $('covStat').className = 'stat' + (covScore == null ? '' : cov.insufficient ? ' warn' : ' good');
-
-  $('statsSkel').style.display = 'none';
-  $('stats').style.display = 'grid';
-  if (covScore != null) {
-    $('covBar').style.display = 'block';
-    $('covBar').querySelector('i').style.width = '0%';
-    requestAnimationFrame(() => {
-      $('covBar').querySelector('i').style.width = Math.min(100, covScore) + '%';
-    });
-  }
-  const note = $('covNote');
-  note.className = 'notice show ' + (cov.insufficient ? '' : 'good');
-  note.textContent = cov.insufficient
-    ? 'Coverage is low (' + covScore + '%). Add more sources on weak topics before generating for better results.'
-    : 'Coverage looks healthy. You are ready to generate the book.';
-  flow.analyzed = true;
-  if (!silent) toast('Analysis complete — ' + analysis.topicCount + ' topics found', 'ok');
+/* ================= KB pipeline ================= */
+function kbDigestFromKb(kb) {
+  return (kb.topics || []).map((t) => ({
+    id: t.id, name: t.canonical_name, aliases: t.aliases || [], summary: t.summary || '',
+    counts: {
+      definitions: (t.definitions || []).length, facts: (t.facts || []).length,
+      examples: (t.examples || []).length, formulas: (t.formulas || []).length, procedures: (t.procedures || []).length
+    },
+    related: (t.relationships || []).map((r) => r.target_name || r.target_id),
+    sources: (t.source_refs || []).map((r) => r.file_name || r.document_id)
+  }));
 }
 
-$('analyzeBtn').onclick = async () => {
-  const btn = $('analyzeBtn');
-  try {
-    busy(btn, true, 'Analyzing…', 'Run analysis');
-    $('stats').style.display = 'none';
-    $('statsSkel').style.display = 'grid';
-    const r = await api('/api/build?json=1', {
-      method: 'POST',
-      headers: aiRequestHeaders() || {},
-      body: JSON.stringify({
-        mode: 'analyze',
-        title: ws.title,
-        author: ws.author,
-        notebook: nb,
-        sources: ws.sources
-      })
-    });
-    ws.analysis = r.analysis;
-    saveWs();
-    applyAnalysis(r.analysis, false);
-    updateStepper();
-  } catch (e) {
-    $('statsSkel').style.display = 'none';
-    showError(e.message, () => $('analyzeBtn').click());
-  }
-  finally {     busy(btn, false, '', 'Run analysis'); }
-};
+function applyKbStats(kb, pagesRead) {
+  const st = kb.stats || {};
+  const glossaryCount = Object.keys(kb.glossary || {}).length;
+  const openConflicts = (kb.conflicts || []).filter((c) => c.status === 'unresolved').length;
+  $('sTopics').textContent = st.topics ?? (kb.topics || []).length;
+  $('sFacts').textContent = st.facts ?? 'â€“';
+  $('sGloss').textContent = glossaryCount || 'â€“';
+  $('sConflicts').textContent = st.conflictsOpen ?? openConflicts;
+  $('sPages').textContent = pagesRead ?? st.documents ?? ws.sources.reduce((n, s) => n + s.pages.length, 0);
+  $('confStat').className = 'stat' + (openConflicts > 0 ? ' warn' : '');
+  $('stats').style.display = 'grid';
+  $('kbBar').style.display = 'none';
+  $('kbNote').className = 'notice show';
+  $('kbNote').textContent = openConflicts > 0
+    ? openConflicts + ' unresolved conflict(s) â€” review in Knowledge Manager before writing.'
+    : 'Knowledge base looks clean. Ready to write.';
+  flow.kbBuilt = true;
+}
 
-/* ================= book ================= */
+async function buildKb() {
+  const btn = $('analyzeBtn');
+  if (!ws || !ws.sources.length) { toast('Add at least one source first', 'err'); return; }
+  const allPages = [];
+  for (const src of ws.sources) {
+    for (const p of (src.pages || [])) {
+      if (p.text && p.text.trim().length > 20) allPages.push({ src, page: p });
+    }
+  }
+  if (!allPages.length) { toast('No readable pages found', 'err'); return; }
+  const total = allPages.length;
+  let kb = ws.kb || {};
+  let pagesRead = 0;
+  busy(btn, true, 'Starting extractionâ€¦', 'Extract knowledge');
+  $('stats').style.display = 'none';
+  $('kbBar').style.display = 'block';
+  $('kbBar').querySelector('i').style.width = '0%';
+  try {
+    for (const { src, page } of allPages) {
+      try {
+        const res = await apiPost('/api/knowledge/extract', {
+          pageText: page.text, kb, documentId: src.id,
+          pageNumber: page.pageNumber, fileName: src.title,
+          docContext: ws.title,
+          recentTopics: (kb.topics || []).slice(-5).map((t) => t.canonical_name)
+        });
+        kb = res.kb || kb;
+      } catch (_e) { /* skip failed pages */ }
+      pagesRead++;
+      const pct = Math.round((pagesRead / total) * 100);
+      $('kbBar').querySelector('i').style.width = pct + '%';
+      $('sPages').textContent = pagesRead;
+      $('sTopics').textContent = (kb.topics || []).length;
+      $('sFacts').textContent = (kb.topics || []).reduce((n, t) => n + (t.facts || []).length, 0);
+      $('sGloss').textContent = Object.keys(kb.glossary || {}).length;
+      $('sConflicts').textContent = (kb.conflicts || []).filter((c) => c.status === 'unresolved').length;
+      $('confStat').className = 'stat' + ((kb.conflicts || []).filter((c) => c.status === 'unresolved').length > 0 ? ' warn' : '');
+      $('stats').style.display = 'grid';
+      busy(btn, true, 'Extractingâ€¦ ' + pct + '% (' + pagesRead + '/' + total + ')', 'Extract knowledge');
+      if (pagesRead % 5 === 0) saveWs(true);
+    }
+    if ((kb.topics || []).length > 1) {
+      busy(btn, true, 'Consolidating duplicatesâ€¦', 'Extract knowledge');
+      try {
+        const cons = await apiPost('/api/knowledge/consolidate', { kb });
+        kb = cons.kb || kb;
+      } catch (_e) { /* keep unconsolidated */ }
+    }
+    ws.kb = kb;
+    saveWs(true);
+    applyKbStats(kb, total);
+    updateStepper();
+    toast('Knowledge base built â€” ' + (kb.topics || []).length + ' topic(s)', 'ok');
+  } catch (e) {
+    showError(e.message || 'Extraction failed', buildKb);
+  } finally {
+    busy(btn, false, '', 'Extract knowledge');
+    $('kbBar').style.display = 'none';
+  }
+}
+$('analyzeBtn').onclick = buildKb;
+
+/* ================= markdown & rendering ================= */
 function preprocessWiki(md) {
   return String(md).replace(/\[\[([^\]]+)\]\]/g, (_m, name) => `[${name}](#wiki-${name.trim()})`);
 }
-
 function renderMarkdown(md) {
   md = preprocessWiki(md);
   const esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return esc.split(/\n{2,}/).map((block) => {
     const b = block.trim();
-    if (/^###\s/.test(b)) return '<h3>' + inline(b.replace(/^###\s/, '')) + '</h3>';
-    if (/^##\s/.test(b)) return '<h2>' + inline(b.replace(/^##\s/, '')) + '</h2>';
-    if (/^#\s/.test(b)) return '<h1>' + inline(b.replace(/^#\s/, '')) + '</h1>';
+    if (/^###\s/.test(b)) return '<h3>' + inlineMd(b.replace(/^###\s/, '')) + '</h3>';
+    if (/^##\s/.test(b)) return '<h2>' + inlineMd(b.replace(/^##\s/, '')) + '</h2>';
+    if (/^#\s/.test(b)) return '<h1>' + inlineMd(b.replace(/^#\s/, '')) + '</h1>';
     if (/^[-*]\s/m.test(b)) {
       const items = b.split('\n');
-      let html = '';
-      let level = 1;
+      let html = '', level = 1;
       for (const raw of items) {
         const ind = Math.min(4, Math.floor((raw.match(/^\s*/)[0].length) / 2)) + 1;
         const txt = raw.replace(/^\s*[-*]\s*/, '');
         while (ind > level) { html += '<ul>'; level++; }
         while (ind < level) { html += '</ul>'; level--; }
-        html += '<li>' + inline(txt) + '</li>';
+        html += '<li>' + inlineMd(txt) + '</li>';
       }
       while (level > 1) { html += '</ul>'; level--; }
       return html;
     }
-    return '<p>' + inline(b).replace(/\n/g, '<br>') + '</p>';
+    return '<p>' + inlineMd(b).replace(/\n/g, '<br>') + '</p>';
   }).join('');
-  function inline(s) {
-    return s
-      .replace(/\[([^\]]+)\]\(#wiki-([^)]+)\)/g, '<a class="wikilink" data-wiki="$2">$1</a>')
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>');
+}
+function inlineMd(s) {
+  return s
+    .replace(/\[([^\]]+)\]\(#wiki-([^)]+)\)/g, '<a class="wikilink" data-wiki="$2">$1</a>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+}
+function renderBlocks(blocks) {
+  let html = '';
+  for (const b of (blocks || [])) {
+    switch (b.type) {
+      case 'paragraph': html += '<p>' + inlineMd(b.text || '') + '</p>'; break;
+      case 'definition': html += '<dl><dt>' + inlineMd(b.term || '') + '</dt><dd>' + inlineMd(b.definition || '') + '</dd></dl>'; break;
+      case 'bullet_list': html += '<ul>' + (b.items || []).map((i) => '<li>' + inlineMd(i) + '</li>').join('') + '</ul>'; break;
+      case 'example': html += '<div class="example"><strong>' + inlineMd(b.title || 'Example') + ':</strong> ' + inlineMd(b.content || '') + '</div>'; break;
+      case 'formula': html += '<div class="formula"><code>' + inlineMd(b.expression || '') + '</code>' + (b.explanation ? ' â€” ' + inlineMd(b.explanation) : '') + '</div>'; break;
+      case 'table': {
+        const hdrs = (b.headers || []).map((h) => '<th>' + inlineMd(h) + '</th>').join('');
+        const rows = (b.rows || []).map((r) => '<tr>' + r.map((c) => '<td>' + inlineMd(c) + '</td>').join('') + '</tr>').join('');
+        html += '<div class="table-wrap"><table><thead><tr>' + hdrs + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+        break;
+      }
+      case 'warning': html += '<div class="notice warn">' + inlineMd(b.text || '') + '</div>'; break;
+      case 'note': html += '<div class="notice">' + inlineMd(b.text || '') + '</div>'; break;
+      case 'summary': html += '<div class="notice good">' + inlineMd(b.text || '') + '</div>'; break;
+      default: if (b.text) html += '<p>' + inlineMd(b.text) + '</p>';
+    }
   }
+  return html;
 }
 
-function buildFlipCards(cards) {
-  const grid = document.createElement('div'); grid.className = 'fcgrid';
-  cards.forEach((c) => {
-    const cell = document.createElement('div'); cell.className = 'fcell'; cell.title = 'Click to flip';
-    cell.innerHTML = '<div class="finner"><div class="fface"><span class="ftag">Q</span></div><div class="fface back"><span class="ftag">A</span></div></div>';
-    cell.querySelector('.fface').append(document.createTextNode(c.front));
-    cell.querySelector('.fface.back').append(document.createTextNode(c.back));
-    cell.onclick = () => cell.classList.toggle('flipped');
-    grid.appendChild(cell);
-  });
-  return grid;
-}
-
-function buildModCards(cards) {
-  const wrap = document.createElement('div'); wrap.className = 'mcards';
-  cards.forEach((c) => {
-    const div = document.createElement('div'); div.className = 'mcard';
-    const q = document.createElement('div'); q.className = 'mq'; q.textContent = c.front;
-    const a = document.createElement('div'); a.className = 'ma'; a.textContent = c.back;
-    div.append(q, a); wrap.appendChild(div);
-  });
-  return wrap;
-}
-
-function bindWikiLinks(container) {
-  container.querySelectorAll('a[data-wiki]').forEach((a) => {
-    a.onclick = (e) => {
-      e.preventDefault();
-      const target = a.dataset.wiki.trim().toLowerCase();
-      const heads = [...container.querySelectorAll('h1,h2,h3,h4')];
-      const hit = heads.find((h) => h.textContent.trim().toLowerCase() === target)
-        || heads.find((h) => h.textContent.toLowerCase().includes(target));
-      if (hit) hit.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      else toast('No section found for “' + a.dataset.wiki + '”');
-    };
-  });
-}
-
-const GEN_MSGS = [
-  'Warming up the author…',
-  'Reading your sources…',
-  'Selecting the best evidence…',
-  'Weaving chapters together…',
-  'Smoothing transitions…',
-  'Adding final polish…'
-];
+/* ================= generation effects ================= */
+const GEN_MSGS = ['Warming up the authorâ€¦','Reading your sourcesâ€¦','Selecting the best evidenceâ€¦','Weaving chapters togetherâ€¦','Smoothing transitionsâ€¦','Adding final polishâ€¦'];
 let genTimer = null;
 function startGenFx() {
   $('genFx').style.display = 'block';
   $('chapters').style.display = 'none';
   let i = 0;
   $('genMsg').textContent = GEN_MSGS[0];
-  genTimer = setInterval(() => {
-    i = Math.min(i + 1, GEN_MSGS.length - 1);
-    $('genMsg').textContent = GEN_MSGS[i];
-  }, 1800);
+  genTimer = setInterval(() => { i = Math.min(i + 1, GEN_MSGS.length - 1); $('genMsg').textContent = GEN_MSGS[i]; }, 1800);
 }
 function stopGenFx() {
   if (genTimer) { clearInterval(genTimer); genTimer = null; }
@@ -2027,40 +1955,7 @@ function stopGenFx() {
   $('chapters').style.display = '';
 }
 
-async function buildBookStream(payload, onEvent) {
-  const res = await fetch('/api/build', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...(aiRequestHeaders() || {}) },
-    body: JSON.stringify(payload)
-  });
-  if (!res.ok || !res.body) {
-    let msg = res.status + ' ' + res.statusText;
-    try { msg = (await res.json()).error || msg; } catch (_e) {}
-    throw new Error(msg);
-  }
-  const reader = res.body.getReader();
-  const dec = new TextDecoder();
-  let buf = '';
-  for (;;) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-    let idx;
-    while ((idx = buf.indexOf('\n\n')) !== -1) {
-      const frame = buf.slice(0, idx);
-      buf = buf.slice(idx + 2);
-      const lines = frame.split('\n');
-      const evLine = lines.find((l) => l.startsWith('event: '));
-      const dataLine = lines.find((l) => l.startsWith('data: '));
-      if (!evLine || !dataLine) continue;
-      let data;
-      try { data = JSON.parse(dataLine.slice(6)); } catch (_e) { continue; }
-      onEvent(evLine.slice(7), data);
-    }
-  }
-}
-
-/* ================= book engine orchestrator ================= */
+/* ================= book generation ================= */
 async function apiPost(url, body) {
   const res = await fetch(url, {
     method: 'POST',
@@ -2075,308 +1970,88 @@ async function apiPost(url, body) {
   return res.json();
 }
 
-function wsBookState() {
-  if (!ws.bookState) {
-    ws.bookState = {
-      stage: 'idle',
-      primaryId: null,
-      blueprint: null,
-      mode: null,
-      summary: '',
-      chapters: [],
-      batchIdx: 0,
-      lastChIdx: -1,
-      enrichCursor: { srcIdx: 0, batchIdx: 0 },
-      enrichCalls: 0
-    };
-  }
-  return ws.bookState;
-}
-
-function resetBookState() {
-  delete ws.bookState;
-}
-
-function usablePages(src) {
-  return src.pages.filter((p) => p.text.trim().length > 40);
-}
-
-const STOP_WORDS = new Set(('the a an and or of in on to for with by from as is are was were be been being this that these those it its their his her our your not no but if then than so such which who whom whose what when where how why all any each few more most other some only own same too very can will just should now'.split(' ')));
-function keywordsOf(text) {
-  const counts = new Map();
-  const words = String(text).toLowerCase().match(/[a-z][a-z'-]{3,}/g) || [];
-  for (const w of words) {
-    if (STOP_WORDS.has(w)) continue;
-    counts.set(w, (counts.get(w) || 0) + 1);
-  }
-  return counts;
-}
-function bestChapterFor(evidenceText, chapters) {
-  const kw = keywordsOf(evidenceText.slice(0, 3000));
-  let best = 0, bestScore = -1;
-  chapters.forEach((c, i) => {
-    const ck = keywordsOf((c.title + ' ' + c.content.slice(0, 2500)));
-    let score = 0;
-    for (const [w, n] of kw) score += Math.min(ck.get(w) || 0, 4) * n * 0.25 + (ck.has(w) ? 1 : 0);
-    if (score > bestScore) { bestScore = score; best = i; }
-  });
-  return best;
-}
-
-let genRunning = false;
-let genPaused = false;
-
-function setGenBtn(mode) {
-  const btn = $('genBtn');
-  busy(btn, false, '', 'Generate book');
-  if (mode === 'pause') { btn.textContent = 'Pause'; }
-  else if (mode === 'resume') { btn.textContent = 'Resume'; }
-  else { btn.textContent = 'Generate book'; }
-}
-
-function engineAvailable() {
-  return Boolean(aiRequestHeaders());
-}
-
-async function runBookEngine() {
-  const st = wsBookState();
-  const primary = ws.sources.find((s) => s.id === st.primaryId) || ws.sources[0];
-  st.primaryId = primary.id;
-
-  const sampleOf = (s) => usablePages(s).slice(0, 4)
-    .map((p) => '[p' + p.pageNumber + '] ' + p.text.slice(0, 400)).join('\n');
-
-  /* ---- stage: blueprint ---- */
-  if (!st.blueprint) {
-    $('genMsg').textContent = 'Designing your book structure…';
-    const res = await apiPost('/api/book/blueprint', {
-      title: ws.title,
-      tone: nb.tone,
-      depth: nb.depth,
-      sources: ws.sources.map((s) => ({ title: s.title, sample: sampleOf(s) }))
-    });
-    st.blueprint = res.blueprint;
-    st.mode = res.mode;
-    st.stage = 'draft';
-    saveWs(true);
-  }
-
-  /* ---- stage: draft ---- */
-  if (!st.chapters.length && st.blueprint && st.blueprint.chapters.length) {
-    st.chapters = st.blueprint.chapters.map((c) => ({ title: c.title, content: '' }));
-  }
-  const batches = batchPages(usablePages(primary), 3500, 4);
-  if (batches.length && st.chapters.length > batches.length) {
-    st.chapters = st.chapters.slice(0, batches.length);
-    toast('Condensed plan to ' + st.chapters.length + ' chapter(s) to match source size', 'ok');
-  }
-  while (st.batchIdx < batches.length) {
-    if (genPaused) return false;
-    const chCount = st.chapters.length || 1;
-    const chIdx = Math.min(Math.floor(st.batchIdx * chCount / batches.length), chCount - 1);
-    const isStart = chIdx !== st.lastChIdx;
-    $('genMsg').textContent = 'Writing "' + st.chapters[chIdx].title.slice(0, 40) + '"… batch ' +
-      (st.batchIdx + 1) + '/' + batches.length;
-    const res = await apiPost('/api/book/draft', {
-      title: ws.title,
-      blueprint: st.blueprint,
-      chapterIndex: chIdx,
-      isChapterStart: isStart,
-      summary: st.summary,
-      pages: batches[st.batchIdx].map((p) => ({
-        title: primary.title,
-        pageNumber: p.pageNumber,
-        text: p.text.slice(0, 3500)
-      }))
-    });
-    if (res.prose) {
-      st.chapters[chIdx].content += (st.chapters[chIdx].content ? '\n\n' : '') + res.prose.trim();
-      st.lastChIdx = chIdx;
-    }
-    if (res.summary) st.summary = String(res.summary).slice(0, 4000);
-    st.batchIdx++;
-    saveWs(true);
-  }
-
-  /* ---- stage: enrich ---- */
-  const secondaries = [];
-  ws.sources.forEach((s, i) => { if (s.id !== primary.id) secondaries.push({ src: s, idx: i }); });
-  const MAX_ENRICH = 30;
-  outer: for (let si = st.enrichCursor.srcIdx; si < secondaries.length; si++) {
-    const { src } = secondaries[si];
-    const ebatches = batchPages(usablePages(src), 3500, 4);
-    for (let bi = st.enrichCursor.batchIdx; bi < ebatches.length; bi++) {
-      if (genPaused) { st.enrichCursor.srcIdx = si; st.enrichCursor.batchIdx = bi; return false; }
-      if (st.enrichCalls >= MAX_ENRICH) break outer;
-      const target = bestChapterFor(ebatches[bi].map((p) => p.text).join('\n'), st.chapters);
-      $('genMsg').textContent = 'Enriching "' + st.chapters[target].title.slice(0, 34) + '" from ' +
-        src.title.slice(0, 22) + '… (' + (bi + 1) + '/' + ebatches.length + ')';
-      try {
-        const res = await apiPost('/api/book/enrich', {
-          chapterTitle: st.chapters[target].title,
-          chapterText: st.chapters[target].content.slice(0, 12000),
-          evidence: ebatches[bi].map((p) => ({
-            title: src.title,
-            pageNumber: p.pageNumber,
-            text: p.text.slice(0, 2200)
-          }))
-        });
-        if (res.text && res.text.length > st.chapters[target].content.length * 0.5) {
-          st.chapters[target].content = res.text.trim();
-        }
-        st.enrichCalls++;
-      } catch (_e) {
-        st.enrichCalls++;
-      }
-      st.enrichCursor.batchIdx = bi + 1;
-      st.enrichCursor.srcIdx = si;
-      saveWs(true);
-    }
-    st.enrichCursor.batchIdx = 0;
-    st.enrichCursor.srcIdx = si + 1;
-    saveWs(true);
-  }
-
-  /* ---- stage: finalize ---- */
-  $('genMsg').textContent = 'Assembling front matter and index…';
-  const finalChapters = [];
-  if (st.blueprint && st.blueprint.preface) {
-    finalChapters.push({ title: 'Preface', content: st.blueprint.preface.trim() });
-  }
-  for (const c of st.chapters) {
-    if (c.content.trim().length > 80) finalChapters.push({ title: c.title, content: c.content.trim() });
-  }
-  const indexTerms = new Map();
-  finalChapters.forEach((c, ci) => {
-    for (const [w, n] of keywordsOf(c.content)) {
-      if (n >= 4 && !indexTerms.has(w)) indexTerms.set(w, []);
-      if (n >= 4 && indexTerms.get(w).length < 6 && !indexTerms.get(w).includes(ci + 1)) indexTerms.get(w).push(ci + 1);
-    }
-  });
-  const indexLines = [...indexTerms.entries()].sort((a, b) => a[0].localeCompare(b[0]))
-    .slice(0, 60)
-    .map(([w, refs]) => '- **' + w + '** — ' + refs.map((r) => 'Ch. ' + r).join(', '));
-  if (indexLines.length) {
-    finalChapters.push({
-      type: 'appendix',
-      title: 'Index of Terms',
-      content: indexLines.join('\n')
-    });
-  }
-  if (!finalChapters.some((c) => !c.type)) throw new Error('The engine could not write any chapters — check your AI key or try again');
-
-  ws.chapters = finalChapters;
-  ws.engine = {
-    mode: st.mode === 'ai' ? 'ai' : 'extractive-fallback',
-    provider: 'book-engine',
-    enriched: st.enrichCalls
-  };
-  st.stage = 'done';
-  saveWs(true);
-  return true;
-}
-
-async function quickGenerate() {
-  const payload = {
-    mode: 'full',
-    title: ws.title,
-    author: ws.author,
-    notebook: nb,
-    sources: ws.sources
-  };
-  let sawDone = false;
-  await buildBookStream(payload, (ev, data) => {
-    if (ev === 'phase') {
-      if (data.message) $('genMsg').textContent = data.message;
-    } else if (ev === 'error') {
-      throw new Error(data.error || 'Generation failed');
-    } else if (ev === 'done') {
-      sawDone = true;
-      ws.chapters = data.chapters;
-      ws.engine = data.engine;
-      if (data.notebook) nb = { ...nb, ...data.notebook };
-      ws.notebook = { ...nb };
-      if (data.analysis) ws.analysis = data.analysis;
-      saveWs(true);
-      stopGenFx();
-      syncNbUI();
-      applyAnalysis(ws.analysis, true);
-      renderBook(true);
-      const eng = data.engine || {};
-      let msg = 'Book generated — ' + data.chapters.length + ' chapter(s)';
-      msg += eng.mode === 'ai-polished' ? ' · AI-polished'
-        : eng.mode === 'ai' ? ' · via ' + (eng.model || eng.provider)
-        : ' · offline extractive mode';
-      if (data.cards) msg += ' · ' + data.cards + ' cards';
-      toast(msg, 'ok');
-    }
-  });
-  if (!sawDone) throw new Error('Connection closed before the book finished generating');
-}
-
 async function generateBook() {
   const btn = $('genBtn');
   if (!ws || !ws.sources.length) { toast('Add at least one source first', 'err'); return; }
-
-  if (genRunning) {
-    genPaused = true;
-    busy(btn, true, 'Pausing after this step…', '');
-    return;
-  }
-
-  const st = wsBookState();
-  if (st.stage === 'done') resetBookState();
-  const useEngine = ['book', 'wiki'].includes(nb.format) && engineAvailable();
-  if (!useEngine && st.stage !== 'idle') resetBookState();
-
-  genRunning = true;
-  genPaused = false;
-  setGenBtn('pause');
+  if (!ws.kb || !(ws.kb.topics || []).length) { toast('Build the knowledge base first', 'err'); return; }
+  const preset = currentPreset();
   startGenFx();
   try {
-    if (useEngine) {
-      const finished = await runBookEngine();
-      if (!finished) {
-        stopGenFx();
-        setGenBtn('resume');
-        toast('Paused — progress saved. Click Resume to continue.', 'ok');
-        updateStepper();
-        return;
-      }
-      stopGenFx();
-      applyAnalysis(ws.analysis, true);
-      renderBook(true);
-      const engMsg = (ws.engine.enriched ? ' · enriched ×' + ws.engine.enriched : '')
-        + (ws.engine.mode === 'extractive-fallback' ? ' · offline fallback' : '');
-      toast('Book complete — ' + ws.chapters.length + ' section(s)' + engMsg, 'ok');
-    } else {
-      await quickGenerate();
+    $('genMsg').textContent = 'Planning book structureâ€¦';
+    const digest = kbDigestFromKb(ws.kb);
+    const planRes = await apiPost('/api/book/plan', { title: ws.title, digest, presetId: preset.id });
+    const plan = planRes.plan;
+    if (!plan || !plan.chapters || !plan.chapters.length) {
+      throw new Error('The planner could not produce chapters â€” add more topics or adjust the preset');
     }
+    const chapterResults = [];
+    const recentSummaries = [];
+    for (let i = 0; i < plan.chapters.length; i++) {
+      const ch = plan.chapters[i];
+      $('genMsg').textContent = 'Writing "' + ch.title.slice(0, 40) + '"â€¦ (' + (i + 1) + '/' + plan.chapters.length + ')';
+      const kbSlice = (ws.kb.topics || []).filter((t) => (ch.topicIds || []).includes(t.id));
+      const writeRes = await apiPost('/api/book/write', {
+        title: ws.title,
+        chapter: { title: ch.title, purpose: ch.purpose, topicIds: ch.topicIds },
+        presetId: preset.id, kbSlice, recentSummaries
+      });
+      chapterResults.push({ plan: ch, result: writeRes });
+      if (writeRes.summary) recentSummaries.push(writeRes.summary);
+      if (recentSummaries.length > 6) recentSummaries.shift();
+      saveWs(true);
+    }
+    const chapters = chapterResults.map((cr) => ({
+      title: cr.plan.title, purpose: cr.plan.purpose,
+      sections: cr.result.sections || [],
+      content: (cr.result.sections || []).map((s) =>
+        (s.title ? '### ' + s.title + '\n\n' : '') +
+        (s.blocks || []).map((b) => {
+          if (b.type === 'paragraph') return b.text || '';
+          if (b.type === 'bullet_list') return (b.items || []).map((it) => '- ' + it).join('\n');
+          if (b.type === 'definition') return '**' + (b.term || '') + '**: ' + (b.definition || '');
+          if (b.type === 'example') return '> **' + (b.title || 'Example') + ':** ' + (b.content || '');
+          if (b.type === 'formula') return '`' + (b.expression || '') + '`';
+          if (b.type === 'warning') return '> ' + (b.text || '');
+          if (b.type === 'note') return '> ' + (b.text || '');
+          if (b.type === 'summary') return '> **Summary:** ' + (b.text || '');
+          return b.text || '';
+        }).join('\n')
+      ).join('\n')
+    }));
+    const book = {
+      title: plan.title || ws.title, subtitle: plan.subtitle || '',
+      preface: plan.preface || '', chapters, presetId: preset.id
+    };
+    $('genMsg').textContent = 'Running quality checksâ€¦';
+    let qaRes = { status: 'skip', errors: [], warnings: [], statistics: {} };
+    try { qaRes = await apiPost('/api/book/qa', { book, kb: ws.kb }); } catch (_e) { /* non-blocking */ }
+    ws.bookJSON = book;
+    ws.chapters = chapters;
+    ws.qa = qaRes;
+    ws.engine = { mode: planRes.mode || 'ai', preset: preset.id, provider: aiCfg.provider };
+    flow.chapters = true;
+    saveWs(true);
+    stopGenFx();
+    renderBook(true);
     updateStepper();
-    setGenBtn('normal');
+    let msg = 'Book complete â€” ' + chapters.length + ' chapter(s)';
+    if (qaRes.status === 'warn') msg += ' Â· ' + (qaRes.warnings || []).length + ' warning(s)';
+    if (qaRes.status === 'fail') msg += ' Â· ' + (qaRes.errors || []).length + ' issue(s)';
+    toast(msg, qaRes.status === 'fail' ? 'err' : 'ok');
   } catch (e) {
     stopGenFx();
-    const st2 = wsBookState();
-    const canResume = st2.stage !== 'idle' && st2.stage !== 'done';
-    setGenBtn(canResume ? 'resume' : 'normal');
     showError(e.message || 'Generation failed', generateBook);
-  }
-  finally {
-    genRunning = false;
-    genPaused = false;
-    const s = ws.bookState;
-    if (s && s.stage !== 'done' && s.stage !== 'idle') setGenBtn('resume');
   }
 }
 $('genBtn').onclick = generateBook;
 
 function engineBadgeText(eng) {
-  if (!eng || eng.mode === 'extractive-fallback') return 'Offline extractive mode';
+  if (!eng) return '';
   const label = eng.model || eng.provider || 'AI';
-  return (eng.mode === 'ai-polished' ? 'AI polished · ' : 'AI written · ') + label;
+  return eng.mode === 'ai' ? 'AI Â· ' + label : 'Extractive fallback';
 }
 
-/* ---------- reader ---------- */
+/* ================= reader ================= */
 let readerFs = Number(localStorage.getItem('pdf2book.readerSize')) || 14.5;
 function applyReaderFs() {
   document.documentElement.style.setProperty('--reader-fs', readerFs.toFixed(1) + 'px');
@@ -2385,20 +2060,33 @@ function applyReaderFs() {
 $('fontPlus').onclick = () => { readerFs = Math.min(21, readerFs + 1); applyReaderFs(); };
 $('fontMinus').onclick = () => { readerFs = Math.max(11, readerFs - 1); applyReaderFs(); };
 applyReaderFs();
-
 $('tocBtn').onclick = () => $('tocDrawer').classList.toggle('open');
 $('tocClose').onclick = () => $('tocDrawer').classList.remove('open');
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') $('tocDrawer').classList.remove('open');
-});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('tocDrawer').classList.remove('open'); });
 
+/* ================= export ================= */
 async function exportBook(fmt) {
   if (!ws || !ws.chapters || !ws.chapters.length) { toast('Generate a book first', 'err'); return; }
   try {
+    const ext = fmt === 'markdown' ? 'md' : fmt;
+    if (fmt === 'json') {
+      const payload = JSON.stringify({ book: ws.bookJSON || { chapters: ws.chapters, title: ws.title }, kb: ws.kb || null }, null, 2);
+      const blob = new Blob([payload], { type: 'application/json' });
+      const name = (ws.title || 'book').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '.json';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      toast('Export downloaded â€” ' + name, 'ok');
+      return;
+    }
     const res = await fetch('/api/export/' + fmt, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ project: { title: ws.title, author: ws.author }, chapters: ws.chapters })
+      body: JSON.stringify({
+        book: { title: ws.title, subtitle: (ws.bookJSON || {}).subtitle || '', preface: (ws.bookJSON || {}).preface || '', chapters: ws.chapters },
+        kb: ws.kb || undefined
+      })
     });
     if (!res.ok) {
       let msg = res.status;
@@ -2408,138 +2096,106 @@ async function exportBook(fmt) {
     const blob = await res.blob();
     const cd = res.headers.get('Content-Disposition') || '';
     const m = cd.match(/filename="([^"]+)"/);
-    const ext = fmt === 'markdown' ? 'md' : fmt === 'flashcards-csv' ? 'csv' : fmt;
     const name = m ? m[1] : ((ws.title || 'book').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'book') + '.' + ext;
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = name;
+    const a = document.createElement('a'); a.href = url; a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
-    toast('Export downloaded — ' + name, 'ok');
+    toast('Export downloaded â€” ' + name, 'ok');
   } catch (e) {
     showError(e.message || 'Export failed', () => exportBook(fmt));
   }
 }
+$('expMd').onclick = () => exportBook('markdown');
+$('expHtml').onclick = () => exportBook('html');
+$('expJson').onclick = () => exportBook('json');
+$('expEpub').onclick = () => exportBook('epub');
+$('expDocx').onclick = () => exportBook('docx');
+$('expPdf').onclick = () => window.print();
+$('expPrint').onclick = () => window.print();
 
-async function renderBook(scrollTo) {
-  const book = ws;
-  const chapters = (book && book.chapters) || [];
+/* ================= book renderer ================= */
+function renderBook(scrollTo) {
+  const chapters = (ws && ws.chapters) || [];
   const wrap = $('chapters');
   wrap.innerHTML = '';
-
-  const fmt = (book.notebook && book.notebook.format) || nb.format;
-  let totalCards = 0;
-  for (const ch of chapters) totalCards += (ch.cards && ch.cards.length) || 0;
-  $('expCsv').style.display = totalCards ? 'inline-flex' : 'none';
-
-  $('engineBadge').textContent = engineBadgeText(book.engine);
-
+  $('engineBadge').textContent = engineBadgeText(ws.engine);
   if (!chapters.length) {
-    wrap.innerHTML = '<div class="empty">Run the analysis first, then generate your book.</div>';
-    $('exports').style.display = 'none';
-    $('readerBar').style.display = 'none';
+    wrap.innerHTML = '<div class="empty">Build the knowledge base first, then write your book.</div>';
+    $('exports').style.display = 'none'; $('readerBar').style.display = 'none';
     return;
   }
-
-  $('exports').style.display = 'flex';
-  $('readerBar').style.display = 'flex';
-
+  $('exports').style.display = 'flex'; $('readerBar').style.display = 'flex';
   flow.chapters = true;
-  flow.analyzed = true;
-
+  updateStepper();
   const tocList = $('tocList');
   tocList.innerHTML = '';
   const chapterEls = [];
-
   chapters.forEach((ch, ci) => {
-    const isAppendix = ch.type === 'appendix';
-    const words = ch.content.trim().split(/\s+/).length;
+    const words = (ch.content || '').trim().split(/\s+/).length || 0;
     const mins = Math.max(1, Math.round(words / 220));
-
     const div = document.createElement('div');
-    div.className = 'chapter' + (isAppendix ? ' appendix' : '');
-    div.id = 'ch-' + ch.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    div.className = 'chapter';
+    div.id = 'ch-' + (ch.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     const head = document.createElement('div'); head.className = 'chapter-head';
     const h = document.createElement('h4'); h.textContent = ch.title;
     const wc = document.createElement('span'); wc.className = 'wc';
-    wc.textContent = (ch.cards && ch.cards.length)
-      ? ch.cards.length + ' card(s)'
-      : '~' + words.toLocaleString() + ' words · ' + mins + ' min read';
+    wc.textContent = '~' + words.toLocaleString() + ' words Â· ' + mins + ' min read';
     head.append(h, wc);
-
     const body = document.createElement('div'); body.className = 'ch-body';
-
-    const structured = !isAppendix && ch.cards && ch.cards.length &&
-      ['cards', 'flashcards'].includes(fmt);
-
-    let reader = null;
-    if (!structured) {
-      reader = document.createElement('div');
-      reader.className = 'reader';
-      reader.innerHTML = renderMarkdown(ch.content);
-      bindWikiLinks(reader);
+    const reader = document.createElement('div'); reader.className = 'reader';
+    if (ch.sections && ch.sections.length) {
+      reader.innerHTML = ch.sections.map((s) =>
+        (s.title ? '<h3>' + inlineMd(s.title) + '</h3>' : '') + renderBlocks(s.blocks)
+      ).join('');
+    } else {
+      reader.innerHTML = renderMarkdown(ch.content || '');
     }
-
+    bindWikiLinks(reader);
     const editor = document.createElement('textarea');
-    editor.value = ch.content;
-    editor.rows = Math.max(8, ch.content.split('\n').length + 2);
+    editor.value = ch.content || '';
+    editor.rows = Math.max(8, (ch.content || '').split('\n').length + 2);
     editor.style.display = 'none';
-
-    if (structured) body.append(fmt === 'flashcards' ? buildFlipCards(ch.cards) : buildModCards(ch.cards));
-    if (reader) body.append(reader);
-    body.append(editor);
-
+    body.append(reader, editor);
     const row = document.createElement('div'); row.className = 'row'; row.style.marginTop = '12px';
     const edit = document.createElement('button'); edit.className = 'ghost small'; edit.textContent = 'Edit';
     const save = document.createElement('button'); save.className = 'small'; save.textContent = 'Save changes';
     save.style.display = 'none';
     const cancel = document.createElement('button'); cancel.className = 'danger small'; cancel.textContent = 'Cancel';
     cancel.style.display = 'none';
-
     const copy = document.createElement('button');
     copy.className = 'iconbtn'; copy.title = 'Copy chapter'; copy.textContent = 'Copy';
-    copy.onclick = async () => {
-      toast(await copyText(ch.content) ? 'Chapter copied to clipboard' : 'Copy failed', 'ok');
-    };
-
+    copy.onclick = async () => { toast(await copyText(ch.content || '') ? 'Chapter copied to clipboard' : 'Copy failed', 'ok'); };
     const collapse = document.createElement('button');
     collapse.className = 'iconbtn'; collapse.title = 'Collapse chapter';
-    collapse.innerHTML = '<span class="chev">▾</span>';
+    collapse.innerHTML = '<span class="chev">â–¾</span>';
     collapse.onclick = () => {
       body.classList.toggle('collapsed');
       collapse.querySelector('.chev').classList.toggle('closed', body.classList.contains('collapsed'));
     };
-
     edit.onclick = () => {
-      if (structured) { body.querySelectorAll('.fcgrid,.mcards').forEach((el) => el.style.display = 'none'); }
-      if (reader) reader.style.display = 'none';
-      editor.style.display = 'block';
-      edit.style.display = 'none';
-      save.style.display = 'inline-flex'; cancel.style.display = 'inline-flex';
+      reader.style.display = 'none'; editor.style.display = 'block';
+      edit.style.display = 'none'; save.style.display = 'inline-flex'; cancel.style.display = 'inline-flex';
       editor.focus();
     };
     cancel.onclick = () => {
-      editor.value = ch.content;
-      if (structured) { body.querySelectorAll('.fcgrid,.mcards').forEach((el) => el.style.display = ''); }
-      if (reader) reader.style.display = '';
-      editor.style.display = 'none';
-      edit.style.display = 'inline-flex';
-      save.style.display = 'none'; cancel.style.display = 'none';
+      editor.value = ch.content || '';
+      reader.style.display = ''; editor.style.display = 'none';
+      edit.style.display = 'inline-flex'; save.style.display = 'none'; cancel.style.display = 'none';
     };
     save.onclick = () => {
       ch.content = editor.value;
-      if (reader) reader.innerHTML = renderMarkdown(ch.content);
+      reader.innerHTML = renderMarkdown(ch.content);
+      bindWikiLinks(reader);
       saveWs();
       toast('Chapter saved in this browser', 'ok');
       cancel.onclick();
     };
-
     row.append(edit, save, cancel);
     head.append(copy, collapse);
     div.append(head, body, row);
     wrap.appendChild(div);
     chapterEls.push(div);
-
     const tocItem = document.createElement('button');
     tocItem.type = 'button'; tocItem.className = 'toc-item'; tocItem.textContent = ch.title;
     tocItem.onclick = () => {
@@ -2549,25 +2205,135 @@ async function renderBook(scrollTo) {
       $('tocDrawer').classList.remove('open');
     };
     tocList.appendChild(tocItem);
-
     if (ci < chapters.length - 1 || ci > 0) {
       const nav = document.createElement('div'); nav.className = 'navbtns';
       const prevB = document.createElement('button');
-      prevB.className = 'ghost small'; prevB.textContent = '↑ Previous chapter';
+      prevB.className = 'ghost small'; prevB.textContent = 'â†‘ Previous chapter';
       prevB.style.visibility = ci > 0 ? 'visible' : 'hidden';
       prevB.onclick = () => chapterEls[ci - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
       const nextB = document.createElement('button');
-      nextB.className = 'ghost small'; nextB.textContent = 'Next chapter ↓';
+      nextB.className = 'ghost small'; nextB.textContent = 'Next chapter â†“';
       nextB.style.visibility = ci < chapters.length - 1 ? 'visible' : 'hidden';
       nextB.onclick = () => chapterEls[ci + 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
       nav.append(prevB, nextB);
       wrap.appendChild(nav);
     }
   });
-
-  updateStepper();
   if (scrollTo) $('chapters').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+/* ================= Knowledge Manager ================= */
+function openKm() {
+  if (!ws || !ws.kb || !(ws.kb.topics || []).length) { toast('Build the knowledge base first', 'err'); return; }
+  $('kmModal').classList.add('open');
+  renderKm();
+}
+function closeKm() { $('kmModal').classList.remove('open'); }
+function renderKm() {
+  const kb = ws.kb || {};
+  const topics = kb.topics || [];
+  const list = $('kmList'); list.innerHTML = '';
+  if (!topics.length) { list.innerHTML = '<div class="empty">No topics yet</div>'; return; }
+  topics.forEach((t, idx) => {
+    const li = document.createElement('li');
+    li.style.cssText = 'padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)' + (t.excluded ? 'opacity:.45' : '');
+    li.innerHTML = '<b>' + esc(t.canonical_name || t.id) + '</b>'
+      + '<div style="font-size:.82em;color:var(--muted);margin-top:4px">'
+      + (t.definitions || []).length + ' def Â· ' + (t.facts || []).length + ' facts Â· '
+      + (t.aliases || []).length + ' aliases Â· ' + (t.source_refs || []).length + ' source(s)</div>';
+    if (t.summary) li.innerHTML += '<div style="font-size:.82em;margin-top:4px;color:var(--subtle)">' + esc(t.summary).slice(0, 140) + '</div>';
+    li.onclick = () => { $('kmDetail').innerHTML = renderKmTopic(t, idx); };
+    list.appendChild(li);
+  });
+}
+function renderKmTopic(t, idx) {
+  let html = '<h3 style="margin:0 0 12px">' + esc(t.canonical_name || t.id) + '</h3>';
+  if (t.summary) html += '<p>' + esc(t.summary) + '</p>';
+  if ((t.aliases || []).length) html += '<p class="hint"><b>Aliases:</b> ' + t.aliases.map(esc).join(', ') + '</p>';
+  if ((t.definitions || []).length) {
+    html += '<h4>Definitions</h4><ul>';
+    for (const d of t.definitions) html += '<li>' + esc(d.text) + '</li>';
+    html += '</ul>';
+  }
+  if ((t.facts || []).length) {
+    html += '<h4>Facts</h4><ul>';
+    for (const f of t.facts) html += '<li>' + esc(f.text) + '</li>';
+    html += '</ul>';
+  }
+  if ((t.examples || []).length) {
+    html += '<h4>Examples</h4>';
+    for (const e of t.examples) html += '<div class="example"><strong>' + esc(e.title || 'Example') + ':</strong> ' + esc(e.text) + '</div>';
+  }
+  if ((t.formulas || []).length) {
+    html += '<h4>Formulas</h4>';
+    for (const f of t.formulas) html += '<div class="formula"><code>' + esc(f.expression || f.text) + '</code></div>';
+  }
+  if ((t.terminology || []).length) {
+    html += '<h4>Terminology</h4><dl>';
+    for (const term of t.terminology) html += '<dt>' + esc(term.term) + '</dt><dd>' + esc(term.meaning) + '</dd>';
+    html += '</dl>';
+  }
+  html += '<div style="margin-top:16px">';
+  html += '<button class="ghost small" onclick="toggleExcludeTopic(' + idx + ')">' + (t.excluded ? 'Include topic' : 'Exclude topic') + '</button>';
+  html += '</div>';
+  return html;
+}
+function toggleExcludeTopic(idx) {
+  const topics = (ws.kb || {}).topics || [];
+  if (!topics[idx]) return;
+  topics[idx].excluded = !topics[idx].excluded;
+  saveWs(true);
+  renderKm();
+  applyKbStats(ws.kb);
+}
+$('kmBtn').onclick = openKm;
+$('kmClose').onclick = closeKm;
+$('kmConsolidate').onclick = async () => {
+  if (!ws || !ws.kb) return;
+  try {
+    toast('Merging similar topicsâ€¦', 'ok');
+    const res = await apiPost('/api/knowledge/consolidate', { kb: ws.kb });
+    ws.kb = res.kb || ws.kb;
+    saveWs(true);
+    renderKm();
+    applyKbStats(ws.kb);
+    toast('Consolidation complete â€” ' + ((ws.kb.topics || []).length) + ' topic(s) remain', 'ok');
+  } catch (e) { showError(e.message || 'Consolidation failed'); }
+};
+
+/* ================= QA modal ================= */
+function openQa() {
+  if (!ws || !ws.qa) { toast('No QA report yet', 'err'); return; }
+  $('qaModal').classList.add('open');
+  const qa = ws.qa;
+  const body = $('qaBody');
+  let html = '<div class="notice ' + (qa.status === 'pass' ? 'good' : qa.status === 'warn' ? 'warn' : 'bad') + '">'
+    + '<b>Status:</b> ' + qa.status.toUpperCase() + '</div>';
+  if (qa.statistics) {
+    html += '<h4>Statistics</h4><ul>';
+    for (const [k, v] of Object.entries(qa.statistics)) html += '<li>' + esc(k) + ': ' + v + '</li>';
+    html += '</ul>';
+  }
+  if ((qa.errors || []).length) {
+    html += '<h4 style="color:var(--danger)">Errors</h4><ul>';
+    for (const e of qa.errors) html += '<li>' + esc(e) + '</li>';
+    html += '</ul>';
+  }
+  if ((qa.warnings || []).length) {
+    html += '<h4 style="color:var(--accent)">Warnings</h4><ul>';
+    for (const w of qa.warnings) html += '<li>' + esc(w) + '</li>';
+    html += '</ul>';
+  }
+  if (!(qa.errors || []).length && !(qa.warnings || []).length) {
+    html += '<p style="margin-top:12px">All checks passed.</p>';
+  }
+  body.innerHTML = html;
+}
+function closeQa() { $('qaModal').classList.remove('open'); }
+$('qaClose').onclick = closeQa;
+$('qaOk').onclick = closeQa;
+$('qaExportAnyway').onclick = () => { closeQa(); exportBook('markdown'); };
+function esc(s) { const d = document.createElement('span'); d.textContent = s || ''; return d.innerHTML; }
 
 /* ================= health + boot ================= */
 (async () => {
@@ -2583,7 +2349,7 @@ async function renderBook(scrollTo) {
 (async () => {
   try { await loadProviders(); } catch (_e) {}
   refreshBadge();
-  loadNotebookMeta();
+  loadSavedPreset(); renderPresetGrid(); savePresetPrefs();
   loadProjects();
   const activeId = localStorage.getItem(WS_ACTIVE_KEY);
   if (activeId && localStorage.getItem(wsStoreKey(activeId))) {
