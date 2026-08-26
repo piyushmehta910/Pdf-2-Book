@@ -36,7 +36,8 @@ const PROVIDERS = {
   }
 };
 
-function normalizeOverride(override = {}) {
+function normalizeOverride(override) {
+  if (!override || typeof override !== 'object') return { provider: null, client: null };
   const provider = PROVIDERS[override.provider] ? override.provider : null;
   if (!provider) return { provider: null, client: null };
   const meta = PROVIDERS[provider];
