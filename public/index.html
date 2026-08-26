@@ -1293,13 +1293,63 @@ function wsList() {
   catch (_e) { return []; }
 }
 
+/* ---------- IndexedDB for heavy page text ---------- */
+let idbPromise = null;
+function idb() {
+  if (!('indexedDB' in window)) return Promise.reject(new Error('IndexedDB unavailable'));
+  if (!idbPromise) {
+    idbPromise = new Promise((resolve, reject) => {
+      const req = indexedDB.open('pdf2book', 1);
+      req.onupgradeneeded = () => { req.result.createObjectStore('kv'); };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error || new Error('IndexedDB open failed'));
+    }).catch((e) => { idbPromise = null; throw e; });
+  }
+  return idbPromise;
+}
+async function idbSet(key, val) {
+  const db = await idb();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction('kv', 'readwrite');
+    tx.objectStore('kv').put(val, key);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error || new Error('IndexedDB write failed'));
+  });
+}
+async function idbGet(key) {
+  const db = await idb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('kv', 'readonly');
+    const rq = tx.objectStore('kv').get(key);
+    rq.onsuccess = () => resolve(rq.result);
+    rq.onerror = () => reject(rq.error || new Error('IndexedDB read failed'));
+  });
+}
+async function idbDel(key) {
+  try {
+    const db = await idb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction('kv', 'readwrite');
+      tx.objectStore('kv').delete(key);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (_e) {}
+}
+
+function wsLite() {
+  const copy = { ...ws, _idb: true };
+  copy.sources = (ws.sources || []).map((s) => ({ ...s, pages: null, pageCount: s.pages.length }));
+  return copy;
+}
+
 let saveTimer = null;
 function saveWs(immediate) {
   if (!ws) return;
   ws.updatedAt = new Date().toISOString();
   const commit = () => {
     try {
-      localStorage.setItem(wsStoreKey(ws.id), JSON.stringify(ws));
+      localStorage.setItem(wsStoreKey(ws.id), JSON.stringify(wsLite()));
       const list = wsList().filter((x) => x.id !== ws.id);
       list.unshift({
         id: ws.id, title: ws.title, createdAt: ws.createdAt, updatedAt: ws.updatedAt,
@@ -1311,6 +1361,8 @@ function saveWs(immediate) {
     } catch (e) {
       showError('Could not save locally — storage may be full. Export your book to keep it.');
     }
+    idbSet('pages.' + ws.id, (ws.sources || []).map((s) => ({ id: s.id, pages: s.pages })))
+      .catch(() => {});
   };
   if (immediate) { clearTimeout(saveTimer); commit(); return; }
   clearTimeout(saveTimer);
@@ -1351,6 +1403,7 @@ async function loadProjects() {
       e.stopPropagation();
       if (!confirm('Delete "' + p.title + '" from this browser?')) return;
       localStorage.removeItem(wsStoreKey(p.id));
+      idbDel('pages.' + p.id);
       localStorage.setItem(WS_LIST_KEY, JSON.stringify(wsList().filter((x) => x.id !== p.id)));
       toast('Project deleted', 'ok');
       if (ws && ws.id === p.id) { ws = null; showWorkspace(false); }
@@ -1405,11 +1458,32 @@ function enterWorkspace() {
   updateStepper();
 }
 
-function openWorkspace(id) {
-  try {
-    ws = JSON.parse(localStorage.getItem(wsStoreKey(id)) || 'null');
-  } catch (_e) { ws = null; }
-  if (!ws) { toast('That project could not be loaded', 'err'); return; }
+async function openWorkspace(id) {
+  let w = null;
+  try { w = JSON.parse(localStorage.getItem(wsStoreKey(id)) || 'null'); }
+  catch (_e) { w = null; }
+  if (!w) { toast('That project could not be loaded', 'err'); return; }
+  ws = w;
+  const migrated = !w._idb && (w.sources || []).some((s) => s.pages);
+  if (w._idb) {
+    try {
+      const pageMap = new Map((await idbGet('pages.' + id)) || []);
+      let missing = 0;
+      w.sources = (w.sources || []).filter((s) => {
+        const rec = pageMap.get(s.id);
+        if (rec && Array.isArray(rec.pages)) { s.pages = rec.pages; return true; }
+        missing++;
+        return false;
+      });
+      if (missing) toast(missing + ' source(s) could not be restored — re-add the file', 'err');
+    } catch (_e) {
+      const kept = (w.sources || []).filter((s) => Array.isArray(s.pages));
+      if (kept.length !== (w.sources || []).length) {
+        toast('Storage error — some sources were dropped. Re-add their files.', 'err');
+      }
+      w.sources = kept;
+    }
+  }
   saveWs(true);
   enterWorkspace();
 }
@@ -1553,6 +1627,8 @@ async function extractPdfPages(file, onProgress) {
   const doc = await pdfjs.getDocument({ data: buf }).promise;
   const pages = [];
   let ocrCount = 0;
+  let ocrFailed = 0;
+  let ocrError = '';
   for (let i = 1; i <= doc.numPages; i++) {
     if (extractionCancelled) throw Object.assign(new Error('Extraction stopped'), { cancelled: true });
     onProgress && onProgress(i, doc.numPages, 'reading');
@@ -1570,14 +1646,15 @@ async function extractPdfPages(file, onProgress) {
       try {
         const ocrText = await ocrPage(page);
         if (ocrText.length > text.length) { text = ocrText; ocrCount++; }
-      } catch (_e) {
-        if (String(_e && _e.message).includes('OCR')) throw _e;
+      } catch (e) {
+        ocrFailed++;
+        if (!ocrError) ocrError = String((e && e.message) || e).slice(0, 140);
       }
     }
     pages.push({ pageNumber: i, text });
     if (page.cleanup) page.cleanup();
   }
-  return { pages, ocrCount };
+  return { pages, ocrCount, ocrFailed, ocrError };
 }
 
 const MAX_SOURCE_CHARS = 600000;
@@ -1741,11 +1818,15 @@ $('addSrc').onclick = async () => {
     for (const f of pickedFiles) {
       if (/\.pdf$/i.test(f.name)) {
         const shortName = f.name.length > 18 ? f.name.slice(0, 15) + '…' : f.name;
-        const { pages, ocrCount } = await extractPdfPages(f, (i, n, mode) => {
+        const { pages, ocrCount, ocrFailed, ocrError } = await extractPdfPages(f, (i, n, mode) => {
           const verb = mode === 'ocr' ? 'OCR page ' : 'page ';
           busy(btn, true, shortName + ' ' + i + '/' + n, '+ Add sources');
           dzHint('"' + f.name + '" — ' + verb + i + '/' + n);
         });
+        if (ocrFailed > 0) {
+          toast(ocrFailed + ' scanned page(s) in "' + f.name.slice(0, 24) + '" could not be OCR-read' +
+            (ocrError ? ': ' + ocrError : ''), 'err');
+        }
         if (!extractionCancelled && pushSource({ title: f.name.replace(/\.pdf$/i, ''), type: 'pdf', pages, ocrCount })) {
           added.push(ws.sources[ws.sources.length - 1]);
         }
@@ -2085,6 +2166,10 @@ async function runBookEngine() {
     st.chapters = st.blueprint.chapters.map((c) => ({ title: c.title, content: '' }));
   }
   const batches = batchPages(usablePages(primary), 3500, 4);
+  if (batches.length && st.chapters.length > batches.length) {
+    st.chapters = st.chapters.slice(0, batches.length);
+    toast('Condensed plan to ' + st.chapters.length + ' chapter(s) to match source size', 'ok');
+  }
   while (st.batchIdx < batches.length) {
     if (genPaused) return false;
     const chCount = st.chapters.length || 1;

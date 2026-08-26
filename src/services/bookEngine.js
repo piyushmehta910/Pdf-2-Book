@@ -75,7 +75,7 @@ async function makeBlueprint(input, aiConfig) {
     const raw = await aiProvider.complete(
       BLUEPRINT_SYSTEM,
       `Working title: ${input.title || 'Untitled'}\nBook tone: ${input.tone || 'neutral'}; depth: ${input.depth || 'standard'}.\n\nSources overview:\n${srcBlock}`,
-      { maxTokens: 1800, temperature: 0.5 },
+      { maxTokens: 1800, temperature: 0.5, timeoutMs: 30000 },
       aiConfig
     );
     return { blueprint: sanitizeBlueprint(parseJsonLoose(raw), fb), mode: 'ai' };
@@ -150,7 +150,7 @@ async function draftBatch(payload, aiConfig) {
         `RUNNING SUMMARY SO FAR:\n${condense(payload.summary || 'Nothing yet.', 1800)}`,
         `NEXT SOURCE PAGES:\n${pagesBlock}`
       ].join('\n\n'),
-      { maxTokens: 2400, temperature: 0.55 },
+      { maxTokens: 2400, temperature: 0.55, timeoutMs: 35000 },
       aiConfig
     );
     const parts = extractSummaryUpdate(raw);
@@ -201,7 +201,7 @@ async function enrichChapter(payload, aiConfig) {
     const raw = await aiProvider.complete(
       ENRICH_SYSTEM,
       `CHAPTER: ${payload.chapterTitle || 'Untitled chapter'}\n\nCURRENT CHAPTER TEXT:\n${condense(chapterText, 9000)}\n\nEVIDENCE FROM OTHER SOURCES:\n${evBlock}`,
-      { maxTokens: 2800, temperature: 0.45 },
+      { maxTokens: 2800, temperature: 0.45, timeoutMs: 35000 },
       aiConfig
     );
     const text = String(raw).trim();

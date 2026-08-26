@@ -168,6 +168,16 @@ describe('POST /api/book/* (stateless book engine)', () => {
   });
 });
 
+describe('GET / (live UI)', () => {
+  test('serves the current UI bundle with engine markers', async () => {
+    const res = await request(app).get('/');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('refineToggle');
+    expect(res.text).toContain('notesModal');
+    expect(res.text).toContain('/vendor/pdf.min.js');
+  });
+});
+
 describe('POST /api/export/:format (stateless)', () => {
   let chapters;
   beforeAll(async () => {

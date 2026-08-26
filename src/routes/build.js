@@ -101,7 +101,7 @@ router.post('/refine', async (req, res) => {
     const raw = await aiProvider.complete(
       REFINE_SYSTEM,
       `Source title: ${sourceTitle}\n\nConvert each page below into study notes. Keep every [[PAGE n]] marker exactly as written and put that page's notes under it.\n\n${bodyText}`,
-      { maxTokens: 2600, temperature: 0.3 },
+      { maxTokens: 2600, temperature: 0.3, timeoutMs: 25000 },
       aiConfig
     );
     res.json({ refined: true, notes: splitRefinedPages(raw, clean) });
