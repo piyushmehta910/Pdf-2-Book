@@ -19,6 +19,51 @@ const esc = (s) => String(s == null ? '' : s)
   .replace(/</g, '&lt;')
   .replace(/>/g, '&gt;');
 
+/** Normalize book metadata from either the `metadata` or `meta` property. */
+function bookMetadata(book) {
+  return (book && (book.metadata || book.meta)) || {};
+}
+
+/** Front matter (title page, copyright, dedication, epigraph) rendered as one HTML string. */
+function frontMatterHtml(book) {
+  const meta = bookMetadata(book);
+  const parts = [];
+  const title = book.title || 'Untitled Book';
+  const subtitle = book.subtitle || meta.subtitle;
+  const author = book.author || meta.author;
+
+  parts.push('<section class="title-page">');
+  parts.push(`<h1 class="title-main">${esc(title)}</h1>`);
+  if (subtitle) parts.push(`<p class="title-subtitle">${esc(subtitle)}</p>`);
+  if (book.byline || author) parts.push(`<p class="title-byline">by ${esc(book.byline || author)}</p>`);
+  if (meta.publisher) parts.push(`<p class="title-publisher">${esc(meta.publisher)}</p>`);
+  if (meta.place) parts.push(`<p class="title-place">${esc(meta.place)}${meta.year ? `, ${esc(meta.year)}` : ''}</p>`);
+  parts.push('</section>');
+
+  const copyrightLine = meta.copyrightLine ||
+    `Copyright \u00A9 ${meta.year || new Date().getFullYear()} ${meta.copyrightHolder || author || title}`;
+  parts.push('<section class="copyright-page">');
+  parts.push(`<p class="copyright-line">${esc(copyrightLine)}</p>`);
+  parts.push('<p class="copyright-note">All rights reserved. No part of this publication may be reproduced, stored in a retrieval system, or transmitted in any form or by any means without the prior written permission of the publisher, except in the case of brief quotations for review.</p>');
+  if (meta.isbn) parts.push(`<p class="copyright-isbn">ISBN: ${esc(meta.isbn)}</p>`);
+  parts.push('</section>');
+
+  if (meta.dedication) {
+    parts.push(`<section class="dedication-page"><p>${esc(meta.dedication)}</p></section>`);
+  }
+  if (meta.epigraph) {
+    parts.push(`<section class="epigraph-page"><blockquote><p>${esc(meta.epigraph)}</p></blockquote></section>`);
+  }
+  return parts.join('\n');
+}
+
+/** Back matter (about the author) rendered as an HTML string, empty when not configured. */
+function aboutAuthorHtml(book) {
+  const meta = bookMetadata(book);
+  if (!meta.aboutAuthor && !meta.authorBio) return '';
+  return `<section class="about-author page-break"><h2>About the Author</h2><p>${esc(meta.aboutAuthor || meta.authorBio)}</p></section>`;
+}
+
 function blockToMarkdown(b, citationStyle = 'APA') {
   if (!b) return '';
   switch (b.type) {
@@ -77,21 +122,33 @@ function blockToMarkdown(b, citationStyle = 'APA') {
 
 function bookToMarkdown(book) {
   const parts = [];
-  const meta = book.metadata || book.meta || {};
+  const meta = bookMetadata(book);
   const citationStyle = meta.citationStyle || 'APA';
+  const author = book.author || meta.author;
+  const subtitle = book.subtitle || meta.subtitle;
 
   parts.push('---');
   parts.push(`title: "${book.title || 'Untitled Book'}"`);
-  if (book.subtitle) parts.push(`subtitle: "${book.subtitle}"`);
-  if (book.author) parts.push(`author: "${book.author}"`);
+  if (subtitle) parts.push(`subtitle: "${subtitle}"`);
+  if (author) parts.push(`author: "${author}"`);
+  if (meta.publisher) parts.push(`publisher: "${meta.publisher}"`);
+  if (meta.year) parts.push(`year: "${meta.year}"`);
+  if (meta.isbn) parts.push(`isbn: "${meta.isbn}"`);
   if (meta.bookType) parts.push(`bookType: "${meta.bookType}"`);
   if (meta.designTheme) parts.push(`designTheme: "${meta.designTheme}"`);
   parts.push(`date: "${new Date().toISOString().split('T')[0]}"`);
   parts.push('---\n');
 
   parts.push(`# ${book.title || 'Untitled Book'}\n`);
-  if (book.subtitle) parts.push(`### ${book.subtitle}\n`);
-  if (book.author) parts.push(`*by ${book.author}*\n`);
+  if (subtitle) parts.push(`### ${subtitle}\n`);
+  if (book.byline || author) parts.push(`*by ${book.byline || author}*\n`);
+
+  const copyrightLine = meta.copyrightLine ||
+    `Copyright \u00A9 ${meta.year || new Date().getFullYear()} ${meta.copyrightHolder || author || book.title || 'the author'}`;
+  parts.push(`> ${copyrightLine}\n`);
+
+  if (meta.dedication) parts.push(`### Dedication\n\n> ${meta.dedication}\n`);
+  if (meta.epigraph) parts.push(`> "${meta.epigraph}"\n`);
   if (book.preface) parts.push(`## Preface\n\n${book.preface}\n`);
 
   const chapters = Array.isArray(book.chapters) ? book.chapters : [];
@@ -140,8 +197,14 @@ function bookToMarkdown(book) {
     for (const entry of indexEntries) {
       const term = entry.term || entry.name || '';
       const pages = Array.isArray(entry.pages) ? entry.pages.join(', ') : (entry.pages || '');
-      parts.push(`- **${term}** ${pages ? `(${pages})` : ''}`);
+      parts.push('- **' + term + '** ' + (pages ? '(' + pages + ')' : ''));
     }
+    parts.push('');
+  }
+
+  if (meta.aboutAuthor || meta.authorBio) {
+    parts.push('## About the Author\n');
+    parts.push(meta.aboutAuthor || meta.authorBio);
     parts.push('');
   }
 
@@ -421,12 +484,103 @@ nav.toc a {
   font-weight: 600;
   color: ${ds.textColor || '#1e293b'};
 }
+
+.title-page {
+  text-align: center;
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  page-break-after: always;
+  break-after: page;
+}
+
+.title-main {
+  font-family: ${ds.headingFont || ds.fontFamily};
+  font-size: 2.8em;
+  color: ${ds.headingColor || '#0f172a'};
+  margin: 0.4em 0;
+}
+
+.title-subtitle {
+  font-size: 1.35em;
+  color: #64748b;
+  font-style: italic;
+  margin-bottom: 1.6em;
+}
+
+.title-byline {
+  font-size: 1.15em;
+  font-weight: 600;
+  color: ${ds.textColor || '#1e293b'};
+}
+
+.title-publisher {
+  font-size: 1em;
+  color: #64748b;
+  margin-top: 3em;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.title-place {
+  font-size: 0.95em;
+  color: #94a3b8;
+}
+
+.copyright-page {
+  page-break-after: always;
+  break-after: page;
+  font-size: 0.82em;
+  color: #64748b;
+  line-height: 1.6;
+  max-width: 34em;
+  margin: 0 auto;
+}
+
+.copyright-note {
+  margin-top: 1.4em;
+}
+
+.dedication-page {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 1.25em;
+  font-style: italic;
+  color: ${ds.headingColor || '#0f172a'};
+  page-break-after: always;
+  break-after: page;
+}
+
+.epigraph-page {
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.epigraph-page blockquote {
+  max-width: 26em;
+  font-style: italic;
+  font-size: 1.15em;
+  color: #475569;
+  border-left: 3px solid ${ds.primaryColor || '#6366f1'};
+  padding-left: 1.2em;
+  margin: 0;
+}
+
+.about-author {
+  max-width: 38em;
+}
 `;
 }
 
 function bookToHtml(book, design = 'modern', pageSize = 'trade_6x9') {
   const chapters = Array.isArray(book.chapters) ? book.chapters : [];
-  const meta = book.metadata || book.meta || {};
+  const meta = bookMetadata(book);
   const citationStyle = meta.citationStyle || 'APA';
   const designId = meta.designTheme || design || 'modern';
   const sizeId = meta.pageSize || pageSize || 'trade_6x9';
@@ -437,9 +591,12 @@ function bookToHtml(book, design = 'modern', pageSize = 'trade_6x9') {
   body.push('<div class="book-container">');
   body.push('<section class="cover-page">');
   body.push(`<h1 class="cover-title">${esc(book.title || 'Untitled Book')}</h1>`);
-  if (book.subtitle) body.push(`<p class="cover-subtitle">${esc(book.subtitle)}</p>`);
-  if (book.author) body.push(`<p class="cover-author">by ${esc(book.author)}</p>`);
+  if (book.subtitle || meta.subtitle) body.push(`<p class="cover-subtitle">${esc(book.subtitle || meta.subtitle)}</p>`);
+  if (book.author || meta.author) body.push(`<p class="cover-author">by ${esc(book.author || meta.author)}</p>`);
   body.push('</section>');
+
+  // Front Matter: Title page, copyright page, dedication, epigraph
+  body.push(frontMatterHtml(book));
 
   // Preface
   if (book.preface) {
@@ -505,6 +662,10 @@ function bookToHtml(book, design = 'modern', pageSize = 'trade_6x9') {
     }
     body.push('</ul></section>');
   }
+
+  // Back Matter: About the Author
+  const aboutAuthor = aboutAuthorHtml(book);
+  if (aboutAuthor) body.push(aboutAuthor);
 
   body.push('</div>'); // book-container
 
