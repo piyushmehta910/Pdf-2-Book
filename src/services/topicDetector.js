@@ -20,6 +20,7 @@ function detectTopics(chunks) {
 
     if (bestTopic && bestScore >= 2) {
       assigned.set(chunk.id, bestTopic.id);
+      bestTopic.chunkIds.push(chunk.id);
     } else {
       const keywords = topKeywords([chunk.content], 5);
       const sectionMatch = (chunk.section || '').trim();

@@ -19,6 +19,7 @@ router.post('/', (req, res) => {
     createdAt: new Date().toISOString()
   };
   fs.mkdirSync(path.resolve(config.dataDir, project.id), { recursive: true });
+  storage.writeCollection(project.id, 'project', [project]);
   res.status(201).json(project);
 });
 
@@ -59,7 +60,7 @@ router.get('/:projectId', (req, res) => {
 
 router.delete('/:projectId', (req, res) => {
   const dir = path.resolve(config.dataDir, req.params.projectId);
-  if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true });
+  if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
   res.status(204).end();
 });
 

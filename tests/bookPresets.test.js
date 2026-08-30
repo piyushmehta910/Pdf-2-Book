@@ -1,13 +1,14 @@
 const bookPresets = require('../src/services/bookPresets');
 
 describe('bookPresets', () => {
-  test('exposes all nine presets via describe()', () => {
+  test('exposes all sixteen presets via describe()', () => {
     const list = bookPresets.describe();
-    expect(list).toHaveLength(9);
+    expect(list).toHaveLength(16);
     const ids = list.map((p) => p.id);
     expect(ids).toEqual(expect.arrayContaining([
-      'textbook', 'studyguide', 'examprep', 'beginner', 'handbook',
-      'reference', 'tutorial', 'research', 'custom'
+      'academic', 'textbook', 'research', 'technical', 'selfhelp',
+      'business', 'biography', 'novel', 'guide', 'manual',
+      'studyguide', 'coursebook', 'children', 'reference', 'report', 'custom'
     ]));
     for (const p of list) {
       expect(p.label).toBeTruthy();
@@ -16,14 +17,21 @@ describe('bookPresets', () => {
     }
   });
 
+  test('exposes 10 design systems and 5 page sizes', () => {
+    const designs = bookPresets.describeDesigns();
+    expect(designs).toHaveLength(10);
+    const pageSizes = bookPresets.describePageSizes();
+    expect(pageSizes).toHaveLength(5);
+  });
+
   test('getPreset falls back to textbook for unknown ids', () => {
     expect(bookPresets.getPreset('nope').id).toBe('textbook');
     expect(bookPresets.getPreset('exam').id).toBe('textbook');
-    expect(bookPresets.getPreset('examprep').label).toBe('Exam Preparation');
+    expect(bookPresets.getPreset('academic').label).toBe('Academic Book');
   });
 
   test('presetExists distinguishes real vs unknown ids', () => {
-    expect(bookPresets.presetExists('tutorial')).toBe(true);
+    expect(bookPresets.presetExists('technical')).toBe(true);
     expect(bookPresets.presetExists('quick')).toBe(false);
   });
 
@@ -48,7 +56,7 @@ describe('bookPresets', () => {
   });
 
   test('every preset carries blueprint and draft addenda except custom defaults', () => {
-    for (const id of ['textbook', 'studyguide', 'examprep', 'beginner', 'handbook', 'reference', 'tutorial', 'research']) {
+    for (const id of ['academic', 'textbook', 'research', 'technical', 'selfhelp', 'business', 'biography', 'novel', 'guide', 'manual', 'studyguide', 'coursebook', 'children', 'reference', 'report']) {
       const p = bookPresets.getPreset(id);
       expect(p.blueprintAddendum.length).toBeGreaterThan(10);
       expect(p.draftAddendum.length).toBeGreaterThan(10);

@@ -19,6 +19,9 @@ const WRITE_SYSTEM =
   '{"type":"table","headers":[string],"rows":[[string]]}\n' +
   '{"type":"warning","text":string}\n' +
   '{"type":"note","text":string}\n' +
+  '{"type":"quote","text":string,"author":string}\n' +
+  '{"type":"exercise","title":string,"content":string,"answer":string}\n' +
+  '{"type":"callout","type":"info|warning|tip|summary","title":string,"text":string}\n' +
   '{"type":"relationship_map","relationships":[{"from":string,"to":string,"type":string,"label":string}]}\n' +
   '{"type":"importance","level":"high|medium|low","text":string}\n' +
   'Finish the last section with a "summary" block type if the preset requests summaries.\n' +
@@ -26,7 +29,7 @@ const WRITE_SYSTEM =
   'Use "importance" blocks to highlight key takeaways marked high/medium/low.\n' +
   'At the top-level JSON, include "openQuestions" (string array) and "continuityNote" (string) for cross-chapter coherence.';
 
-const BLOCK_TYPES = new Set(['paragraph', 'definition', 'bullet_list', 'example', 'formula', 'table', 'warning', 'note', 'summary', 'relationship_map', 'importance']);
+const BLOCK_TYPES = new Set(['paragraph', 'definition', 'bullet_list', 'example', 'exercise', 'quote', 'callout', 'formula', 'table', 'warning', 'note', 'summary', 'relationship_map', 'importance', 'pageBreak']);
 
 /** Validate + repair one AI-returned section list. Drops only unusable items. */
 function sanitizeBlocks(rawSections) {
@@ -41,6 +44,17 @@ function sanitizeBlocks(rawSections) {
         case 'paragraph': case 'warning': case 'note': case 'summary':
           if (!isStr(b.text)) continue;
           out.text = b.text.trim().slice(0, 6000);
+          break;
+        case 'callout':
+          if (!isStr(b.text)) continue;
+          out.text = b.text.trim().slice(0, 6000);
+          out.title = isStr(b.title) ? b.title.trim().slice(0, 140) : '';
+          out.style = isStr(b.style) ? b.style.trim().slice(0, 30) : 'info';
+          break;
+        case 'quote':
+          if (!isStr(b.text)) continue;
+          out.text = b.text.trim().slice(0, 2000);
+          out.author = isStr(b.author) ? b.author.trim().slice(0, 120) : '';
           break;
         case 'definition':
           if (!isStr(b.term) || !isStr(b.definition)) continue;
@@ -57,6 +71,12 @@ function sanitizeBlocks(rawSections) {
           if (!isStr(b.content)) continue;
           out.title = isStr(b.title) ? b.title.trim().slice(0, 140) : '';
           out.content = b.content.trim().slice(0, 3000);
+          break;
+        case 'exercise':
+          if (!isStr(b.content) && !isStr(b.question)) continue;
+          out.title = isStr(b.title) ? b.title.trim().slice(0, 140) : '';
+          out.content = (b.content || b.question || '').trim().slice(0, 2000);
+          out.answer = isStr(b.answer) ? b.answer.trim().slice(0, 1000) : '';
           break;
         case 'formula':
           if (!isStr(b.expression)) continue;
@@ -95,7 +115,11 @@ function sanitizeBlocks(rawSections) {
           out.text = b.text.trim().slice(0, 500);
           break;
         }
+        case 'pageBreak':
+          out.manual = true;
+          break;
       }
+      if (b.sourceRef) out.sourceRef = b.sourceRef;
       blocks.push(out);
     }
     if (blocks.length) sections.push({ title: sec.title.trim().slice(0, 140), blocks });
@@ -119,34 +143,44 @@ function deterministicSections(chapter, slice, preset) {
   for (const topic of slice) {
     if (topic.summary) current.blocks.push({ type: 'paragraph', text: topic.summary });
     for (const d of topic.definitions || []) {
-      current.blocks.push({ type: 'definition', term: d.term || topic.name, definition: d.text });
+      current.blocks.push({ type: 'definition', term: d.term || topic.name, definition: d.text, sourceRef: d.source_ref });
     }
     if ((topic.facts || []).length) {
-      current.blocks.push({ type: 'bullet_list', items: topic.facts.map((f) => f.text + (preset.include.sources && f.source_ref ? ' ' + refLabel(f.source_ref) : '')) });
+      current.blocks.push({
+        type: 'bullet_list',
+        items: topic.facts.map((f) => f.text + (preset.include && preset.include.sources && f.source_ref ? ' ' + refLabel(f.source_ref) : ''))
+      });
     }
     for (const f of topic.formulas || []) {
-      current.blocks.push({ type: 'formula', expression: f.text, explanation: '' });
+      current.blocks.push({ type: 'formula', expression: f.expression || f.text || '', explanation: '' });
     }
     for (const p of topic.procedures || []) {
-      current.blocks.push({ type: 'bullet_list', items: String(p.text).split(' | ').map((s) => s.replace(/^\d+[.)]\s*/, '')).filter(Boolean) });
+      current.blocks.push({
+        type: 'bullet_list',
+        items: String(p.text).split(' | ').map((s) => s.replace(/^\d+[.)]\s*/, '')).filter(Boolean)
+      });
     }
     for (const e of topic.examples || []) {
       current.blocks.push({ type: 'example', title: e.title || 'Example', content: e.text });
     }
-    // start a fresh subsection per additional topic to keep entries standalone
     if (slice.indexOf(topic) < slice.length - 1) {
       const next = slice[slice.indexOf(topic) + 1];
       startNew(next.name);
     }
   }
-  if (preset.include.summary) {
-    current.blocks.push({
-      type: 'summary',
-      text: `This section covered ${(slice.map((t) => t.name).join(', ') || chapter.title).toString()}.`
-    });
-  }
   push();
-  return sections.filter((s) => s.blocks.length);
+
+  if (preset && preset.include && preset.include.summary && slice.length) {
+    const last = sections[sections.length - 1] || current;
+    if (last) {
+      last.blocks.push({
+        type: 'summary',
+        text: `Key points: ${slice.map((t) => t.name).join(', ')} were covered in this chapter.`
+      });
+    }
+  }
+
+  return sections.length ? sections : [{ title: chapter.title, blocks: [{ type: 'paragraph', text: chapter.purpose || 'No content generated.' }] }];
 }
 
 async function writeChapter({ title, chapter, presetId, kbSlice, recentSummaries }, aiConfig) {
@@ -198,4 +232,66 @@ async function writeChapter({ title, chapter, presetId, kbSlice, recentSummaries
   }
 }
 
-module.exports = { writeChapter, sanitizeBlocks, deterministicSections, WRITE_SYSTEM };
+/**
+ * Isolated Section Rewriter (master spec §11, §24)
+ * Allows rewrites/expansions of a specific section without modifying other sections.
+ */
+async function rewriteSection({ section, action, customInstruction, presetId, kbSlice }, aiConfig) {
+  if (!section || typeof section !== 'object') {
+    throw new Error('Section object is required');
+  }
+  const preset = getPreset(presetId);
+  const act = String(action || 'rewrite').toLowerCase();
+
+  const actionDirectives = {
+    rewrite: 'Rewrite and polish this section to improve clarity and flow while adhering to the preset tone.',
+    expand: 'Expand this section with more in-depth explanations, thorough evidence breakdown, and supporting details.',
+    condense: 'Condense this section into crisp, concise key points, removing fluff while preserving all core facts and definitions.',
+    simplify: 'Simplify this section into plain, jargon-free language suitable for a beginner reader, using intuitive analogies.',
+    explain: 'Provide a deeper, step-by-step conceptual explanation of the ideas in this section.',
+    academic: 'Elevate this section to formal academic style, citing principles and structuring formal arguments.',
+    examples: 'Add 1-2 practical, illustrative worked examples or case scenarios to this section.',
+    exercises: 'Add 2-3 thoughtful practice questions or exercises with answers at the end of this section.',
+    summary: 'Add a clear summary callout block and high-priority takeaways to this section.',
+    takeaways: 'Extract and format the top high-yield takeaways in importance blocks.'
+  };
+
+  const directive = actionDirectives[act] || actionDirectives.rewrite;
+  const extra = customInstruction ? ` Additional user instruction: ${customInstruction}` : '';
+
+  if (!aiProvider.available(aiConfig)) {
+    return { section, mode: 'fallback' };
+  }
+
+  try {
+    const prompt = [
+      `PRESET: ${preset.label} (${preset.tone}, reading level: ${preset.readingLevel})`,
+      `GOAL: ${directive}${extra}`,
+      `ORIGINAL SECTION:\n${JSON.stringify(section)}`,
+      kbSlice ? `RELEVANT EVIDENCE:\n${JSON.stringify(kbSlice)}` : ''
+    ].filter(Boolean).join('\n\n');
+
+    const raw = await aiProvider.complete(
+      'You are a master book editor. Transform the given book section according to the requested directive. Return STRICT JSON only: {"title":string,"blocks":[<block>]} matching the standard block schema (paragraph, definition, bullet_list, example, exercise, formula, table, warning, note, summary, quote, callout, importance).',
+      prompt,
+      { maxTokens: 2000, temperature: 0.4, timeoutMs: 25000 },
+      aiConfig
+    );
+    const parsed = parseJsonLoose(raw);
+    const sanitized = sanitizeBlocks([parsed]);
+    if (sanitized.length && sanitized[0].blocks.length) {
+      return { section: sanitized[0], mode: 'ai' };
+    }
+    return { section, mode: 'fallback' };
+  } catch (_err) {
+    return { section, mode: 'fallback' };
+  }
+}
+
+module.exports = {
+  writeChapter,
+  rewriteSection,
+  sanitizeBlocks,
+  deterministicSections,
+  WRITE_SYSTEM
+};

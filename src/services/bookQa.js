@@ -1,12 +1,15 @@
 /**
- * BookQa — deterministic quality gate before export (master spec §29).
- * Pure function over the final book JSON + KB. No AI.
+ * BookQa — deterministic quality audit engine before export (master spec §29, §33, §34).
+ * Calculates a comprehensive 0-100 Quality Score, detecting structural issues,
+ * empty sections, broken cross-references, ungrounded claims, and formatting flaws.
  */
 const { isStr, isArr, isObj } = require('./jsonUtils');
 
 function runQa(book, kb) {
   const errors = [];
   const warnings = [];
+  const suggestions = [];
+
   const stats = {
     topics: kb && Array.isArray(kb.topics) ? kb.topics.filter((t) => !t.excluded).length : 0,
     chapters: 0,
@@ -16,11 +19,24 @@ function runQa(book, kb) {
     unresolved_references: (kb && Array.isArray(kb.unresolved_refs) ? kb.unresolved_refs.length : 0),
     emptySections: 0,
     duplicateSections: 0,
-    brokenRefs: 0
+    brokenRefs: 0,
+    groundedBlocks: 0,
+    formulas: 0,
+    definitions: 0,
+    examples: 0,
+    exercises: 0,
+    tables: 0
   };
 
   if (!isObj(book) || !isArr(book.chapters)) {
-    return { status: 'fail', errors: ['Book JSON is malformed or missing chapters'], warnings, statistics: stats };
+    return {
+      status: 'fail',
+      score: 0,
+      errors: ['Book JSON is malformed or missing chapters'],
+      warnings,
+      suggestions,
+      statistics: stats
+    };
   }
 
   stats.chapters = book.chapters.length;
@@ -30,7 +46,7 @@ function runQa(book, kb) {
 
   for (const ch of book.chapters) {
     if (!isStr(ch.title)) errors.push('Chapter without a title');
-    else if (!ch.title.trim()) errors.push(`Empty chapter title`);
+    else if (!ch.title.trim()) errors.push('Empty chapter title');
     const sections = isArr(ch.sections) ? ch.sections : [];
     if (!sections.length) errors.push(`Chapter "${ch.title || '?'}" has no sections`);
 
@@ -39,7 +55,7 @@ function runQa(book, kb) {
       const blocks = isArr(sec.blocks) ? sec.blocks : [];
       if (!blocks.length) {
         stats.emptySections++;
-        warnings.push(`Empty section "${sec.title || '?'}" in ${ch.title}`);
+        warnings.push(`Empty section "${sec.title || '?'}" in chapter "${ch.title}"`);
       }
       stats.blocks += blocks.length;
 
@@ -53,8 +69,15 @@ function runQa(book, kb) {
         }
       }
 
-      // cross-reference integrity: [[Topic]] mentions must exist as topics
       for (const b of blocks) {
+        if (b.sourceRef) stats.groundedBlocks++;
+        if (b.type === 'formula') stats.formulas++;
+        if (b.type === 'definition') stats.definitions++;
+        if (b.type === 'example') stats.examples++;
+        if (b.type === 'exercise') stats.exercises++;
+        if (b.type === 'table') stats.tables++;
+
+        // Cross-reference integrity: [[Topic]] mentions must exist as topics
         const text = [b.text, b.content, ...(b.items || [])].filter(isStr).join(' ');
         const refs = text.match(/\[\[([^\]]+)\]\]/g) || [];
         for (const r of refs) {
@@ -65,38 +88,64 @@ function runQa(book, kb) {
           );
           if (!known) {
             stats.brokenRefs++;
-            warnings.push(`Cross-reference "${r}" does not match any knowledge topic`);
+            warnings.push(`Cross-reference "${r}" does not match any known topic in the knowledge base`);
           }
         }
       }
     }
   }
 
-  // front/back matter checks
+  // Front & Back matter checks
   if (!book.glossary || !book.glossary.length) warnings.push('No glossary entries were generated');
   if (book.meta && book.meta.includeToc && !book.tocEntries) warnings.push('Table of contents requested but missing');
+
+  if (stats.conflicts > 5) {
+    warnings.push(`${stats.conflicts} unresolved conflicting claims detected between source documents`);
+  } else if (stats.conflicts > 0) {
+    suggestions.push(`${stats.conflicts} unresolved conflict(s) detected. Consider reviewing in Knowledge Manager.`);
+  }
+
   if (stats.unresolved_references > 20) {
     warnings.push(`${stats.unresolved_references} unresolved references remain — consider reviewing the Knowledge Manager`);
   }
 
-  // spec new-field checks
-  let openQCount = 0;
+  // Spec relationship map check
   let relMapCount = 0;
-  let importanceCount = 0;
   for (const ch of (book.chapters || [])) {
     for (const sec of (ch.sections || [])) {
       for (const b of (sec.blocks || [])) {
         if (b.type === 'relationship_map') relMapCount++;
-        if (b.type === 'importance') importanceCount++;
       }
     }
-    openQCount += (ch.openQuestions || []).length;
   }
-  if (!openQCount) warnings.push('No open questions surfaced by the writer — continuity may be thin');
-  if (relMapCount === 0 && stats.topics >= 5) warnings.push('No relationship maps generated despite multiple topics');
+  if (relMapCount === 0 && stats.topics >= 5) {
+    warnings.push('No relationship maps generated despite multiple topics');
+  }
+
+  // Suggestions for enriched book structure
+  if (!book.preface) {
+    suggestions.push('Add a Preface to outline the book scope and target audience.');
+  }
+
+  // Calculate 0-100 Quality Score
+  let score = 100;
+  score -= (errors.length * 25);
+  score -= (stats.emptySections * 10);
+  score -= (stats.duplicateSections * 5);
+  score -= (stats.brokenRefs * 3);
+  score -= Math.min(15, stats.conflicts * 2);
+  score = Math.max(0, Math.min(100, score));
 
   const status = errors.length ? 'fail' : warnings.length ? 'warn' : 'pass';
-  return { status, errors, warnings, statistics: stats };
+
+  return {
+    status,
+    score,
+    errors,
+    warnings,
+    suggestions,
+    statistics: stats
+  };
 }
 
 module.exports = { runQa };

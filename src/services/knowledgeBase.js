@@ -1,7 +1,7 @@
 /**
  * KnowledgeBase — the canonical source of truth (master spec §6, §14–16).
  *
- * A serialisable plain object so the browser owns persistence (IndexedDB) and
+ * A serializable plain object so the browser owns persistence (IndexedDB) and
  * stateless endpoints operate on slices. Every meaningful item carries
  * provenance {document_id, page}. Pure functions only; no I/O.
  */
@@ -73,14 +73,14 @@ function clipText(v, cap) {
 }
 
 /** Wrap arbitrary AI-provided items into {text, source_ref} records. */
-function asRecords(input, ref, textFielders) {
+function asRecords(input, ref, textFields) {
   const out = [];
   for (const raw of isArr(input) ? input : []) {
     let record = null;
     if (isStr(raw)) record = { text: raw.trim() };
     else if (isObj(raw)) {
       record = { text: '' };
-      for (const f of textFielders) {
+      for (const f of textFields) {
         if (isStr(raw[f])) { record.text = raw[f].trim(); break; }
       }
       if (!record.text) {

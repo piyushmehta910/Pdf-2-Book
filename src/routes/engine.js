@@ -10,11 +10,11 @@ const semanticResolver = require('../services/semanticResolver');
 const ocrCleaner = require('../services/ocrCleaner');
 const { extractFromPage } = require('../services/knowledgeExtractor');
 const { planFromDigest } = require('../services/bookPlanner');
-const { writeChapter } = require('../services/bookWriter');
+const { writeChapter, rewriteSection } = require('../services/bookWriter');
 const { runQa } = require('../services/bookQa');
 const bookPresets = require('../services/bookPresets');
 const { slugify, toMarkdown, toHtml, toProjectJson } = require('../services/exporterv2');
-
+const { termVector, cosineSimilarity } = require('../services/similarity');
 const { SlidingWindow } = require('../services/contextManager');
 
 const router = express.Router();
@@ -45,10 +45,17 @@ function aiConfigFromRequest(req) {
   }
 }
 
-/* ---------- presets ---------- */
+/* ---------- presets & design metadata ---------- */
 
 router.get('/presets', (_req, res) => {
-  res.json({ presets: bookPresets.describe(), defaultPreset: bookPresets.DEFAULT_PRESET_ID });
+  res.json({
+    presets: bookPresets.describeBookTypes(),
+    designs: bookPresets.describeDesigns(),
+    pageSizes: bookPresets.describePageSizes(),
+    defaultPreset: bookPresets.DEFAULT_PRESET_ID,
+    defaultDesign: bookPresets.DEFAULT_DESIGN_ID,
+    defaultPageSize: bookPresets.DEFAULT_PAGE_SIZE_ID
+  });
 });
 
 /* ---------- knowledge extraction loop ---------- */
@@ -60,7 +67,6 @@ router.post('/knowledge/extract', async (req, res) => {
     if (pageText.trim().length < 10) return res.status(400).json({ error: 'pageText must contain readable text' });
 
     const kb = knowledgeBase.sanitizeKb(body.kb);
-    // deterministic cleanup first (idempotent; client may have pre-cleaned)
     const cleaned = ocrCleaner.cleanOcr(pageText);
 
     const meta = {
@@ -83,7 +89,6 @@ router.post('/knowledge/extract', async (req, res) => {
       aiConfigFromRequest(req)
     );
 
-    // Record this page in the sliding window
     sw.recordPage(extraction);
 
     const result = knowledgeBase.applyExtraction(kb, extraction, meta);
@@ -103,16 +108,16 @@ router.post('/knowledge/extract', async (req, res) => {
 });
 
 router.post('/knowledge/adjudicate', async (req, res) => {
-  const aiConfig = aiConfigFromRequest(req);
-  if (!aiProvider.available(aiConfig)) {
-    return res.status(400).json({ error: 'Adjudication requires an AI key (x-ai-config header)' });
-  }
   try {
     const body = req.body || {};
     const a = body.a || {};
     const b = body.b || {};
     if (!String(a.name || '').trim() || !String(b.name || '').trim()) {
       return res.status(400).json({ error: 'Both candidate topics (a.name, b.name) are required' });
+    }
+    const aiConfig = aiConfigFromRequest(req);
+    if (!aiProvider.available(aiConfig)) {
+      return res.status(400).json({ error: 'Adjudication requires an AI key (x-ai-config header)' });
     }
     const raw = await aiProvider.complete(
       'You decide whether two candidate topics from a knowledge base are the SAME concept or DIFFERENT concepts. Reply with STRICT JSON only: {"verdict":"merge"|"separate","confidence":number,"reason":string}. Confidence 0-1.',
@@ -145,12 +150,25 @@ router.post('/knowledge/consolidate', (req, res) => {
         const a = kb.topics.find((t) => t.id === ids[i]);
         const b = kb.topics.find((t) => t.id === ids[j]);
         if (!a || !b || a.id === b.id || a.excluded || b.excluded) continue;
-        const verdict = semanticResolver.resolveTopic(kb, b.canonical_name, semanticResolver.topicSignature(b), a.id);
-        if (verdict.verdict === 'strong' || verdict.score >= semanticResolver.THRESHOLDS.AUTO_MERGE) {
+
+        const normA = semanticResolver.normalizeName(a.canonical_name);
+        const normB = semanticResolver.normalizeName(b.canonical_name);
+        const isNameMatch = normA === normB ||
+          (a.aliases || []).some((al) => semanticResolver.normalizeName(al) === normB) ||
+          (b.aliases || []).some((bl) => semanticResolver.normalizeName(bl) === normA);
+
+        let score = isNameMatch ? 1.0 : 0;
+        if (!isNameMatch) {
+          const tvA = termVector(semanticResolver.topicSignature(a));
+          const tvB = termVector(semanticResolver.topicSignature(b));
+          score = cosineSimilarity(tvA, tvB);
+        }
+
+        if (isNameMatch || score >= semanticResolver.THRESHOLDS.AUTO_MERGE) {
           knowledgeBase.mergeTopics(kb, a.id, b.id);
-          merged.push({ kept: a.canonical_name, absorbed: b.canonical_name, score: Number(verdict.score.toFixed(3)) });
-        } else if (verdict.verdict === 'review') {
-          review.push({ a: { id: a.id, name: a.canonical_name }, b: { id: b.id, name: b.canonical_name }, score: Number(verdict.score.toFixed(3)) });
+          merged.push({ kept: a.canonical_name, absorbed: b.canonical_name, score: Number(score.toFixed(3)) });
+        } else if (score >= semanticResolver.THRESHOLDS.REVIEW) {
+          review.push({ a: { id: a.id, name: a.canonical_name }, b: { id: b.id, name: b.canonical_name }, score: Number(score.toFixed(3)) });
         }
       }
     }
@@ -164,7 +182,70 @@ router.post('/knowledge/consolidate', (req, res) => {
   }
 });
 
-/* ---------- book planning / writing / QA ---------- */
+/* ---------- AI Source Search (master spec §23) ---------- */
+
+router.post('/sources/search', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const query = String(body.query || '').trim();
+    if (!query) return res.status(400).json({ error: 'Search query is required' });
+    const sources = Array.isArray(body.sources) ? body.sources : [];
+
+    const queryVec = termVector(query.toLowerCase());
+    const matches = [];
+
+    for (const src of sources) {
+      for (const p of src.pages || []) {
+        const text = String(p.text || '');
+        if (!text.trim()) continue;
+        const pageVec = termVector(text.toLowerCase());
+        const sim = cosineSimilarity(queryVec, pageVec);
+        const lowerText = text.toLowerCase();
+        const includesQuery = lowerText.includes(query.toLowerCase());
+
+        if (sim > 0.08 || includesQuery) {
+          matches.push({
+            sourceId: src.id,
+            sourceTitle: src.title || src.name || 'Source',
+            pageNumber: p.pageNumber || 1,
+            score: Number((sim + (includesQuery ? 0.3 : 0)).toFixed(3)),
+            snippet: text.slice(0, 400)
+          });
+        }
+      }
+    }
+
+    matches.sort((a, b) => b.score - a.score);
+    const topMatches = matches.slice(0, 8);
+
+    const aiConfig = aiConfigFromRequest(req);
+    let answer = '';
+
+    if (aiProvider.available(aiConfig) && topMatches.length) {
+      try {
+        const context = topMatches.map((m) => `[Source: ${m.sourceTitle}, Page ${m.pageNumber}]: ${m.snippet}`).join('\n\n');
+        answer = await aiProvider.complete(
+          'You are a research assistant answering questions strictly from the provided source excerpts. Always cite your sources in brackets like [Paper A, p. 12]. Never invent facts.',
+          `QUESTION: ${query}\n\nEXCERPTS:\n${context}`,
+          { maxTokens: 800, temperature: 0.2, timeoutMs: 20000 },
+          aiConfig
+        );
+      } catch (_e) {
+        answer = topMatches.length ? `Found ${topMatches.length} matching excerpts in sources.` : 'No answer generated.';
+      }
+    }
+
+    res.json({
+      query,
+      answer: answer || (topMatches.length ? `Found ${topMatches.length} matching excerpts.` : 'No matching evidence found in uploaded sources.'),
+      matches: topMatches
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* ---------- book planning / writing / QA / section rewrite ---------- */
 
 router.post('/book/plan', async (req, res) => {
   try {
@@ -208,6 +289,29 @@ router.post('/book/write', async (req, res) => {
   }
 });
 
+router.post('/book/section/rewrite', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const section = body.section;
+    if (!section || !Array.isArray(section.blocks)) {
+      return res.status(400).json({ error: 'section with blocks array is required' });
+    }
+    const result = await rewriteSection(
+      {
+        section,
+        action: body.action || 'rewrite',
+        customInstruction: String(body.customInstruction || '').slice(0, 500),
+        presetId: body.presetId,
+        kbSlice: Array.isArray(body.kbSlice) ? body.kbSlice : undefined
+      },
+      aiConfigFromRequest(req)
+    );
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.post('/book/qa', (req, res) => {
   try {
     const body = req.body || {};
@@ -231,14 +335,15 @@ router.post('/export/:format', (req, res) => {
       res.setHeader('Content-Disposition', `attachment; filename="${name}"`);
       res.type(type).send(content);
     };
-    if (req.params.format === 'markdown') {
+    const format = (req.params.format || '').toLowerCase();
+    if (format === 'markdown' || format === 'md') {
       attach(`${base}.md`, 'text/markdown; charset=utf-8', toMarkdown(book));
-    } else if (req.params.format === 'html') {
-      attach(`${base}.html`, 'text/html; charset=utf-8', toHtml(book));
-    } else if (req.params.format === 'json') {
+    } else if (format === 'html') {
+      attach(`${base}.html`, 'text/html; charset=utf-8', toHtml(book, body.design || 'modern', body.pageSize || 'trade_6x9'));
+    } else if (format === 'json') {
       attach(`${base}.json`, 'application/json; charset=utf-8', toProjectJson(book, body.kb || null));
     } else {
-      res.status(400).json({ error: 'Unsupported format. Use markdown, html or json.' });
+      res.status(400).json({ error: 'Unsupported format. Use markdown, html, json.' });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });

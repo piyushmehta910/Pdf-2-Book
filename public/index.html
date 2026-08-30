@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="pdf2book â€” turn scattered research papers and notes into a coherent knowledge book.">
-<title>pdf2book â€” Knowledge Book Studio</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='18' y='30' width='64' height='44' rx='6' fill='%236d7cff'/><rect x='26' y='22' width='64' height='44' rx='6' fill='none' stroke='%239a6bff' stroke-width='5'/></svg>">
+<meta name="description" content="pdf2book — Browser-Based AI Book Creation Studio & Publishing Software.">
+<title>pdf2book — AI Book Creation & Publishing Studio</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='18' y='30' width='64' height='44' rx='6' fill='%236366f1'/><rect x='26' y='22' width='64' height='44' rx='6' fill='none' stroke='%238b5cf6' stroke-width='5'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #07080d;
@@ -21,1009 +21,748 @@
     --text: #eaedf5;
     --text2: #b9c0d2;
     --muted: #7c8598;
-    --accent: #7d92ff;
-    --accent2: #9a6bff;
-    --accent-dim: #5a6fd6;
-    --glow: rgba(125,146,255,.13);
-    --ok: #34d399;
-    --warn: #fbbf24;
-    --err: #f87171;
-    --grad: linear-gradient(135deg, #6d7cff, #9a6bff);
-    --header-bg: rgba(9,11,17,.78);
-    --input-bg: rgba(0,0,0,.25);
-    --reader-text: #e3e7f0;
-    --shadow-lg: 0 18px 50px rgba(0,0,0,.5);
+    --accent: #6366f1;
+    --accent2: #8b5cf6;
+    --accent-dim: #4f46e5;
+    --glow: rgba(99,102,241,.14);
+    --ok: #10b981;
+    --warn: #f59e0b;
+    --err: #ef4444;
+    --grad: linear-gradient(135deg, #6366f1, #8b5cf6);
+    --header-bg: rgba(11,13,20,.85);
+    --input-bg: rgba(0,0,0,.28);
+    --sheet-bg: #ffffff;
+    --sheet-text: #1e293b;
+    --sheet-border: #cbd5e1;
+    --shadow-lg: 0 20px 50px rgba(0,0,0,.5);
     --shadow-sm: 0 4px 16px rgba(0,0,0,.35);
   }
   html[data-theme="light"] {
-    --bg: #f2f4f9;
-    --bg2: #eef0f7;
+    --bg: #f3f4f8;
+    --bg2: #eaecef;
     --panel: #ffffff;
-    --panel2: #f5f6fb;
-    --panel3: #e8eaf3;
-    --border: #dde1ee;
-    --border2: #c6ccdf;
-    --text: #181c28;
-    --text2: #3c4358;
-    --muted: #6b7288;
-    --glow: rgba(109,124,255,.16);
-    --header-bg: rgba(255,255,255,.82);
+    --panel2: #f8fafc;
+    --panel3: #e2e8f0;
+    --border: #cbd5e1;
+    --border2: #94a3b8;
+    --text: #0f172a;
+    --text2: #334155;
+    --muted: #64748b;
+    --glow: rgba(99,102,241,.18);
+    --header-bg: rgba(255,255,255,.88);
     --input-bg: #ffffff;
-    --reader-text: #262c3d;
-    --shadow-lg: 0 18px 50px rgba(30,40,80,.14);
-    --shadow-sm: 0 4px 16px rgba(30,40,80,.08);
+    --sheet-bg: #ffffff;
+    --sheet-text: #1e293b;
+    --sheet-border: #cbd5e1;
+    --shadow-lg: 0 20px 50px rgba(30,40,80,.12);
+    --shadow-sm: 0 4px 16px rgba(30,40,80,.06);
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
     margin: 0;
-    background:
-      radial-gradient(1100px 520px at 85% -12%, rgba(122,102,255,.12), transparent 62%),
-      radial-gradient(900px 420px at -10% 108%, rgba(52,211,153,.06), transparent 60%),
-      var(--bg);
+    background: var(--bg);
     color: var(--text);
-    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    font-size: 14.5px; line-height: 1.55;
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
-    transition: background .25s, color .25s;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
   ::selection { background: var(--accent); color: #fff; }
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-thumb { background: var(--panel3); border-radius: 999px; border: 2px solid var(--bg); }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--panel3); border-radius: 999px; }
   ::-webkit-scrollbar-track { background: transparent; }
 
-  /* ---------- header ---------- */
-  header {
-    position: sticky; top: 0; z-index: 40;
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    padding: 13px 28px;
-    background: var(--header-bg); backdrop-filter: blur(14px);
+  /* ---------- top studio navigation ---------- */
+  header.studio-bar {
+    height: 54px;
+    background: var(--header-bg);
+    backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    z-index: 50;
+    flex: none;
   }
-  .logo {
-    font-weight: 800; font-size: 20px; letter-spacing: .2px;
-    background: linear-gradient(90deg, var(--text), var(--text2));
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    display: flex; align-items: baseline;
+  .brand {
+    font-weight: 800; font-size: 17px;
+    background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+    display: flex; align-items: center; gap: 6px; white-space: nowrap; margin-right: 6px;
   }
-  .logo b { background: var(--grad); -webkit-background-clip: text; background-clip: text; }
-  .logo small {
-    font-weight: 500; color: var(--muted); margin-left: 10px;
-    font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase;
+  .title-wrap {
+    display: flex; align-items: center; gap: 8px; flex: 1; max-width: 380px; min-width: 140px;
   }
-  header .spacer { flex: 1; }
-  .badge {
-    font-size: 11.5px; padding: 5px 13px; border-radius: 999px;
-    border: 1px solid var(--border2); background: var(--panel); color: var(--text2);
-    display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+  .title-input {
+    background: transparent; border: 1px solid transparent; color: var(--text); font-weight: 600;
+    font-size: 14px; padding: 5px 8px; border-radius: 6px; width: 100%; text-overflow: ellipsis;
   }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); flex: none; transition: background .2s; }
-  .dot.ok { background: var(--ok); box-shadow: 0 0 9px rgba(52,211,153,.8); }
+  .title-input:hover { border-color: var(--border); }
+  .title-input:focus { background: var(--input-bg); border-color: var(--accent); outline: none; }
 
-  /* ---------- layout ---------- */
-  .layout { display: grid; grid-template-columns: 290px minmax(0,1fr); min-height: calc(100vh - 57px); }
-  aside {
-    border-right: 1px solid var(--border); background: var(--bg2);
-    padding: 22px 16px; position: sticky; top: 57px; height: calc(100vh - 57px);
-    overflow-y: auto;
+  .sel-group { display: flex; align-items: center; gap: 8px; }
+  .studio-sel {
+    background: var(--panel2); border: 1px solid var(--border); color: var(--text);
+    padding: 5px 9px; border-radius: 7px; font-size: 12.5px; font-weight: 500; outline: none; cursor: pointer;
   }
-  main { padding: 34px 44px 90px; max-width: 1000px; width: 100%; }
-  @media (max-width: 960px) {
-    .layout { grid-template-columns: 1fr; }
-    aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
-    main { padding: 24px 16px 80px; margin: 0 auto; }
-    header { padding: 12px 16px; }
-    .logo small { display: none; }
-  }
+  .studio-sel:hover { border-color: var(--accent); }
 
-  /* ---------- controls ---------- */
-  input[type=text], input[type=password], textarea {
-    width: 100%; background: var(--input-bg); border: 1px solid var(--border); color: var(--text);
-    border-radius: 10px; padding: 10px 14px; font: inherit; outline: none;
-    transition: border-color .15s, box-shadow .15s;
+  .qa-score-btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 700; background: rgba(16,185,129,.12); color: var(--ok);
+    border: 1px solid rgba(16,185,129,.35); cursor: pointer; transition: transform .1s;
   }
-  input::placeholder, textarea::placeholder { color: var(--muted); }
-  input:focus-visible, textarea:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
-  textarea { resize: vertical; line-height: 1.6; }
+  .qa-score-btn.warn { background: rgba(245,158,11,.12); color: var(--warn); border-color: rgba(245,158,11,.35); }
+  .qa-score-btn.fail { background: rgba(239,68,68,.12); color: var(--err); border-color: rgba(239,68,68,.35); }
+  .qa-score-btn:hover { transform: scale(1.03); }
+
+  .spacer { flex: 1; }
 
   button {
-    background: var(--grad); color: #fff; border: 0; border-radius: 10px;
-    padding: 9px 17px; font: inherit; font-weight: 600; cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    box-shadow: 0 6px 20px rgba(109,124,255,.25), inset 0 1px 0 rgba(255,255,255,.18);
-    transition: filter .15s, transform .05s, opacity .15s;
+    background: var(--grad); color: #fff; border: 0; border-radius: 8px;
+    padding: 7px 14px; font: inherit; font-weight: 600; font-size: 13px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    box-shadow: 0 4px 14px rgba(99,102,241,.25); transition: filter .15s, transform .05s;
   }
-  button:hover:not(:disabled) { filter: brightness(1.12); }
+  button:hover:not(:disabled) { filter: brightness(1.1); }
   button:active:not(:disabled) { transform: translateY(1px); }
-  button:disabled { opacity: .45; cursor: not-allowed; filter: grayscale(.35); }
-  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  button.ghost {
-    background: var(--panel2); border: 1px solid var(--border2); color: var(--text);
-    font-weight: 550; box-shadow: none;
-  }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.ghost { background: var(--panel2); border: 1px solid var(--border); color: var(--text); box-shadow: none; font-weight: 500; }
   button.ghost:hover:not(:disabled) { border-color: var(--accent); filter: none; }
-  button.small { padding: 6px 13px; font-size: 12.5px; border-radius: 8px; }
-  button.danger { background: transparent; border: 0; box-shadow: none; color: var(--muted); font-weight: 450; }
-  button.danger:hover:not(:disabled) { color: var(--err); }
-  button.iconbtn {
-    background: transparent; border: 1px solid transparent; box-shadow: none;
-    color: var(--muted); padding: 4px 9px; border-radius: 8px; font-size: 13px;
-  }
-  button.iconbtn:hover { color: var(--text); background: var(--panel3); filter: none; }
+  button.small { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+  button.danger { background: transparent; border: 0; box-shadow: none; color: var(--muted); }
+  button.danger:hover { color: var(--err); }
+  button.iconbtn { background: transparent; border: 0; box-shadow: none; color: var(--muted); padding: 5px 8px; border-radius: 6px; font-size: 14px; }
+  button.iconbtn:hover { color: var(--text); background: var(--panel3); }
+  button.iconbtn.active { color: var(--accent); background: var(--glow); }
 
-  a.btn {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: var(--panel2); border: 1px solid var(--border2); color: var(--text2);
-    border-radius: 10px; padding: 8px 15px; text-decoration: none; font-weight: 550; font-size: 13.5px;
-    transition: border-color .15s, color .15s, transform .05s;
+  /* ---------- studio 3-panel workspace ---------- */
+  .studio-body {
+    display: grid;
+    grid-template-columns: 310px 1fr 340px;
+    flex: 1;
+    overflow: hidden;
   }
-  a.btn:hover { border-color: var(--accent); color: var(--text); }
-  a.btn:active { transform: translateY(1px); }
 
-  /* ---------- cards ---------- */
-  .card {
-    position: relative;
-    background: linear-gradient(180deg, var(--panel), color-mix(in srgb, var(--panel) 60%, transparent));
-    border: 1px solid var(--border); border-radius: 18px;
-    padding: 24px; margin-bottom: 20px;
-    box-shadow: var(--shadow-sm);
-    transition: opacity .25s;
+  /* Left & Right Panels */
+  .panel-sidebar {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
-  .card::before {
-    content: ""; position: absolute; inset: 0 0 auto; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(125,146,255,.35), transparent);
-    border-radius: 18px 18px 0 0; pointer-events: none;
+  .panel-sidebar.right {
+    border-right: 0;
+    border-left: 1px solid var(--border);
+    background: var(--bg2);
   }
-  .card.locked > *:not(.gate-hint):not(.card-head) { opacity: .45; pointer-events: none; user-select: none; }
-  .card.locked .card-head h2 { opacity: .75; }
-  .gate-hint {
-    display: none; margin: -6px 0 12px; padding: 9px 14px; border-radius: 10px;
-    font-size: 12.5px; font-weight: 550; color: var(--warn);
-    background: rgba(251,191,36,.07); border: 1px dashed rgba(251,191,36,.4);
-  }
-  .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
-  .card-head h2 { flex: 1; min-width: 180px; }
-  h2 { font-size: 16.5px; margin: 0; font-weight: 700; letter-spacing: .1px; display: flex; align-items: center; gap: 10px; }
-  .step-num {
-    width: 27px; height: 27px; flex: none; border-radius: 9px;
-    background: var(--panel3); color: var(--muted);
-    border: 1px solid var(--border);
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 12.5px; font-weight: 800;
-    transition: background .25s, color .25s, box-shadow .25s;
-  }
-  .card.live .step-num, .step.done.s-num {
-    background: var(--grad); color: #fff; border-color: transparent;
-    box-shadow: 0 4px 14px rgba(109,124,255,.35);
-  }
-  .hint { color: var(--muted); font-size: 12.5px; }
-  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .stack { display: flex; flex-direction: column; gap: 10px; }
-  hr.sep { border: 0; border-top: 1px solid var(--border); margin: 18px 0; }
-
-  /* ---------- stepper ---------- */
-  .stepper {
-    display: flex; align-items: center; gap: 10px;
-    padding: 14px 18px; margin-bottom: 22px;
-    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+  .tab-head {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    flex: none;
     overflow-x: auto;
   }
-  .step { display: flex; align-items: center; gap: 9px; flex: none; }
-  .step .s-num {
-    width: 26px; height: 26px; border-radius: 50%; flex: none;
-    background: var(--panel3); border: 1px solid var(--border); color: var(--muted);
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 800; transition: all .25s;
+  .tab-btn {
+    flex: 1;
+    padding: 10px 12px;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 12.5px;
+    border-radius: 0;
+    box-shadow: none;
+    white-space: nowrap;
+    cursor: pointer;
   }
-  .step.active .s-num {
-    background: var(--grad); color: #fff; border-color: transparent;
-    box-shadow: 0 0 0 4px var(--glow);
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: var(--glow);
   }
-  .step.done .s-num { background: rgba(52,211,153,.14); border-color: rgba(52,211,153,.5); color: var(--ok); }
-  .step .s-label { font-size: 12.5px; font-weight: 650; color: var(--muted); transition: color .2s; white-space: nowrap; }
-  .step.active .s-label { color: var(--text); }
-  .step.done .s-label { color: var(--text2); }
-  .s-line { flex: 1; min-width: 22px; height: 2px; border-radius: 99px; background: var(--border); transition: background .3s; }
-  .s-line.done { background: linear-gradient(90deg, rgba(52,211,153,.7), rgba(52,211,153,.35)); }
+  .tab-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+  }
 
-  /* ---------- sidebar ---------- */
-  aside h3 {
-    font-size: 10.5px; margin: 0 0 12px; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 1.6px; font-weight: 700;
-  }
-  ul.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-  ul.list li {
+  /* Center Panel (Studio Canvas) */
+  .studio-canvas-wrap {
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     position: relative;
-    display: flex; justify-content: space-between; align-items: center; gap: 8px;
-    padding: 11px 13px; border-radius: 12px; background: var(--panel);
-    border: 1px solid var(--border); cursor: pointer; overflow: hidden;
-    transition: border-color .15s, background .15s;
   }
-  ul.list li::before {
-    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-    background: var(--grad); opacity: 0; transition: opacity .15s;
+  .canvas-toolbar {
+    height: 42px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    flex: none;
   }
-  ul.list li:hover { border-color: var(--border2); background: var(--panel2); }
-  ul.list li.active { border-color: rgba(125,146,255,.55); background: linear-gradient(90deg, var(--glow), transparent 65%), var(--panel2); }
-  ul.list li.active::before { opacity: 1; }
-  ul.list li.static { cursor: default; }
-  ul.list li.static:hover { background: var(--panel); border-color: var(--border); }
-  ul.list li.static:hover::before { opacity: 0; }
-  .li-title { font-weight: 600; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .li-sub { font-size: 11.5px; color: var(--muted); }
-
-  /* ---------- pills ---------- */
-  .pill {
-    font-size: 10.5px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase;
-    padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border2); color: var(--muted); white-space: nowrap;
-  }
-  .pill.ok { color: var(--ok); border-color: rgba(52,211,153,.4); background: rgba(52,211,153,.08); }
-  .pill.pending { color: var(--warn); border-color: rgba(251,191,36,.4); background: rgba(251,191,36,.07); }
-
-  /* ---------- stats ---------- */
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-  .stat {
-    background: var(--panel2); border: 1px solid var(--border); border-radius: 14px;
-    padding: 16px; transition: transform .15s, border-color .15s;
-  }
-  .stat:hover { transform: translateY(-2px); border-color: var(--border2); }
-  .stat b { display: block; font-size: 27px; font-weight: 800; line-height: 1.15; letter-spacing: -.5px; }
-  .stat span { color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-  .stat.warn b { color: var(--warn); }
-  .stat.bad b { color: var(--err); }
-  .stat.good b { color: var(--ok); }
-
-  .bar { height: 10px; background: var(--panel3); border-radius: 999px; overflow: hidden; border: 1px solid var(--border); }
-  .bar i {
-    display: block; height: 100%; width: 0%;
-    background: linear-gradient(90deg, var(--accent), var(--ok));
-    border-radius: 999px; transition: width .9s cubic-bezier(.2,.8,.2,1);
-    box-shadow: 0 0 12px rgba(52,211,153,.35);
+  .canvas-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px 20px 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    perspective: 1000px;
   }
 
-  .notice {
-    display: none; margin-top: 14px; padding: 12px 15px; border-radius: 12px; font-size: 13px; font-weight: 500;
-    border: 1px solid rgba(251,191,36,.35); background: rgba(251,191,36,.06); color: #ffd479;
+  /* Physical Paginated Sheet Card */
+  .book-sheet {
+    background: var(--sheet-bg);
+    color: var(--sheet-text);
+    box-shadow: var(--shadow-lg), 0 0 0 1px var(--sheet-border);
+    border-radius: 4px;
+    padding: 48px 44px;
+    position: relative;
+    box-sizing: border-box;
+    transition: transform .2s, box-shadow .2s;
+    font-family: var(--doc-font, 'Inter', sans-serif);
+    min-height: 580px;
   }
-  .notice.show { display: block; }
-  .notice.good { border-color: rgba(52,211,153,.35); background: rgba(52,211,153,.05); color: var(--ok); }
-  .notice.bad  { border-color: rgba(248,113,113,.35); background: rgba(248,113,113,.06); color: var(--err); }
+  .book-sheet:hover { box-shadow: 0 24px 60px rgba(0,0,0,.35), 0 0 0 1px var(--accent); }
 
-  /* ---------- hero ---------- */
-  .hero { text-align: center; padding: 54px 20px 30px; }
-  .hero .big { width: 64px; height: 4px; margin: 0 auto 22px; border-radius: 99px; background: var(--grad); }
-  .hero h1 {
-    font-size: clamp(26px, 4vw, 38px); margin: 0 0 12px; font-weight: 800; letter-spacing: -.8px;
-    background: linear-gradient(100deg, var(--text) 30%, var(--accent) 70%, var(--accent2));
-    -webkit-background-clip: text; background-clip: text; color: transparent;
+  /* Sheet Header & Footer */
+  .sheet-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em;
+    border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 24px;
   }
-  .hero p { color: var(--muted); max-width: 520px; margin: 0 auto 26px; font-size: 15px; }
-  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; max-width: 720px; margin: 34px auto 0; text-align: left; }
-  .feature {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px;
-    transition: transform .15s, border-color .15s;
+  .sheet-footer {
+    display: flex; justify-content: center; align-items: center;
+    font-size: 11px; color: #94a3b8; font-weight: 600;
+    margin-top: 32px; padding-top: 12px; border-top: 1px solid #f1f5f9;
   }
-  .feature:hover { transform: translateY(-3px); border-color: var(--border2); }
-  .feature .fi { font-size: 21px; margin-bottom: 8px; }
-  .feature b { display: block; font-size: 13.5px; margin-bottom: 3px; }
-  .feature span { font-size: 12px; color: var(--muted); line-height: 1.5; }
 
-  /* ---------- dropzone & file chips ---------- */
-  .dropzone {
-    border: 1.5px dashed var(--border2); border-radius: 14px; padding: 26px;
-    text-align: center; color: var(--muted); cursor: pointer;
-    transition: border-color .15s, background .15s, transform .15s;
-  }
-  .dropzone:hover, .dropzone.over { border-color: var(--accent); background: var(--glow); color: var(--text2); }
-  .dropzone.over { transform: scale(1.01); }
-  .dz-icon { font-size: 28px; margin-bottom: 8px; filter: drop-shadow(0 4px 10px rgba(0,0,0,.4)); }
+  /* Page Dimensions */
+  .size-trade_6x9 { width: 576px; min-height: 864px; }
+  .size-a4 { width: 720px; min-height: 1018px; }
+  .size-a5 { width: 520px; min-height: 736px; }
+  .size-letter { width: 730px; min-height: 946px; }
+  .size-digest_55x85 { width: 540px; min-height: 835px; }
 
-  .filechips { display: flex; flex-direction: column; gap: 6px; }
-  .filechip {
-    display: flex; align-items: center; gap: 11px;
-    background: var(--panel2); border: 1px solid var(--border); border-radius: 11px;
-    padding: 9px 13px; animation: fadein .2s ease;
+  /* Blocks in Sheet */
+  .block-node {
+    position: relative;
+    margin: 14px 0;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: background .12s, border-color .12s;
   }
-  @keyframes fadein { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-  .filechip .ficon { font-size: 18px; }
-  .filechip .fname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 500; }
-  .filechip .fsize { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
-  .filechip button { background: transparent; border: 0; box-shadow: none; color: var(--muted); cursor: pointer; padding: 2px 7px; font-size: 14px; border-radius: 6px; }
-  .filechip button:hover { color: var(--err); background: rgba(248,113,113,.08); }
-
-  /* ---------- chapters ---------- */
-  .chapter {
-    border: 1px solid var(--border); border-radius: 14px;
-    background: linear-gradient(180deg, var(--panel2), var(--panel));
-    padding: 20px 22px; margin-bottom: 12px;
+  .block-node:hover {
+    background: rgba(99,102,241,.03);
+    border-color: rgba(99,102,241,.25);
   }
-  .chapter-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
-  .chapter-head h4 { flex: 1; min-width: 160px; margin: 0; font-size: 14.5px; font-weight: 700; }
-  .wc { font-size: 11px; color: var(--muted); white-space: nowrap; font-weight: 550; }
-  .ch-body.collapsed { display: none; }
-  .chev { transition: transform .2s; display: inline-block; }
-  .chev.closed { transform: rotate(-90deg); }
-  .reader {
-    font-family: Georgia, "Times New Roman", serif; font-size: 16.5px; line-height: 1.8;
-    color: var(--reader-text); max-width: 68ch;
-  }
-  .reader h1 { font-size: 23px; margin: 18px 0 10px; letter-spacing: -.2px; }
-  .reader h2 { font-size: 18px; margin: 16px 0 8px; }
-  .reader h3 { font-size: 15.5px; margin: 14px 0 6px; }
-  .reader p { margin: 10px 0; }
-  .reader ul { padding-left: 24px; margin: 8px 0; }
-  .reader strong { color: var(--text); font-weight: 700; }
-
-  /* ---------- generation fx ---------- */
-  .genfx { display: none; padding: 8px 0; }
-  .genfx .gline { height: 14px; border-radius: 8px; margin-bottom: 12px; }
-  .genfx .gmsg { display: flex; align-items: center; gap: 10px; color: var(--text2); font-size: 13.5px; font-weight: 550; margin-top: 18px; }
-
-  /* ---------- empty state ---------- */
-  .empty {
-    color: var(--muted); text-align: center; border: 1.5px dashed var(--border2);
-    border-radius: 16px; padding: 44px 26px; font-size: 13.5px;
-  }
-  .empty b { color: var(--text2); display: block; margin-bottom: 6px; font-size: 15px; font-weight: 650; }
-
-  /* ---------- skeleton ---------- */
-  .skel {
-    border-radius: 14px;
-    background: linear-gradient(90deg, var(--panel2) 25%, var(--panel3) 45%, var(--panel2) 65%);
-    background-size: 200% 100%; animation: shimmer 1.3s infinite;
-  }
-  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-
-  .spin {
-    display: inline-block; width: 14px; height: 14px; flex: none;
-    border: 2px solid rgba(125,146,255,.3); border-top-color: var(--accent);
-    border-radius: 50%; animation: rot .7s linear infinite;
-  }
-  @keyframes rot { to { transform: rotate(360deg); } }
-
-  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 28px 0 10px; }
-
-  /* ---------- toasts ---------- */
-  #toasts { position: fixed; bottom: 22px; right: 22px; z-index: 100; display: flex; flex-direction: column; gap: 10px; max-width: 430px; }
-  .toast {
-    background: var(--panel3); backdrop-filter: blur(10px);
-    border: 1px solid var(--border2); border-left: 3px solid var(--accent);
-    padding: 13px 17px; border-radius: 12px; font-size: 13.5px; font-weight: 500;
-    box-shadow: var(--shadow-lg);
-    animation: slidein .28s cubic-bezier(.2,.8,.2,1);
-    transition: opacity .35s;
-  }
-  .toast.err { border-left-color: var(--err); }
-  .toast.ok { border-left-color: var(--ok); }
-  @keyframes slidein { from { opacity: 0; transform: translateX(36px); } to { opacity: 1; transform: none; } }
-
-  /* ---------- settings modal ---------- */
-  .modal-backdrop {
-    display: none; position: fixed; inset: 0; z-index: 90;
-    background: rgba(4,6,10,.7); backdrop-filter: blur(6px);
-    align-items: center; justify-content: center; padding: 20px;
-  }
-  .modal-backdrop.open { display: flex; }
-  .modal {
-    background: var(--panel); border: 1px solid var(--border2); border-radius: 20px;
-    width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
-    box-shadow: var(--shadow-lg);
-    animation: pop .2s cubic-bezier(.2,.8,.2,1);
-  }
-  @keyframes pop { from { opacity: 0; transform: scale(.95) translateY(10px); } to { opacity: 1; transform: none; } }
-  .modal-head {
-    display: flex; align-items: center; gap: 10px;
-    padding: 20px 24px; border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; background: var(--panel); z-index: 2;
-  }
-  .modal-head h2 { flex: 1; font-size: 17px; }
-  .modal-body { padding: 22px 24px; }
-  .modal-foot {
-    padding: 16px 24px; border-top: 1px solid var(--border);
-    display: flex; gap: 10px; align-items: center;
-    position: sticky; bottom: 0; background: var(--panel);
-  }
-  .field { margin-bottom: 18px; }
-  .field > label {
-    display: flex; align-items: baseline; gap: 8px;
-    font-size: 12.5px; font-weight: 700; color: var(--text2);
-    margin-bottom: 8px; text-transform: uppercase; letter-spacing: .8px;
-  }
-  .field .labelhint { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); font-size: 11.5px; }
-
-  .provgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .provcard {
-    position: relative; text-align: left;
-    background: var(--panel2); border: 1px solid var(--border);
-    border-radius: 13px; padding: 13px; cursor: pointer;
-    display: flex; gap: 11px; align-items: center; width: 100%;
-    box-shadow: none; transition: border-color .15s, background .15s;
-  }
-  .provcard:hover { border-color: var(--border2); filter: none; }
-  .provcard.active {
+  .block-node.active-block {
+    background: rgba(99,102,241,.06);
     border-color: var(--accent);
-    background: linear-gradient(135deg, rgba(125,146,255,.12), rgba(154,107,255,.05)), var(--panel2);
   }
-  .picon {
-    width: 38px; height: 38px; flex: none; border-radius: 10px;
-    background: var(--panel3); border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  .block-ctrls {
+    position: absolute;
+    right: 6px;
+    top: -12px;
+    display: none;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 4px;
+    gap: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    z-index: 10;
   }
-  .pname { font-weight: 650; font-size: 13.5px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-  .psub { font-size: 11px; color: var(--muted); margin-top: 1px; }
-  .ptag {
-    font-size: 9.5px; font-weight: 800; letter-spacing: .6px;
-    color: var(--ok); background: rgba(52,211,153,.09);
-    border: 1px solid rgba(52,211,153,.35); border-radius: 999px; padding: 1px 7px;
-  }
-  .pcheck {
-    position: absolute; top: 9px; right: 11px;
-    color: var(--accent); font-weight: 800; font-size: 13px; opacity: 0; transition: opacity .15s;
-  }
-  .provcard.active .pcheck { opacity: 1; }
-
-  .keywrap { position: relative; }
-  .keywrap input { padding-right: 66px; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13px; }
-  .keytoggle {
-    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-    background: var(--panel3); border: 1px solid var(--border); color: var(--muted);
-    font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 10px; border-radius: 7px; box-shadow: none;
-  }
-  .keytoggle:hover { color: var(--text); border-color: var(--border2); }
-
-  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
-  .segbtn {
-    background: var(--panel2); border: 1px solid var(--border); color: var(--text2);
-    font-weight: 600; font-size: 13px; padding: 10px 6px; border-radius: 11px; box-shadow: none;
-    display: flex; flex-direction: column; gap: 2px; align-items: center;
-  }
-  .segbtn small { font-weight: 450; font-size: 10.5px; color: var(--muted); }
-  .segbtn.active { background: linear-gradient(135deg, rgba(125,146,255,.16), rgba(154,107,255,.08)), var(--panel2); border-color: var(--accent); color: var(--text); }
-
-  .ctxinfo { font-size: 11.5px; color: var(--muted); margin-top: 7px; line-height: 1.5; }
-  .provlink { color: var(--accent); text-decoration: none; font-size: 12px; font-weight: 600; }
-  .provlink:hover { text-decoration: underline; }
-  .testline { display: flex; gap: 12px; align-items: center; min-height: 32px; }
-  .testresult { font-size: 13px; font-weight: 550; }
-  .testresult.ok { color: var(--ok); }
-  .testresult.err { color: var(--err); }
-
-  select {
-    width: 100%; background: var(--input-bg); color: var(--text); border: 1px solid var(--border);
-    border-radius: 10px; padding: 10px 12px; font: inherit; outline: none;
+  .block-node:hover .block-ctrls, .block-node.active-block .block-ctrls {
+    display: inline-flex;
   }
 
-  /* ---------- notebook setup panel ---------- */
-  .nb-panel {
-    border: 1px solid var(--border); border-radius: 14px;
-    background: var(--panel2); margin-bottom: 16px; overflow: hidden;
-  }
-  .nb-head {
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    padding: 12px 16px; cursor: pointer; user-select: none;
-  }
-  .nb-head:hover { background: var(--panel3); }
-  .nb-title { font-weight: 700; font-size: 13.5px; }
-  .nb-chips { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; justify-content: flex-end; }
-  .nb-chip {
-    font-size: 10.5px; font-weight: 650; padding: 2px 10px; border-radius: 999px;
-    border: 1px solid var(--border2); color: var(--text2); background: var(--panel);
-  }
-  #nbBody { padding: 4px 16px 16px; border-top: 1px solid var(--border); }
-  #nbBody.collapsed { display: none; }
-  .nb-label {
-    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-    color: var(--muted); margin: 14px 0 7px;
-  }
-  .stylegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 7px; }
+  /* Block Types Formatting inside Book Sheets */
+  .block-node h2 { font-size: 1.7em; margin: .4em 0 .3em; color: var(--doc-heading-color, #0f172a); font-weight: 800; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
+  .block-node h3 { font-size: 1.3em; margin: .5em 0 .2em; color: var(--doc-heading-color, #0f172a); font-weight: 700; }
+  .block-node p { margin: .5em 0; line-height: 1.65; font-size: 14.5px; }
+  .block-node .cit-badge { font-size: .85em; color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: underline dotted; }
+  .block-node .cit-badge:hover { color: var(--accent2); }
 
-  .fmtgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 7px; }
-  .fmtbtn {
-    background: var(--panel); border: 1px solid var(--border); color: var(--text2);
-    font-weight: 600; font-size: 12px; padding: 9px 4px; border-radius: 10px; box-shadow: none;
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-  }
-  .fmtbtn .fi2 { font-size: 16px; }
-  .fmtbtn.active { border-color: var(--accent); color: var(--text); background: linear-gradient(135deg, rgba(125,146,255,.14), transparent), var(--panel); }
+  .b-warning { border-left: 4px solid #ef4444; background: #fef2f2; padding: 10px 14px; border-radius: 6px; color: #991b1b; }
+  .b-note { border-left: 4px solid var(--accent); background: #f8fafc; padding: 10px 14px; border-radius: 6px; }
+  .b-summary { border-left: 4px solid #10b981; background: #ecfdf5; padding: 10px 14px; border-radius: 6px; color: #065f46; }
+  .b-callout { border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px 16px; border-radius: 8px; }
+  .b-def { border-left: 3px solid var(--accent2); background: #fdf4ff; padding: 8px 14px; border-radius: 6px; }
+  .b-formula { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; }
+  .b-quote { border-left: 3px solid var(--accent); font-style: italic; color: #475569; padding: 6px 14px; margin: 10px 0; }
+  .b-exercise { border: 1px solid #fde68a; background: #fffbeb; padding: 12px 16px; border-radius: 8px; }
 
-  .nbtoggles { display: flex; gap: 14px; flex-wrap: wrap; }
-  .nbcheck { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; font-size: 12.5px; font-weight: 550; color: var(--text2); }
-  .nbcheck input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
-  .crossseg { display: inline-flex; gap: 0; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
-  .crossbtn { background: var(--panel); border: 0; box-shadow: none; border-radius: 0; color: var(--muted); font-size: 12px; font-weight: 600; padding: 5px 12px; }
-  .crossbtn + .crossbtn { border-left: 1px solid var(--border); }
-  .crossbtn.active { background: linear-gradient(135deg, rgba(125,146,255,.2), rgba(154,107,255,.1)); color: var(--text); }
+  /* Tree outline items */
+  .tree-item {
+    display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 7px;
+    color: var(--text2); font-weight: 500; font-size: 13px; cursor: pointer; transition: background .1s; margin-bottom: 2px;
+  }
+  .tree-item:hover { background: var(--panel2); color: var(--text); }
+  .tree-item.active { background: var(--glow); color: var(--accent); font-weight: 600; }
+  .tree-sub { margin-left: 18px; border-left: 1px solid var(--border); padding-left: 6px; }
 
-  /* ---------- rendered formats ---------- */
-  .fcgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-  .fcell { perspective: 1200px; height: 210px; cursor: pointer; }
-  .finner { position: relative; width: 100%; height: 100%; transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-style: preserve-3d; }
-  .fcell.flipped .finner { transform: rotateY(180deg); }
-  .fface {
-    position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
-    border: 1px solid var(--border2); border-radius: 13px; padding: 15px; overflow-y: auto;
-    background: linear-gradient(160deg, var(--panel2), var(--panel));
-    font-size: 12.8px; line-height: 1.55; white-space: pre-line;
+  /* Source card */
+  .source-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 9px;
+    padding: 11px 13px; margin-bottom: 9px; transition: border-color .15s;
   }
-  .fface.back { transform: rotateY(180deg); background: linear-gradient(160deg, rgba(125,146,255,.09), var(--panel)); }
-  .fface .ftag { position: absolute; top: 9px; right: 11px; font-size: 9.5px; font-weight: 800; letter-spacing: .6px; color: var(--muted); text-transform: uppercase; }
-  .mcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
-  .mcard { border: 1px solid var(--border); border-radius: 12px; background: var(--panel2); padding: 14px; font-size: 13px; }
-  .mcard .mq { font-weight: 700; margin-bottom: 8px; color: var(--accent); }
-  .mcard .ma { white-space: pre-line; color: var(--reader-text); }
-  .chapter.appendix { opacity: .85; border-style: dashed; }
-  a.wikilink { color: var(--accent); text-decoration: underline dotted; cursor: pointer; }
+  .source-card:hover { border-color: var(--border2); }
+  .source-card.disabled { opacity: .5; }
+  .src-head { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .src-meta { display: flex; gap: 8px; font-size: 11.5px; color: var(--muted); align-items: center; }
 
-  /* ---------- error banner ---------- */
-  .errbar {
-    position: sticky; top: 0; z-index: 60; display: none; align-items: center; gap: 12px;
-    background: #3b1220; border-bottom: 1px solid #a2475e; color: #ffd7de;
-    padding: 10px 20px; font-size: 13px;
+  /* Modals */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(5px);
+    display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px;
   }
-  html[data-theme="light"] .errbar { background: #ffe9ee; border-color: #e0687f; color: #8c1826; }
-  .errbar button.ghost { background: transparent; border-color: currentColor; color: inherit; }
+  .modal {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    width: 100%; max-width: 680px; max-height: 88vh; display: flex; flex-direction: column;
+    box-shadow: var(--shadow-lg); overflow: hidden;
+  }
+  .modal-head {
+    display: flex; justify-content: space-between; align-items: center; padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-head h3 { margin: 0; font-size: 16px; font-weight: 700; }
+  .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+  .modal-foot { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
 
-  /* ---------- reader toolbar / TOC ---------- */
-  .readertoolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .engbadge {
-    margin-left: auto; font-size: 11.5px; color: var(--muted);
-    border: 1px solid var(--border); border-radius: 999px; padding: 4px 11px;
-    max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  .dropzone {
+    border: 2px dashed var(--border2); border-radius: 12px; padding: 24px; text-align: center;
+    background: rgba(255,255,255,.015); cursor: pointer; transition: border-color .15s, background .15s;
   }
-  .tocdrawer {
-    position: fixed; top: 0; right: 0; height: 100vh; width: min(330px, 88vw);
-    background: var(--panel); border-left: 1px solid var(--border); z-index: 70;
-    transform: translateX(105%); transition: transform .22s ease;
-    display: flex; flex-direction: column; box-shadow: -18px 0 44px rgba(0,0,0,.3);
-  }
-  .tocdrawer.open { transform: none; }
-  .toc-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
-  .toc-list { overflow-y: auto; padding: 10px; }
-  .toc-item {
-    display: block; width: 100%; text-align: left; background: none; border: 0;
-    color: var(--text2); padding: 9px 11px; border-radius: 9px; cursor: pointer;
-    font: inherit; font-size: 13px; box-shadow: none;
-  }
-  .toc-item:hover { background: var(--panel2); color: var(--text); filter: none; }
-  .toc-item.active { color: var(--accent); font-weight: 650; }
+  .dropzone:hover, .dropzone.dragover { border-color: var(--accent); background: var(--glow); }
 
-  /* ---------- exports as buttons ---------- */
-  button.exportbtn {
-    background: var(--panel2); border: 1px solid var(--border2); color: var(--text2);
-    font-weight: 550; font-size: 13px; padding: 7px 14px; border-radius: 10px; box-shadow: none;
+  /* Toast alerts */
+  #toasts { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 200; pointer-events: none; }
+  .toast {
+    background: var(--panel2); border: 1px solid var(--border); color: var(--text); padding: 10px 16px;
+    border-radius: 8px; font-weight: 500; font-size: 13px; box-shadow: var(--shadow-sm); pointer-events: auto;
+    transition: opacity .3s, transform .3s; display: flex; align-items: center; gap: 8px;
   }
-  button.exportbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--text); filter: none; }
-
-  /* ---------- nav + focus + mobile ---------- */
-  .navbtns { display: flex; gap: 10px; justify-content: space-between; margin-top: 20px; }
-  .reader { font-size: var(--reader-fs, 14.5px); }
-  a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
-  @media (max-width: 720px) {
-    main { padding: 20px 12px 70px; }
-    .stepper { gap: 5px; }
-    .step { padding: 6px 8px; }
-    .s-label { font-size: 10px; }
-    .card { padding: 16px 14px; }
-    .row { flex-wrap: wrap; }
-    .hero h1 { font-size: 25px; }
-    header .badge { display: none; }
-    .engbadge { max-width: 100%; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-    html { scroll-behavior: auto; }
-  }
+  .toast.ok { border-left: 4px solid var(--ok); }
+  .toast.err { border-left: 4px solid var(--err); }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">pdf<b>2</b>book <small>Knowledge Book Studio</small></div>
+<!-- TOP STUDIO BAR -->
+<header class="studio-bar">
+  <div class="brand">
+    <span>📚</span> pdf2book <small style="font-size:10.5px;font-weight:600;letter-spacing:1px;color:var(--muted)">STUDIO</small>
+  </div>
+
+  <div class="title-wrap">
+    <input type="text" class="title-input" id="bookTitle" value="Untitled Research Book" title="Click to rename book">
+  </div>
+
+  <div class="sel-group">
+    <select class="studio-sel" id="selBookType" title="Book Type (Spec §10)">
+      <option value="textbook">Textbook</option>
+      <option value="academic">Academic Book</option>
+      <option value="research">Research Book</option>
+      <option value="technical">Technical Book</option>
+      <option value="selfhelp">Self-Help</option>
+      <option value="business">Business Book</option>
+      <option value="biography">Biography</option>
+      <option value="novel">Novel</option>
+      <option value="guide">Practical Guide</option>
+      <option value="manual">Instruction Manual</option>
+      <option value="studyguide">Study Notes</option>
+      <option value="coursebook">Course Book</option>
+      <option value="children">Children's Book</option>
+      <option value="reference">Reference Manual</option>
+      <option value="report">Comprehensive Report</option>
+      <option value="custom">Custom Book</option>
+    </select>
+
+    <select class="studio-sel" id="selDesign" title="Visual Design Theme (Spec §13)">
+      <option value="modern">Theme: Modern</option>
+      <option value="academic">Theme: Academic</option>
+      <option value="editorial">Theme: Editorial</option>
+      <option value="luxury">Theme: Luxury</option>
+      <option value="textbook">Theme: Textbook</option>
+      <option value="technical">Theme: Technical</option>
+      <option value="classic">Theme: Classic</option>
+      <option value="minimal">Theme: Minimal</option>
+      <option value="selfhelp">Theme: Self-Help</option>
+      <option value="research">Theme: Research</option>
+    </select>
+
+    <select class="studio-sel" id="selPageSize" title="Physical Page Size (Spec §32)">
+      <option value="trade_6x9">Size: 6 × 9 in (Trade)</option>
+      <option value="a4">Size: A4 (210×297mm)</option>
+      <option value="a5">Size: A5 (148×210mm)</option>
+      <option value="letter">Size: US Letter (8.5×11in)</option>
+      <option value="digest_55x85">Size: 5.5 × 8.5 in (Digest)</option>
+    </select>
+  </div>
+
   <div class="spacer"></div>
-  <span class="badge" id="aiBadge"><span class="dot" id="provDot"></span><span id="provider">connectingâ€¦</span></span>
-  <button class="ghost small" id="themeToggle" title="Toggle light/dark theme" aria-label="Toggle theme">Theme</button>
-  <button class="ghost small" onclick="openSettings()" title="AI provider settings">AI settings</button>
+
+  <div class="qa-score-btn" id="qaScoreBtn" title="Click to open Quality Audit report">
+    <span>🛡️</span> <span id="qaScoreText">98/100</span>
+  </div>
+
+  <button class="ghost small" id="themeToggle" title="Toggle Light/Dark Theme">Theme</button>
+  <button class="ghost small" onclick="openSettings()" title="AI Provider & API Key Settings">⚙ AI settings</button>
+  <button class="ghost small" id="generateBookBtn">✨ Write Book</button>
+  <button class="small" id="exportBtn">📥 Export ▾</button>
 </header>
 
-<div class="errbar" id="errBar" role="alert">
-  <span id="errMsg" style="min-width:0;overflow-wrap:anywhere"></span>
-  <span style="flex:1"></span>
-  <button class="ghost small" id="errRetry" style="display:none">Retry</button>
-  <button class="iconbtn" id="errClose" title="Dismiss">âœ•</button>
-</div>
+<!-- STUDIO 3-PANEL LAYOUT -->
+<div class="studio-body">
 
-<div class="layout">
-  <aside>
-    <h3>Projects</h3>
-    <div class="stack" style="margin-bottom:18px">
-      <input type="text" id="projTitle" placeholder="New project titleâ€¦" maxlength="120"
-             onkeydown="if(event.key==='Enter')document.getElementById('newBtn').click()">
-      <button id="newBtn">Create project</button>
+  <!-- LEFT PANEL: OUTLINE / SOURCES / KNOWLEDGE -->
+  <aside class="panel-sidebar" id="leftPanel">
+    <div class="tab-head">
+      <button class="tab-btn active" data-tab="tabOutline" onclick="switchLeftTab('tabOutline')">📑 Outline</button>
+      <button class="tab-btn" data-tab="tabSources" onclick="switchLeftTab('tabSources')">📚 Sources (<span id="srcCountBadge">0</span>)</button>
+      <button class="tab-btn" data-tab="tabKnowledge" onclick="switchLeftTab('tabKnowledge')">🧠 Knowledge</button>
     </div>
-    <ul class="list" id="projects"></ul>
+
+    <!-- TAB 1: OUTLINE -->
+    <div class="tab-content" id="tabOutline">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase">Book Structure</span>
+        <button class="ghost small" id="addChapterBtn" style="padding:3px 8px;font-size:11.5px">+ Chapter</button>
+      </div>
+
+      <div id="outlineTree">
+        <div class="tree-item active" onclick="selectSection('front-cover')"><span>📘</span> Cover Page</div>
+        <div class="tree-item" onclick="selectSection('front-preface')"><span>📜</span> Preface</div>
+        <div class="tree-item" onclick="selectSection('front-toc')"><span>📑</span> Table of Contents</div>
+        <div id="chapterTreeItems"></div>
+        <div class="tree-item" onclick="selectSection('back-references')"><span>📚</span> References</div>
+        <div class="tree-item" onclick="selectSection('back-glossary')"><span>📖</span> Glossary</div>
+        <div class="tree-item" onclick="selectSection('back-index')"><span>📇</span> Index</div>
+      </div>
+    </div>
+
+    <!-- TAB 2: SOURCES -->
+    <div class="tab-content" id="tabSources" style="display:none">
+      <div class="dropzone" id="sourceDropzone">
+        <div style="font-size:24px;margin-bottom:4px">📄</div>
+        <b style="font-size:13px">Drop PDF, DOCX, TXT, or MD</b><br>
+        <span style="font-size:11.5px;color:var(--muted)">or click to browse multiple sources</span>
+        <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt,.md" hidden>
+      </div>
+
+      <div style="margin:12px 0 8px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase">Source Files</span>
+        <button class="ghost small" id="extractSourcesBtn" style="font-size:11.5px">⚡ Extract All</button>
+      </div>
+      <div id="sourcesList"></div>
+    </div>
+
+    <!-- TAB 3: KNOWLEDGE BASE -->
+    <div class="tab-content" id="tabKnowledge" style="display:none">
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button class="ghost small" id="kmModalBtn" style="flex:1" onclick="openKm()">Knowledge Manager</button>
+        <button class="ghost small" id="consolidateBtn" style="flex:1">Merge Duplicates</button>
+      </div>
+      <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Extracted Topics</div>
+      <div id="kbTopicsList"></div>
+    </div>
   </aside>
 
-  <main>
-    <div id="noProject" style="display:none">
-      <div class="hero">
-        <div class="big"></div>
-        <h1>Turn research chaos into a readable book</h1>
-        <p>pdf2book reads your papers and notes, maps the knowledge inside, resolves contradictions, and writes coherent chapters you can edit and export.</p>
-        <button id="heroCta">+ Create your first project</button>
-        <div class="features">
-        <div class="feature"><b>Add anything</b><span>Drop PDFs or paste raw notes â€” everything stays local.</span></div>
-        <div class="feature"><b>Smart analysis</b><span>Detects topics, merges duplicates, flags conflicting claims.</span></div>
-        <div class="feature"><b>Readable output</b><span>Grounded chapters with your choice of free AI models.</span></div>
-        </div>
+  <!-- CENTER PANEL: VISUAL PAGINATED STUDIO CANVAS -->
+  <main class="studio-canvas-wrap">
+    <div class="canvas-toolbar">
+      <div style="display:flex;gap:4px">
+        <button class="iconbtn active" id="viewPaginatedBtn" title="Paginated Sheet View (Spec §15)">📄 Pages</button>
+        <button class="iconbtn" id="viewContinuousBtn" title="Continuous Reader View">📜 Continuous</button>
       </div>
+      <span style="color:var(--border)">|</span>
+      <button class="iconbtn" id="zoomOutBtn" title="Zoom Out">−</button>
+      <span id="zoomLabel" style="font-weight:600;min-width:38px;text-align:center">100%</span>
+      <button class="iconbtn" id="zoomInBtn" title="Zoom In">+</button>
+      <span style="color:var(--border)">|</span>
+      <span id="pageCountLabel">Page 1 of 1</span>
+      <div class="spacer"></div>
+      <button class="ghost small" id="addBlockBtn">+ Add Block</button>
     </div>
 
-    <div id="workspace" style="display:none">
-      <div style="margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <div style="min-width:0">
-          <h2 id="projHeading" style="font-size:22px;margin-bottom:4px"></h2>
-          <div class="hint" id="projMeta"></div>
+    <div class="canvas-scroll-area" id="canvasScroll">
+      <!-- DYNAMIC SHEETS RENDERED HERE -->
+      <div class="book-sheet size-trade_6x9" id="activeSheet">
+        <div class="sheet-header">
+          <span id="sheetHeaderTitle">Untitled Book</span>
+          <span id="sheetHeaderChapter">Chapter 1</span>
         </div>
-        <span class="pill ok" id="savePill" style="display:none;margin-left:auto">Saved in this browser</span>
-      </div>
-
-      <div class="stepper" id="stepper" aria-label="Workflow progress">
-        <div class="step" data-step="1"><span class="s-num">1</span><span class="s-label">Add sources</span></div>
-        <div class="s-line"></div>
-        <div class="step" data-step="2"><span class="s-num">2</span><span class="s-label">Build knowledge base</span></div>
-        <div class="s-line"></div>
-        <div class="step" data-step="3"><span class="s-num">3</span><span class="s-label">Write &amp; export book</span></div>
-      </div>
-
-      <!-- STEP 1 -->
-      <section class="card live" id="card1">
-        <div class="card-head"><h2><span class="step-num">1</span>Add sources</h2></div>
-        <div class="stack">
-          <input type="text" id="noteTitle" placeholder="Title for pasted notes (optional)">
-          <textarea id="noteText" rows="4" placeholder="Paste research notes, paper excerpts, summariesâ€¦"></textarea>
-          <div class="hint" id="noteStats" style="display:none"></div>
-
-          <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose files">
-            <div class="dz-icon">â†‘</div>
-            <b style="color:var(--text2)" id="dzTitle">Drop PDF or TXT files here</b><br>
-            <span class="hint" id="dzHint">or click to browse â€” text is extracted right in your browser, files never leave your device</span>
-            <input type="file" id="files" accept=".pdf,.txt" multiple hidden>
+        <div id="sheetContent">
+          <div class="block-node">
+            <h2 contenteditable="true" id="chapterHeading">Chapter 1: Foundations</h2>
           </div>
-          <div class="filechips" id="fileChips"></div>
-          <div class="row">
-            <span style="flex:1"></span>
-            <button class="ghost small" id="cancelExtract" style="display:none">Stop</button>
-            <button class="ghost small" id="clearFiles" style="display:none">Clear files</button>
-            <button id="addSrc">+ Add sources</button>
+          <div class="block-node active-block" id="demoBlock">
+            <p contenteditable="true">pdf2book automatically ingests your source PDFs, extracts canonical knowledge, resolves conflicting evidence, and writes publication-ready books.</p>
+            <div class="block-ctrls">
+              <button class="iconbtn" title="AI Rewrite" onclick="triggerBlockAi('rewrite')">✨</button>
+              <button class="iconbtn" title="Delete Block" onclick="deleteActiveBlock()">🗑</button>
+            </div>
           </div>
         </div>
-        <hr class="sep">
-        <ul class="list" id="sources"></ul>
-      </section>
-
-      <!-- STEP 2 -->
-      <section class="card" id="card2">
-        <div class="card-head">
-          <h2><span class="step-num">2</span>Build knowledge base</h2>
-          <span style="flex:1"></span>
-          <button class="ghost small" id="kmBtn">Knowledge manager</button>
-          <button id="analyzeBtn">Extract knowledge</button>
+        <div class="sheet-footer">
+          <span id="sheetPageNum">1</span>
         </div>
-        <div class="gate-hint" id="gate2">Add at least one source to unlock extraction.</div>
-        <p class="hint" style="margin-top:0">Reads every page, extracts canonical topics with facts, definitions and formulas, merges duplicates across documents and tracks contradictions â€” all checkpointed page by page.</p>
-        <div class="stats" id="stats" style="display:none">
-          <div class="stat good"><b id="sTopics">0</b><span>Topics</span></div>
-          <div class="stat"><b id="sFacts">0</b><span>Facts</span></div>
-          <div class="stat"><b id="sGloss">0</b><span>Glossary terms</span></div>
-          <div class="stat" id="confStat"><b id="sConflicts">0</b><span>Conflicts</span></div>
-          <div class="stat" id="pagesStat"><b id="sPages">0</b><span>Pages read</span></div>
-        </div>
-        <div class="bar" id="kbBar" style="display:none;margin-top:14px"><i></i></div>
-        <div class="notice" id="kbNote"></div>
-        <div id="logPanel" style="display:none;margin-top:12px;max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:.82em;font-family:monospace;background:var(--card)">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>Event log</b><button class="ghost small" id="clearLog">Clear</button></div>
-          <div id="logEntries"></div>
-        </div>
-      </section>
-
-      <!-- STEP 3 -->
-      <section class="card" id="card3">
-        <div class="card-head">
-          <h2><span class="step-num">3</span>Write your book</h2>
-        <button class="ghost small" onclick="openSettings()" title="AI provider settings">AI</button>
-        <button id="genBtn">Write book</button>
-        </div>
-        <div class="gate-hint" id="gate3">Build the knowledge base first â€” chapters are planned from extracted topics.</div>
-
-        <div class="nb-label">Book preset</div>
-        <div class="fmtgrid" id="presetGrid" style="margin-bottom:10px"></div>
-        <div class="row" id="presetOptsRow" style="gap:16px;margin-bottom:6px">
-          <label class="nbcheck"><input type="checkbox" id="optSources" checked> Show sources</label>
-          <label class="nbcheck"><input type="checkbox" id="optToc" checked> Table of contents</label>
-          <button class="ghost small" id="customPresetBtn" title="Save current options as your custom preset">Save as custom</button>
-        </div>
-
-        <div class="readertoolbar" id="readerBar" style="display:none;margin-bottom:16px">
-          <button class="ghost small" id="tocBtn">Contents</button>
-          <button class="ghost small" id="fontMinus" title="Smaller text" aria-label="Decrease font size">Aâˆ’</button>
-          <button class="ghost small" id="fontPlus" title="Larger text" aria-label="Increase font size">A+</button>
-          <span class="engbadge" id="engineBadge"></span>
-        </div>
-
-        <div class="row" id="exports" style="display:none;margin-bottom:16px;flex-wrap:wrap">
-          <span class="hint">Export:</span>
-          <button type="button" class="exportbtn" id="expMd">â†“ Markdown</button>
-          <button type="button" class="exportbtn" id="expHtml">â†“ HTML</button>
-          <button type="button" class="exportbtn" id="expPdf">â†“ PDF</button>
-          <button type="button" class="exportbtn" id="expPrint">ðŸ–¨ Print view</button>
-          <button type="button" class="exportbtn" id="expEpub">â†“ EPUB</button>
-          <button type="button" class="exportbtn" id="expDocx">â†“ DOCX</button>
-          <button type="button" class="exportbtn" id="expJson">â†“ JSON</button>
-        </div>
-        <div class="genfx" id="genFx">
-          <div class="gline skel" style="width:88%"></div>
-          <div class="gline skel" style="width:96%"></div>
-          <div class="gline skel" style="width:72%"></div>
-          <div class="gline skel" style="width:91%"></div>
-          <div class="gmsg"><span class="spin"></span><span id="genMsg">Warming up the authorâ€¦</span></div>
-        </div>
-        <div id="chapters"><div class="empty">Build the knowledge base first, then write your book.</div></div>
-      </section>
-
-      <footer>pdf2book Â· local-first knowledge synthesis engine</footer>
+      </div>
     </div>
   </main>
+
+  <!-- RIGHT PANEL: AI ACTIONS / PROVENANCE / DESIGN / QUALITY -->
+  <aside class="panel-sidebar right" id="rightPanel">
+    <div class="tab-head">
+      <button class="tab-btn active" data-tab="tabAi" onclick="switchRightTab('tabAi')">🤖 AI Writing</button>
+      <button class="tab-btn" data-tab="tabProvenance" onclick="switchRightTab('tabProvenance')">🔍 Sources</button>
+      <button class="tab-btn" data-tab="tabSearch" onclick="switchRightTab('tabSearch')">🔎 Search</button>
+      <button class="tab-btn" data-tab="tabAudit" onclick="switchRightTab('tabAudit')">🛡️ Audit</button>
+    </div>
+
+    <!-- TAB 1: AI WRITING ACTIONS -->
+    <div class="tab-content" id="tabAi">
+      <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Section Actions</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
+        <button class="ghost small" onclick="runSectionAction('rewrite')">✨ Polish Flow</button>
+        <button class="ghost small" onclick="runSectionAction('expand')">📈 Expand</button>
+        <button class="ghost small" onclick="runSectionAction('condense')">📉 Condense</button>
+        <button class="ghost small" onclick="runSectionAction('simplify')">💡 Simplify</button>
+        <button class="ghost small" onclick="runSectionAction('academic')">🎓 Academic</button>
+        <button class="ghost small" onclick="runSectionAction('examples')">📌 Add Examples</button>
+        <button class="ghost small" onclick="runSectionAction('exercises')">📝 Add Exercises</button>
+        <button class="ghost small" onclick="runSectionAction('summary')">📑 Add Summary</button>
+      </div>
+
+      <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Custom AI Directive</div>
+      <textarea id="aiDirective" rows="3" placeholder="e.g. Focus on practical engineering trade-offs..." style="width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px;font-family:inherit;font-size:12.5px;resize:vertical;margin-bottom:10px"></textarea>
+      <button id="applyAiDirectiveBtn" style="width:100%">⚡ Regenerate Section</button>
+    </div>
+
+    <!-- TAB 2: PROVENANCE / TRACEABILITY -->
+    <div class="tab-content" id="tabProvenance" style="display:none">
+      <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Source Evidence</div>
+      <div id="provenanceContent" style="font-size:12.5px;color:var(--text2)">
+        <div style="padding:12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;margin-bottom:10px">
+          <div style="font-weight:700;color:var(--text);margin-bottom:4px" id="provDocTitle">Research Paper A.pdf</div>
+          <div style="color:var(--muted);font-size:11.5px;margin-bottom:8px">Page 14 · Section: Methods · Confidence 94%</div>
+          <div style="font-style:italic;background:var(--panel2);padding:8px;border-radius:6px;border-left:3px solid var(--accent);font-size:12px" id="provExcerpt">
+            "Muscle contraction produces mechanical torque across joint axes..."
+          </div>
+        </div>
+        <button class="ghost small" style="width:100%" onclick="viewSourceContext()">📖 View Original Context in Source</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: SEMANTIC SOURCE SEARCH -->
+    <div class="tab-content" id="tabSearch" style="display:none">
+      <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Ask Your Sources</div>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <input type="text" id="sourceSearchInput" placeholder="Ask questions across all PDFs…" style="flex:1;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:6px 10px;font-size:12.5px">
+        <button class="small" id="doSearchBtn">Ask</button>
+      </div>
+      <div id="searchAnswerBox" style="display:none;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;font-size:12.5px">
+        <div style="font-weight:700;margin-bottom:6px;color:var(--accent)">Grounded Answer:</div>
+        <div id="searchAnswerText"></div>
+      </div>
+      <div id="searchResultsList"></div>
+    </div>
+
+    <!-- TAB 4: QUALITY AUDIT -->
+    <div class="tab-content" id="tabAudit" style="display:none">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;background:var(--panel);padding:12px;border-radius:10px;border:1px solid var(--border)">
+        <div style="font-size:28px;font-weight:900;color:var(--ok)" id="auditScoreBig">98</div>
+        <div>
+          <div style="font-weight:700;font-size:13px">Book Quality Score</div>
+          <div style="font-size:11.5px;color:var(--muted)" id="auditVerdict">Ready for export</div>
+        </div>
+      </div>
+      <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Audit Items</div>
+      <div id="auditItemsList"></div>
+    </div>
+  </aside>
 </div>
 
 <!-- SETTINGS MODAL -->
 <div class="modal-backdrop" id="settingsModal">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <div class="modal">
     <div class="modal-head">
-      <h2 id="setTitle">AI settings</h2>
-      <button class="danger small" onclick="closeSettings()">âœ•</button>
+      <h3>AI Provider Settings</h3>
+      <button class="iconbtn" onclick="closeSettings()">✕</button>
     </div>
     <div class="modal-body">
+      <label style="font-weight:600;display:block;margin-bottom:6px">Provider</label>
+      <select id="setProvider" style="width:100%;padding:8px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);margin-bottom:14px">
+        <option value="zen">OpenCode Zen (Free AI Models)</option>
+        <option value="nvidia">NVIDIA NIM (Free Tier Credits)</option>
+        <option value="openai">OpenAI (ChatGPT / GPT-4o)</option>
+        <option value="anthropic">Anthropic (Claude 3.5)</option>
+        <option value="gemini">Google Gemini</option>
+        <option value="ollama">Local Model (Ollama / LocalAI)</option>
+      </select>
 
-      <div class="field">
-        <label>Provider</label>
-        <div class="provgrid" id="provGrid"></div>
-      </div>
+      <label style="font-weight:600;display:block;margin-bottom:6px">API Key</label>
+      <input type="password" id="setApiKey" placeholder="Paste your API key…" style="width:100%;padding:8px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);margin-bottom:14px">
 
-      <div class="field" id="keyField" style="display:none">
-        <label>API key
-          <a class="provlink" id="keyLink" target="_blank" rel="noopener" style="margin-left:auto">Get free key â†—</a>
-        </label>
-        <div class="keywrap">
-          <input type="password" id="setKey" placeholder="Paste your API keyâ€¦" autocomplete="off" spellcheck="false">
-          <button type="button" class="keytoggle" id="showKey">SHOW</button>
-        </div>
-        <div class="ctxinfo">Stored only in this browser (localStorage) â€” sent per request when generating, never saved on the server.</div>
-      </div>
-
-      <div class="field" id="modelField" style="display:none">
-        <label>Model <span class="labelhint">free picks pre-listed Â· custom IDs allowed</span></label>
-        <input type="text" id="setModel" list="modelList" placeholder="" autocomplete="off" spellcheck="false">
-        <datalist id="modelList"></datalist>
-      </div>
-
-      <div class="field" id="ctxField">
-        <label>Context budget <span class="labelhint">source material packed into each topic</span></label>
-        <div class="seg" id="ctxSeg">
-          <button type="button" class="segbtn" data-budget="6000">Compact<small>~6k chars</small></button>
-          <button type="button" class="segbtn" data-budget="12000">Balanced<small>~12k chars</small></button>
-          <button type="button" class="segbtn" data-budget="24000">Extended<small>~24k chars</small></button>
-        </div>
-        <div class="ctxinfo">Bigger budgets give richer chapters but consume more tokens.</div>
-      </div>
-
-      <div class="testline" id="testLine" style="display:none">
-        <button class="ghost small" id="testBtn">Test connection</button>
-        <span class="testresult" id="testResult"></span>
-      </div>
-
-      <hr class="sep" style="margin:14px 0">
-
-      <div class="field">
-        <label>OCR language <span class="labelhint">for scanned pages</span></label>
-        <select id="setOcrLang" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text2)">
-          <option value="eng">English</option>
-          <option value="fra">French</option>
-          <option value="deu">German</option>
-          <option value="spa">Spanish</option>
-          <option value="ita">Italian</option>
-          <option value="por">Portuguese</option>
-          <option value="rus">Russian</option>
-          <option value="jpn">Japanese</option>
-          <option value="chi_sim">Chinese (Simplified)</option>
-          <option value="chi_tra">Chinese (Traditional)</option>
-          <option value="kor">Korean</option>
-          <option value="ara">Arabic</option>
-          <option value="hin">Hindi</option>
-          <option value="nld">Dutch</option>
-          <option value="swe">Swedish</option>
-          <option value="pol">Polish</option>
-          <option value="tur">Turkish</option>
-          <option value="vie">Vietnamese</option>
-          <option value="tha">Thai</option>
-          <option value="ind">Indonesian</option>
-        </select>
-        <div class="ctxinfo">Choose the primary language of your PDF. Multiple languages can be selected later.</div>
-      </div>
-
-      <div class="field">
-        <label>Extraction batch size <span class="labelhint">pages per extraction batch</span></label>
-        <div class="seg" id="batchSeg">
-          <button type="button" class="segbtn" data-batch="1">1</button>
-          <button type="button" class="segbtn" data-batch="2">2</button>
-          <button type="button" class="segbtn" data-batch="3">3</button>
-          <button type="button" class="segbtn" data-batch="5">5</button>
-        </div>
-        <div class="ctxinfo">Larger batches extract faster but use more tokens at once.</div>
-      </div>
-
-      <div class="field">
-        <label>Similarity threshold <span class="labelhint">duplicate detection sensitivity</span></label>
-        <div class="seg" id="simSeg">
-          <button type="button" class="segbtn" data-sim="0.7">Loose<small>0.7</small></button>
-          <button type="button" class="segbtn" data-sim="0.8">Balanced<small>0.8</small></button>
-          <button type="button" class="segbtn" data-sim="0.9">Strict<small>0.9</small></button>
-        </div>
-        <div class="ctxinfo">Higher = fewer duplicates detected, lower = more aggressive merging.</div>
-      </div>
-
-      <div class="field">
-        <label>Sliding context window <span class="labelhint">recent pages kept in memory</span></label>
-        <div class="seg" id="ctxWinSeg">
-          <button type="button" class="segbtn" data-win="3">3 pages</button>
-          <button type="button" class="segbtn" data-win="5">5 pages</button>
-          <button type="button" class="segbtn" data-win="8">8 pages</button>
-          <button type="button" class="segbtn" data-win="10">10 pages</button>
-        </div>
-        <div class="ctxinfo">More pages = better continuity but more tokens per extraction.</div>
-      </div>
+      <label style="font-weight:600;display:block;margin-bottom:6px">Citation Style (Spec §8)</label>
+      <select id="setCitationStyle" style="width:100%;padding:8px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);margin-bottom:14px">
+        <option value="APA">APA 7th Edition (Author, Year)</option>
+        <option value="MLA">MLA 9th Edition (Author Page)</option>
+        <option value="Chicago">Chicago Manual of Style</option>
+        <option value="IEEE">IEEE Numbered [1]</option>
+        <option value="Vancouver">Vancouver Style</option>
+      </select>
     </div>
     <div class="modal-foot">
-      <span class="hint" style="flex:1">Changes apply immediately after saving.</span>
       <button class="ghost" onclick="closeSettings()">Cancel</button>
-      <button id="saveSettings">Save settings</button>
-    </div>
-  </div>
-</div>
-
-<!-- NOTES VIEWER MODAL -->
-<div class="modal-backdrop" id="notesModal">
-  <div class="modal" style="max-width:780px;max-height:88vh;display:flex;flex-direction:column" role="dialog" aria-modal="true" aria-labelledby="notesTitle">
-    <div class="modal-head">
-      <h2 id="notesTitle">Page notes</h2>
-      <button class="danger small" onclick="closeNotesModal()">âœ•</button>
-    </div>
-    <div class="modal-body" id="notesBody" style="overflow-y:auto"></div>
-    <div class="modal-foot">
-      <span class="hint" style="flex:1">Edits are saved in this browser and used by generation.</span>
-      <button class="ghost" onclick="closeNotesModal()">Close</button>
+      <button id="saveSettingsBtn">Save Settings</button>
     </div>
   </div>
 </div>
 
 <!-- KNOWLEDGE MANAGER MODAL -->
 <div class="modal-backdrop" id="kmModal">
-  <div class="modal" style="max-width:960px;max-height:90vh;display:flex;flex-direction:column" role="dialog" aria-modal="true" aria-labelledby="kmTitle">
+  <div class="modal" style="max-width:860px">
     <div class="modal-head">
-      <h2 id="kmTitle">Knowledge manager</h2>
-      <button class="danger small" id="kmClose">âœ•</button>
+      <h3>Knowledge Base & Entity Graph</h3>
+      <button class="iconbtn" id="kmClose" onclick="closeKm()">✕</button>
     </div>
-    <div class="modal-body" style="display:grid;grid-template-columns:290px minmax(0,1fr);gap:0;padding:0;overflow:hidden;flex:1">
-      <div style="border-right:1px solid var(--border);overflow-y:auto;padding:14px" id="kmList"></div>
-      <div style="overflow-y:auto;padding:18px" id="kmDetail"><div class="empty">Select a topic to inspect and edit it.</div></div>
+    <div class="modal-body" id="kmBody" style="display:grid;grid-template-columns:260px 1fr;gap:14px;min-height:360px">
+      <div id="kmTopicNav" style="border-right:1px solid var(--border);padding-right:10px;overflow-y:auto"></div>
+      <div id="kmTopicDetail" style="overflow-y:auto"></div>
     </div>
     <div class="modal-foot">
-      <span class="hint" style="flex:1">Edits persist in this browser and shape every regeneration.</span>
-      <button class="ghost" id="kmConsolidate">Merge duplicates</button>
       <button class="ghost" onclick="closeKm()">Close</button>
     </div>
   </div>
 </div>
 
-<!-- QA REPORT MODAL -->
+<!-- QUALITY AUDIT MODAL -->
 <div class="modal-backdrop" id="qaModal">
-  <div class="modal" style="max-width:640px;max-height:88vh;display:flex;flex-direction:column" role="dialog" aria-modal="true" aria-labelledby="qaTitle">
+  <div class="modal">
     <div class="modal-head">
-      <h2 id="qaTitle">Quality check</h2>
-      <button class="danger small" id="qaClose">âœ•</button>
+      <h3>Book Quality Audit</h3>
+      <button class="iconbtn" id="qaClose" onclick="closeQaModal()">✕</button>
     </div>
-    <div class="modal-body" id="qaBody" style="overflow-y:auto"></div>
+    <div class="modal-body" id="qaBody"></div>
     <div class="modal-foot">
-      <span class="hint" style="flex:1">Fix issues or export anyway â€” your call.</span>
-      <button class="ghost" id="qaExportAnyway">Export anyway</button>
-      <button id="qaOk">Back to book</button>
+      <button class="ghost" onclick="closeQaModal()">Close</button>
+      <button id="qaExportAnyway" onclick="exportBook('html')">Export Anyway</button>
     </div>
   </div>
 </div>
 
-<div class="tocdrawer" id="tocDrawer" aria-label="Table of contents">
-  <div class="toc-head">
-    <b style="font-size:13.5px">Contents</b>
-    <button class="iconbtn" id="tocClose" title="Close contents">âœ•</button>
+<!-- NOTES VIEWER MODAL -->
+<div class="modal-backdrop" id="notesModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="notesTitle">Source Inspector</h3>
+      <button class="iconbtn" onclick="closeNotesModal()">✕</button>
+    </div>
+    <div class="modal-body" id="notesBody"></div>
+    <div class="modal-foot">
+      <button class="ghost" onclick="closeNotesModal()">Close</button>
+    </div>
   </div>
-  <div class="toc-list" id="tocList"></div>
 </div>
 
-<div id="toasts" aria-live="polite"></div>
+<!-- EXPORT MENU DROPDOWN (DYNAMIC POPUP) -->
+<div id="exportMenu" style="display:none;position:fixed;top:50px;right:16px;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);z-index:150;padding:6px;width:210px">
+  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('pdf')">🖨 Print-Ready PDF</button>
+  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('html')">🌐 Standalone Web Book</button>
+  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('markdown')">📝 Markdown (.md)</button>
+  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('docx')">📄 Word Document (.docx)</button>
+  <button class="ghost small" style="width:100%;justify-content:flex-start" onclick="exportBook('json')">💾 Project Backup (.json)</button>
+</div>
 
+<div id="toasts"></div>
+
+<!-- JSZip & PDF.js Lazy Loaders -->
 <script>
 'use strict';
 const $ = (id) => document.getElementById(id);
 
-/* ================= helpers ================= */
-function toast(msg, kind) {
+/* ---------- State Management ---------- */
+const WS_KEY = 'pdf2book.activeWorkspace';
+let ws = {
+  title: 'Untitled Research Book',
+  bookType: 'textbook',
+  design: 'modern',
+  pageSize: 'trade_6x9',
+  citationStyle: 'APA',
+  sources: [],
+  kb: { topics: [], conflicts: [], unresolved_refs: [], glossary: {} },
+  chapters: [
+    {
+      id: 'ch-1',
+      title: 'Foundations',
+      purpose: 'Core background principles and foundational concepts.',
+      sections: [
+        {
+          id: 'sec-1',
+          title: 'Introduction',
+          blocks: [
+            {
+              type: 'paragraph',
+              text: 'pdf2book automatically ingests your source PDFs and notes, maps the knowledge inside, and writes coherent, professionally formatted chapters with full source traceability.',
+              sourceRef: { document_id: 'sample-doc', page: 1 }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  qa: { score: 98, status: 'pass', warnings: [], errors: [] }
+};
+
+let activeSectionId = 'sec-1';
+let activeBlockIndex = 0;
+let currentZoom = 100;
+let currentViewMode = 'paginated'; // 'paginated' | 'continuous'
+
+/* ---------- Helpers & Toasts ---------- */
+function toast(msg, kind = 'ok') {
   const t = document.createElement('div');
-  t.className = 'toast' + (kind ? ' ' + kind : '');
-  t.textContent = msg;
+  t.className = 'toast ' + kind;
+  t.innerHTML = (kind === 'ok' ? '✓ ' : '⚠️ ') + msg;
   $('toasts').appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; }, 3800);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(10px)'; }, 3800);
   setTimeout(() => t.remove(), 4300);
 }
 
-let errRetryFn = null;
-function showError(msg, retryFn) {
-  $('errMsg').textContent = String(msg || 'Something went wrong');
-  errRetryFn = typeof retryFn === 'function' ? retryFn : null;
-  $('errRetry').style.display = errRetryFn ? 'inline-flex' : 'none';
-  $('errBar').style.display = 'flex';
-}
-$('errClose').onclick = () => { $('errBar').style.display = 'none'; };
-$('errRetry').onclick = () => {
-  $('errBar').style.display = 'none';
-  const fn = errRetryFn; errRetryFn = null;
-  if (fn) fn();
-};
-window.onerror = function (msg) {
-  try { showError('UI error: ' + msg); } catch (_e) {}
-};
-window.addEventListener('unhandledrejection', (e) => {
-  try { showError('Unexpected error: ' + ((e.reason && e.reason.message) || e.reason)); } catch (_e) {}
-});
-
-async function api(path, opts = {}) {
-  const headers = { ...(opts.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), ...(opts.headers || {}) };
-  const init = Object.keys(opts).length || Object.keys(headers).length ? { ...opts, headers } : undefined;
-  const res = await fetch(path, init);
-  if (!res.ok) {
-    let msg = res.status + ' ' + res.statusText;
-    try { msg = (await res.json()).error || msg; } catch (_e) {}
-    throw new Error(msg);
-  }
-  return res.status === 204 ? null : res.json();
-}
-const json = (body) => ({ method: 'POST', body: JSON.stringify(body) });
-
-function busy(btn, on, labelBusy, labelIdle) {
-  btn.disabled = on;
-  btn.innerHTML = on ? '<span class="spin"></span>&nbsp; ' + labelBusy : labelIdle;
+function saveWorkspace() {
+  localStorage.setItem(WS_KEY, JSON.stringify(ws));
 }
 
-function timeAgo(iso) {
-  const d = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (d < 60) return 'just now';
-  if (d < 3600) return Math.floor(d / 60) + 'm ago';
-  if (d < 86400) return Math.floor(d / 3600) + 'h ago';
-  return Math.floor(d / 86400) + 'd ago';
+function loadWorkspace() {
+  try {
+    const raw = localStorage.getItem(WS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') ws = { ...ws, ...parsed };
+    }
+  } catch (_e) {}
 }
 
-async function copyText(txt) {
-  try { await navigator.clipboard.writeText(txt); return true; }
-  catch (_e) {
-    const ta = document.createElement('textarea');
-    ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    let ok = false;
-    try { ok = document.execCommand('copy'); } catch (_e2) {}
-    ta.remove(); return ok;
-  }
-}
-
-/* ================= theme ================= */
+/* ---------- Theme Switcher ---------- */
 const THEME_KEY = 'pdf2book.theme';
 function applyTheme(t) {
   document.documentElement.dataset.theme = t;
@@ -1034,590 +773,172 @@ $('themeToggle').onclick = () => {
   localStorage.setItem(THEME_KEY, next);
   applyTheme(next);
 };
-applyTheme(
-  localStorage.getItem(THEME_KEY) ||
-  (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
-);
+applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
 
-/* ================= AI provider settings ================= */
-const CFG_KEY = 'pdf2book.aiConfig';
-let aiCfg = { provider: 'zen', apiKey: '', model: '', contextBudget: 12000, ocrLang: 'eng', batchSize: 2, similarityThreshold: 0.8, contextWindowSize: 5 };
-let providerMeta = [];
-const keysByProvider = {};
-
-try {
-  const saved = JSON.parse(localStorage.getItem(CFG_KEY) || 'null');
-  if (saved && typeof saved === 'object') aiCfg = { ...aiCfg, ...saved };
-} catch (_e) {}
-if (!['zen', 'nvidia'].includes(aiCfg.provider)) {
-  aiCfg = { provider: 'zen', apiKey: '', model: '', contextBudget: aiCfg.contextBudget || 12000, ocrLang: aiCfg.ocrLang || 'eng', batchSize: aiCfg.batchSize || 2, similarityThreshold: aiCfg.similarityThreshold || 0.8, contextWindowSize: aiCfg.contextWindowSize || 5 };
-}
-
-function saveAiCfg() { localStorage.setItem(CFG_KEY, JSON.stringify(aiCfg)); }
-
-function aiRequestHeaders() {
-  if (!aiCfg.apiKey) return null;
-  return { 'X-AI-Config': JSON.stringify({
-    provider: aiCfg.provider,
-    apiKey: aiCfg.apiKey,
-    model: aiCfg.model || undefined,
-    contextBudget: aiCfg.contextBudget || 12000
-  }) };
-}
-
-const PROV_ICONS = { zen: 'Z', nvidia: 'N' };
-
-async function loadProviders() {
-  const data = await api('/api/providers');
-  providerMeta = data.providers;
-  const grid = $('provGrid');
-  grid.innerHTML = '';
-  for (const p of providerMeta) {
-    const card = document.createElement('button');
-    card.type = 'button';
-    card.className = 'provcard';
-    card.dataset.id = p.id;
-
-    const icon = document.createElement('div'); icon.className = 'picon'; icon.textContent = PROV_ICONS[p.id] || '?';
-    const info = document.createElement('div'); info.style.minWidth = '0';
-    const name = document.createElement('div'); name.className = 'pname';
-    name.append(document.createTextNode(p.label));
-    const tag = document.createElement('span'); tag.className = 'ptag'; tag.textContent = 'FREE';
-    name.appendChild(tag);
-    const sub = document.createElement('div'); sub.className = 'psub';
-    sub.textContent = p.id === 'zen'
-      ? (p.models || []).length + ' free models'
-      : 'Free tier credits';
-    info.append(name, sub);
-
-    const check = document.createElement('span'); check.className = 'pcheck'; check.textContent = 'âœ“';
-
-    card.addEventListener('click', () => selectProvider(p.id));
-    card.append(icon, info, check);
-    grid.appendChild(card);
-  }
-}
-
-function currentProviderMeta() {
-  return providerMeta.find((p) => p.id === aiCfg.provider);
-}
-
-function selectProvider(id) {
-  if (id === aiCfg.provider) return;
-  keysByProvider[aiCfg.provider] = $('setKey').value.trim();
-  aiCfg.provider = id;
-  aiCfg.model = '';
-  $('setKey').value = keysByProvider[id] || '';
-  $('testResult').textContent = ''; $('testResult').className = 'testresult';
-  renderSettings();
-}
-
-function renderSettings() {
-  const meta = currentProviderMeta();
-  document.querySelectorAll('.provcard').forEach((c) =>
-    c.classList.toggle('active', c.dataset.id === aiCfg.provider));
-
-  const hasKeyField = Boolean(meta);
-  $('keyField').style.display = hasKeyField ? 'block' : 'none';
-  $('modelField').style.display = hasKeyField ? 'block' : 'none';
-  $('testLine').style.display = hasKeyField ? 'flex' : 'none';
-
-  if (hasKeyField) {
-    $('keyLink').href = meta.keyUrl || '#';
-    const dl = $('modelList');
-    dl.innerHTML = '';
-    for (const m of meta.models || []) {
-      const o = document.createElement('option'); o.value = m; dl.appendChild(o);
-    }
-    if (!$('setModel').value.trim()) $('setModel').value = meta.defaultModel || '';
-    $('setModel').placeholder = meta.defaultModel || 'model-id';
-  }
-
-  [...$('ctxSeg').children].forEach((b) =>
-    b.classList.toggle('active', Number(b.dataset.budget) === Number(aiCfg.contextBudget)));
-}
-
-let lastFocused = null;
-function openSettings() {
-  lastFocused = document.activeElement;
-  $('setKey').value = aiCfg.apiKey;
-  $('setModel').value = aiCfg.model;
-  $('setOcrLang').value = aiCfg.ocrLang || 'eng';
-  [...$('batchSeg').children].forEach((b) => b.classList.toggle('active', Number(b.dataset.batch) === Number(aiCfg.batchSize)));
-  [...$('simSeg').children].forEach((b) => b.classList.toggle('active', Number(b.dataset.sim) === Number(aiCfg.similarityThreshold)));
-  [...$('ctxWinSeg').children].forEach((b) => b.classList.toggle('active', Number(b.dataset.win) === Number(aiCfg.contextWindowSize)));
-  renderSettings();
-  $('settingsModal').classList.add('open');
-  setTimeout(() => { try { $('setKey').focus(); } catch (_e) {} }, 60);
-}
-function closeSettings() {
-  $('settingsModal').classList.remove('open');
-  if (lastFocused && lastFocused.focus) lastFocused.focus();
-}
-$('settingsModal').addEventListener('click', (e) => {
-  if (e.target === $('settingsModal')) closeSettings();
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && $('settingsModal').classList.contains('open')) closeSettings();
-});
-
-$('showKey').onclick = () => {
-  const inp = $('setKey');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-  $('showKey').textContent = inp.type === 'password' ? 'SHOW' : 'HIDE';
-};
-
-$('ctxSeg').addEventListener('click', (e) => {
-  const btn = e.target.closest('.segbtn');
-  if (!btn) return;
-  aiCfg.contextBudget = Number(btn.dataset.budget);
-  [...$('ctxSeg').children].forEach((b) => b.classList.toggle('active', b === btn));
-});
-
-$('batchSeg').addEventListener('click', (e) => {
-  const btn = e.target.closest('.segbtn');
-  if (!btn) return;
-  aiCfg.batchSize = Number(btn.dataset.batch);
-  [...$('batchSeg').children].forEach((b) => b.classList.toggle('active', b === btn));
-});
-
-$('simSeg').addEventListener('click', (e) => {
-  const btn = e.target.closest('.segbtn');
-  if (!btn) return;
-  aiCfg.similarityThreshold = Number(btn.dataset.sim);
-  [...$('simSeg').children].forEach((b) => b.classList.toggle('active', b === btn));
-});
-
-$('ctxWinSeg').addEventListener('click', (e) => {
-  const btn = e.target.closest('.segbtn');
-  if (!btn) return;
-  aiCfg.contextWindowSize = Number(btn.dataset.win);
-  [...$('ctxWinSeg').children].forEach((b) => b.classList.toggle('active', b === btn));
-});
-
-$('testBtn').onclick = async () => {
-  const resEl = $('testResult');
-  busy($('testBtn'), true, 'Testingâ€¦', 'Test connection');
-  resEl.className = 'testresult'; resEl.textContent = '';
-  try {
-    const r = await api('/api/providers/test', json({
-      provider: aiCfg.provider,
-      apiKey: $('setKey').value.trim(),
-      model: $('setModel').value.trim()
-    }));
-    resEl.className = 'testresult ok';
-    resEl.textContent = 'Connected' + (r.model ? ' â€” ' + r.model : '');
-  } catch (e) {
-    resEl.className = 'testresult err';
-    resEl.textContent = 'Failed: ' + e.message;
-  } finally { busy($('testBtn'), false, '', 'Test connection'); }
-};
-
-$('saveSettings').onclick = () => {
-  aiCfg.apiKey = $('setKey').value.trim();
-  aiCfg.model = $('setModel').value.trim();
-  aiCfg.ocrLang = $('setOcrLang').value || 'eng';
-  keysByProvider[aiCfg.provider] = aiCfg.apiKey;
-  saveAiCfg();
-  closeSettings();
-  refreshBadge();
-  toast('AI set to ' + (currentProviderMeta()?.label || aiCfg.provider) +
-    (aiCfg.model ? ' \u00b7 ' + aiCfg.model : ''), 'ok');
-};
-
-function refreshBadge() {
-  const el = $('provider');
-  if (aiCfg.apiKey) {
-    el.textContent = 'AI: ' + (currentProviderMeta()?.label || aiCfg.provider) +
-      (aiCfg.model ? ' Â· ' + aiCfg.model : '');
-    $('provDot').classList.add('ok');
-  }
-}
-
-/* ================= workflow state ================= */
-const flow = { processed: false, kbBuilt: false, chapters: false };
-
-function updateStepper() {
-  flow.processed = Boolean(ws && ws.sources.length);
-  const activeStep = flow.chapters ? 4 : flow.kbBuilt ? 3 : flow.processed ? 2 : 1;
-  document.querySelectorAll('#stepper .step').forEach((el) => {
-    const n = Number(el.dataset.step);
-    el.classList.toggle('done', activeStep === 4 || n < activeStep);
-    el.classList.toggle('active', activeStep !== 4 && n === activeStep);
+/* ---------- UI Tab Handlers ---------- */
+function switchLeftTab(tabId) {
+  ['tabOutline', 'tabSources', 'tabKnowledge'].forEach((id) => {
+    $(id).style.display = id === tabId ? 'block' : 'none';
   });
-  document.querySelectorAll('#stepper .s-line').forEach((ln, i) =>
-    ln.classList.toggle('done', activeStep === 4 || i + 1 < activeStep));
-
-  $('card1').classList.toggle('live', activeStep === 1);
-  $('card2').classList.toggle('live', activeStep === 2);
-  $('card3').classList.toggle('live', activeStep >= 3);
-
-  const lock2 = !flow.processed;
-  const lock3 = !flow.kbBuilt;
-  $('analyzeBtn').disabled = lock2;
-  $('genBtn').disabled = lock3;
-  $('gate2').style.display = lock2 ? 'block' : 'none';
-  $('gate3').style.display = lock3 ? 'block' : 'none';
-  $('card2').classList.toggle('locked', lock2);
-  $('card3').classList.toggle('locked', lock3);
-}
-
-/* ================= presets ================= */
-const PRESETS_STORE_KEY = 'pdf2book.preset';
-let activePresetId = 'textbook';
-const clientPresets = { academic:{id:'academic',label:'Academic',blurb:'Formal citations, structured sections, abstract, index.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:true,index:true,toc:true}}, textbook:{id:'textbook',label:'Textbook',blurb:'Definition-forward chapters with worked examples.',include:{examples:true,exercises:true,summary:true,glossary:true,sources:true,index:true,toc:true}}, novel:{id:'novel',label:'Novel',blurb:'Flowing narrative, minimal headings, literary style.',include:{examples:true,exercises:false,summary:false,glossary:false,sources:false,index:false,toc:true}}, minimalist:{id:'minimalist',label:'Minimalist',blurb:'Clean, pure content, no decorations.',include:{examples:false,exercises:false,summary:false,glossary:false,sources:false,index:false,toc:true}}, visual:{id:'visual',label:'Visual',blurb:'Color blocks, callouts, relationship diagrams.',include:{examples:true,exercises:true,summary:true,glossary:true,sources:false,index:false,toc:true}}, studyguide:{id:'studyguide',label:'Study Notes',blurb:'Condensed scannable revision material.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:false,index:false,toc:true}}, examprep:{id:'examprep',label:'Exam Prep',blurb:'High-yield facts, pitfalls and practice Q&A.',include:{examples:true,exercises:true,summary:true,glossary:false,sources:false,index:false,toc:true}}, beginner:{id:'beginner',label:'Beginner Guide',blurb:'Plain-language journey assuming no prior knowledge.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:false,index:false,toc:true}}, handbook:{id:'handbook',label:'Handbook',blurb:'Practitioner reference with procedures and best practices.',include:{examples:true,exercises:false,summary:false,glossary:true,sources:true,index:true,toc:true}}, reference:{id:'reference',label:'Reference',blurb:'Terse lookup-friendly entries and tables.',include:{examples:false,exercises:false,summary:false,glossary:true,sources:true,index:true,toc:true}}, tutorial:{id:'tutorial',label:'Tutorial',blurb:'Learn-by-doing walkthroughs building one running project.',include:{examples:true,exercises:true,summary:true,glossary:false,sources:false,index:false,toc:true}}, research:{id:'research',label:'Research Digest',blurb:'Literature-review synthesis with methodology awareness.',include:{examples:false,exercises:false,summary:true,glossary:true,sources:true,index:true,toc:true}}, custom:{id:'custom',label:'Custom',blurb:'Your own saved combination of options.',include:{examples:true,exercises:false,summary:true,glossary:true,sources:true,index:true,toc:true}} };
-const defaultPreset = clientPresets.textbook;
-
-function currentPreset() { return clientPresets[activePresetId] || defaultPreset; }
-
-function loadSavedPreset() {
-  try { const s = JSON.parse(localStorage.getItem(PRESETS_STORE_KEY)); if (s && clientPresets[s.id]) { activePresetId = s.id; } else if (s && s.id === 'custom' && s.include) { clientPresets.custom = { ...clientPresets.custom, ...s, isCustom: true }; activePresetId = 'custom'; } } catch (_e) {}
-}
-
-function savePresetPrefs() {
-  const p = currentPreset();
-  localStorage.setItem(PRESETS_STORE_KEY, JSON.stringify({ id: activePresetId, label: p.label, include: { ...p.include }, custom: activePresetId === 'custom' ? p : undefined }));
-  $('optSources').checked = Boolean(p.include.sources);
-  $('optToc').checked = Boolean(p.include.toc);
-}
-
-function renderPresetGrid() {
-  const grid = $('presetGrid'); grid.innerHTML = '';
-  for (const [id, p] of Object.entries(clientPresets)) {
-    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fmtbtn';
-    if (id === activePresetId) btn.classList.add('active');
-    btn.dataset.id = id; btn.title = p.blurb;
-    btn.innerHTML = '<span class="fi2"></span><span class="fl"></span>';
-    btn.querySelector('.fi2').textContent = p.label.charAt(0);
-    btn.querySelector('.fl').textContent = p.label;
-    btn.onclick = () => { activePresetId = id; renderPresetGrid(); savePresetPrefs(); };
-    grid.appendChild(btn);
-  }
-}
-
-$('optSources').onchange = () => { currentPreset().include.sources = $('optSources').checked; savePresetPrefs(); };
-$('optToc').onchange = () => { currentPreset().include.toc = $('optToc').checked; savePresetPrefs(); };
-$('customPresetBtn').onclick = () => {
-  clientPresets.custom = { ...clientPresets.custom, id: 'custom', isCustom: true, label: (ws && ws.title) ? ws.title.slice(0, 32) + ' Custom' : 'Custom', include: { examples: true, exercises: false, summary: true, glossary: true, sources: $('optSources').checked, index: true, toc: $('optToc').checked } };
-  activePresetId = 'custom'; renderPresetGrid(); savePresetPrefs(); toast('Custom preset saved', 'ok');
-};
-
-/* ================= local workspaces ================= */
-const WS_LIST_KEY = 'pdf2book.workspaces.v1';
-const WS_ACTIVE_KEY = 'pdf2book.activeWorkspace';
-const wsStoreKey = (id) => 'pdf2book.ws.' + id;
-
-let ws = null;
-
-function newWs(title) {
-  return {
-    id: 'ws_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
-    title: title || 'Untitled Project',
-    author: '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    sources: [],
-    analysis: null,
-    chapters: null,
-    engine: null,
-    notebook: null
-  };
-}
-
-function wsList() {
-  try { return JSON.parse(localStorage.getItem(WS_LIST_KEY) || '[]'); }
-  catch (_e) { return []; }
-}
-
-/* ---------- IndexedDB for page text + KB ---------- */
-let idbPromise = null;
-function idb() {
-  if (!('indexedDB' in window)) return Promise.reject(new Error('IndexedDB unavailable'));
-  if (!idbPromise) {
-    idbPromise = new Promise((resolve, reject) => {
-      const req = indexedDB.open('pdf2book', 1);
-      req.onupgradeneeded = () => { req.result.createObjectStore('kv'); };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error || new Error('IndexedDB open failed'));
-    }).catch((e) => { idbPromise = null; throw e; });
-  }
-  return idbPromise;
-}
-let kbIdbPromise = null;
-function kbIdb() {
-  if (!('indexedDB' in window)) return Promise.reject(new Error('IndexedDB unavailable'));
-  if (!kbIdbPromise) {
-    kbIdbPromise = new Promise((resolve, reject) => {
-      const req = indexedDB.open('pdf2book-kb', 1);
-      req.onupgradeneeded = () => { req.result.createObjectStore('kb'); };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error || new Error('IndexedDB open failed'));
-    }).catch((e) => { kbIdbPromise = null; throw e; });
-  }
-  return kbIdbPromise;
-}
-async function idbSet(key, val) {
-  const db = await idb();
-  await new Promise((resolve, reject) => {
-    const tx = db.transaction('kv', 'readwrite');
-    tx.objectStore('kv').put(val, key);
-    tx.oncomplete = resolve;
-    tx.onerror = () => reject(tx.error || new Error('IndexedDB write failed'));
+  document.querySelectorAll('#leftPanel .tab-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.tab === tabId);
   });
 }
-async function idbGet(key) {
-  const db = await idb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction('kv', 'readonly');
-    const rq = tx.objectStore('kv').get(key);
-    rq.onsuccess = () => resolve(rq.result);
-    rq.onerror = () => reject(rq.error || new Error('IndexedDB read failed'));
+
+function switchRightTab(tabId) {
+  ['tabAi', 'tabProvenance', 'tabSearch', 'tabAudit'].forEach((id) => {
+    $(id).style.display = id === tabId ? 'block' : 'none';
+  });
+  document.querySelectorAll('#rightPanel .tab-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.tab === tabId);
   });
 }
-async function idbDel(key) {
-  try {
-    const db = await idb();
-    await new Promise((resolve, reject) => {
-      const tx = db.transaction('kv', 'readwrite');
-      tx.objectStore('kv').delete(key);
-      tx.oncomplete = resolve;
-      tx.onerror = () => reject(tx.error);
-    });
-  } catch (_e) {}
-}
-async function kbSet(wsId, kb) {
-  try { const db = await kbIdb(); await new Promise((resolve, reject) => { const tx = db.transaction('kb', 'readwrite'); tx.objectStore('kb').put(kb, wsId); tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); }); } catch (_e) {}
-}
-async function kbGet(wsId) {
-  try { const db = await kbIdb(); return new Promise((resolve, reject) => { const tx = db.transaction('kb', 'readonly'); const rq = tx.objectStore('kb').get(wsId); rq.onsuccess = () => resolve(rq.result || null); rq.onerror = () => reject(rq.error); }); } catch (_e) { return null; }
-}
 
-/* ---------- clean OCR (client mirror of ocrCleaner for deterministic offline use) ---------- */
-function clientCleanOcr(raw) {
-  let t = String(raw == null ? '' : raw).replace(/\r\n?/g, '\n');
-  // eslint-disable-next-line no-control-regex
-  t = t.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
-  t = t.replace(/[\u00AD\u200B\u200C\uFEFF]/g, '').replace(/\u200D/g, '');
-  t = t.replace(/([A-Za-z]{2,})-\n([a-z]{1,})/g, (_, a, b) => a + b);
-  t = t.replace(/^[ \t]*[\u2022\u00B7\u25AA\u25E6*][ \t]+/gm, '- ');
-  t = t.replace(/[ \t]+$/gm, '');
-  t = t.replace(/\n{3,}/g, '\n\n');
-  t = t.replace(/([^\n])[ \t]{2,}/g, '$1 ');
-  return t.trim();
-}
+/* ---------- Modals ---------- */
+function openSettings() { $('settingsModal').style.display = 'flex'; }
+function closeSettings() { $('settingsModal').style.display = 'none'; }
+function openKm() { $('kmModal').style.display = 'flex'; renderKm(); }
+function closeKm() { $('kmModal').style.display = 'none'; }
+function openQaModal() { $('qaModal').style.display = 'flex'; renderQaModal(); }
+function closeQaModal() { $('qaModal').style.display = 'none'; }
+function closeNotesModal() { $('notesModal').style.display = 'none'; }
 
-function wsLite() {
-  const copy = { ...ws, _idb: true };
-  copy.sources = (ws.sources || []).map((s) => ({ ...s, pages: null, pageCount: s.pages.length }));
-  return copy;
-}
+$('qaScoreBtn').onclick = openQaModal;
+$('exportBtn').onclick = (e) => {
+  e.stopPropagation();
+  const m = $('exportMenu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+};
+document.addEventListener('click', () => { $('exportMenu').style.display = 'none'; });
 
-let saveTimer = null;
-function saveWs(immediate) {
-  if (!ws) return;
-  ws.updatedAt = new Date().toISOString();
-  const commit = () => {
-    try {
-      localStorage.setItem(wsStoreKey(ws.id), JSON.stringify(wsLite()));
-      const list = wsList().filter((x) => x.id !== ws.id);
-      list.unshift({
-        id: ws.id, title: ws.title, createdAt: ws.createdAt, updatedAt: ws.updatedAt,
-        sources: (ws.sources || []).length, chapters: (ws.bookJSON && ws.bookJSON.chapters || []).length
-      });
-      localStorage.setItem(WS_LIST_KEY, JSON.stringify(list));
-      localStorage.setItem(WS_ACTIVE_KEY, ws.id);
-      flashSavePill();
-    } catch (e) {
-      showError('Could not save locally â€” storage may be full. Export your book to keep it.');
-    }
-    idbSet('pages.' + ws.id, (ws.sources || []).map((s) => ({ id: s.id, pages: s.pages }))).catch(() => {});
-    if (ws.kb) kbSet(ws.id, ws.kb).catch(() => {});
-  };
-  if (immediate) { clearTimeout(saveTimer); commit(); return; }
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(commit, 350);
-}
-
-let pillTimer = null;
-function flashSavePill() {
-  const pill = $('savePill');
-  pill.style.display = 'inline-flex';
-  clearTimeout(pillTimer);
-  pillTimer = setTimeout(() => { pill.style.display = 'none'; }, 1600);
-}
-
-async function loadProjects() {
-  const ul = $('projects');
-  ul.innerHTML = '';
-  const list = wsList();
-  if (!list.length) {
-    const li = document.createElement('li'); li.className = 'static';
-    li.innerHTML = '<span class="li-sub">No projects yet â€” create one above.</span>';
-    ul.appendChild(li); return;
-  }
-  for (const p of list) {
-    const li = document.createElement('li');
-    if (ws && p.id === ws.id) li.classList.add('active');
-    li.onclick = () => openWorkspace(p.id);
-    const name = document.createElement('div'); name.style.minWidth = '0';
-    const t = document.createElement('div'); t.className = 'li-title'; t.textContent = p.title;
-    const s = document.createElement('div'); s.className = 'li-sub';
-    s.textContent = timeAgo(p.updatedAt || p.createdAt) +
-      (p.sources ? ' Â· ' + p.sources + ' src' : '') +
-      (p.chapters ? ' Â· ' + p.chapters + ' ch' : '');
-    name.append(t, s);
-    const del = document.createElement('button');
-    del.className = 'danger small'; del.textContent = 'Delete';
-    del.onclick = async (e) => {
-      e.stopPropagation();
-      if (!confirm('Delete "' + p.title + '" from this browser?')) return;
-      localStorage.removeItem(wsStoreKey(p.id));
-      idbDel('pages.' + p.id);
-      localStorage.setItem(WS_LIST_KEY, JSON.stringify(wsList().filter((x) => x.id !== p.id)));
-      toast('Project deleted', 'ok');
-      if (ws && ws.id === p.id) { ws = null; showWorkspace(false); }
-      await loadProjects();
+/* ---------- WikiLinks Binding ---------- */
+function bindWikiLinks(container) {
+  if (!container) return;
+  container.querySelectorAll('a.wikilink').forEach((a) => {
+    a.onclick = (e) => {
+      e.preventDefault();
+      const topicName = a.getAttribute('data-wiki') || a.textContent.trim();
+      if (ws.kb && Array.isArray(ws.kb.topics)) {
+        const topic = ws.kb.topics.find((t) => (t.canonical_name || '').toLowerCase() === topicName.toLowerCase());
+        if (topic) {
+          openKm();
+          return;
+        }
+      }
+      toast('Wiki link: ' + topicName, 'ok');
     };
-    li.append(name, del);
-    ul.appendChild(li);
-  }
-}
-
-$('newBtn').onclick = () => {
-  const title = $('projTitle').value.trim() || 'Untitled Project';
-  ws = newWs(title);
-  $('projTitle').value = '';
-  saveWs(true);
-  toast('Project "' + title + '" created', 'ok');
-  loadProjects();
-  enterWorkspace();
-};
-
-$('heroCta').onclick = () => {
-  $('projTitle').focus();
-  $('projTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
-};
-
-function showWorkspace(on) {
-  $('noProject').style.display = on ? 'none' : 'block';
-  $('workspace').style.display = on ? 'block' : 'none';
-}
-
-function resetWorkflowUi() {
-  flow.processed = false; flow.kbBuilt = false; flow.chapters = false;
-  $('stats').style.display = 'none'; $('kbBar').style.display = 'none'; $('kbNote').textContent = '';
-  $('chapters').innerHTML = '<div class="empty">Build the knowledge base first, then write your book.</div>';
-  $('exports').style.display = 'none'; $('readerBar').style.display = 'none'; $('engineBadge').textContent = '';
-  renderPresetGrid(); savePresetPrefs();
-}
-
-function enterWorkspace() {
-  $('projHeading').textContent = ws.title;
-  $('projMeta').textContent = 'Stored only in this browser Â· nothing leaves your device except AI prompts';
-  showWorkspace(true);
-  document.querySelectorAll('#projects li').forEach((li) => li.classList.remove('active'));
-  resetWorkflowUi();
-  renderSources();
-  if (ws.kb && ws.kb.topics && ws.kb.topics.length) { flow.kbBuilt = true; applyKbStats(ws.kb); }
-  if (ws.bookJSON && ws.bookJSON.chapters && ws.bookJSON.chapters.length) renderBook(false);
-  updateStepper();
-}
-
-async function openWorkspace(id) {
-  let w = null;
-  try { w = JSON.parse(localStorage.getItem(wsStoreKey(id)) || 'null'); }
-  catch (_e) { w = null; }
-  if (!w) { toast('That project could not be loaded', 'err'); return; }
-  ws = w;
-  const migrated = !w._idb && (w.sources || []).some((s) => s.pages);
-  if (w._idb) {
-    try {
-      const pageMap = new Map((await idbGet('pages.' + id)) || []);
-      let missing = 0;
-      w.sources = (w.sources || []).filter((s) => {
-        const rec = pageMap.get(s.id);
-        if (rec && Array.isArray(rec.pages)) { s.pages = rec.pages; return true; }
-        missing++;
-        return false;
-      });
-      if (missing) toast(missing + ' source(s) could not be restored â€” re-add the file', 'err');
-      w.kb = w.kb || await kbGet(id);
-    } catch (_e) {
-      w.sources = (w.sources || []).filter((s) => Array.isArray(s.pages));
-      toast('Storage error â€” some sources were dropped. Re-add their files.', 'err');
-    }
-  }
-  saveWs(true);
-  enterWorkspace();
-}
-
-/* ================= sources ================= */
-const dz = $('dropzone'), fileInput = $('files');
-let pickedFiles = [];
-
-function fmtSize(bytes) {
-  if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  return Math.max(1, Math.round(bytes / 1024)) + ' KB';
-}
-function fileIcon(name) {
-  return /\.pdf$/i.test(name) ? 'PDF' : /\.txt$/i.test(name) ? 'TXT' : 'FILE';
-}
-
-function renderFileChips() {
-  const wrap = $('fileChips');
-  wrap.innerHTML = '';
-  pickedFiles.forEach((f, i) => {
-    const chip = document.createElement('div');
-    chip.className = 'filechip';
-    const icon = document.createElement('span'); icon.className = 'ficon'; icon.textContent = fileIcon(f.name);
-    const name = document.createElement('span'); name.className = 'fname'; name.textContent = f.name;
-    const size = document.createElement('span'); size.className = 'fsize'; size.textContent = fmtSize(f.size);
-    const rm = document.createElement('button'); rm.type = 'button'; rm.textContent = 'âœ•'; rm.title = 'Remove';
-    rm.onclick = () => { pickedFiles.splice(i, 1); syncInputFiles(); renderFileChips(); };
-    chip.append(icon, name, size, rm);
-    wrap.appendChild(chip);
   });
-  $('clearFiles').style.display = pickedFiles.length ? 'inline-flex' : 'none';
 }
 
-function syncInputFiles() {
-  try {
-    const dt = new DataTransfer();
-    pickedFiles.forEach((f) => dt.items.add(f));
-    fileInput.files = dt.files;
-  } catch (_e) {}
+/* ---------- Paginated Sheet Layout Engine ---------- */
+function renderPaginatedCanvas() {
+  const canvas = $('canvasScroll');
+  canvas.innerHTML = '';
+
+  const pageSizeClass = 'size-' + (ws.pageSize || 'trade_6x9');
+  let pageNumber = 1;
+
+  // Render chapters and sections
+  (ws.chapters || []).forEach((ch, ci) => {
+    const sheet = document.createElement('div');
+    sheet.className = `book-sheet ${pageSizeClass}`;
+    sheet.style.transform = `scale(${currentZoom / 100})`;
+    sheet.style.transformOrigin = 'top center';
+
+    const header = document.createElement('div');
+    header.className = 'sheet-header';
+    header.innerHTML = `<span>${ws.title || 'Book'}</span><span>Chapter ${ci + 1}: ${ch.title}</span>`;
+    sheet.appendChild(header);
+
+    const body = document.createElement('div');
+    const h2Node = document.createElement('div');
+    h2Node.className = 'block-node';
+    h2Node.innerHTML = `<h2 contenteditable="true">${ch.title}</h2>`;
+    h2Node.querySelector('h2').onblur = (e) => { ch.title = e.target.textContent; saveWorkspace(); renderOutlineTree(); };
+    body.appendChild(h2Node);
+
+    (ch.sections || []).forEach((sec) => {
+      (sec.blocks || []).forEach((b, bi) => {
+        const node = document.createElement('div');
+        node.className = 'block-node';
+        node.onclick = () => selectBlock(sec.id, bi, b);
+
+        let inner = '';
+        if (b.type === 'heading') inner = `<h3>${b.text}</h3>`;
+        else if (b.type === 'definition') inner = `<div class="b-def"><strong>${b.term}:</strong> ${b.definition}</div>`;
+        else if (b.type === 'formula') inner = `<div class="b-formula"><code>${b.expression}</code></div>`;
+        else if (b.type === 'quote') inner = `<blockquote class="b-quote">"${b.text}"</blockquote>`;
+        else if (b.type === 'callout') inner = `<div class="b-callout">${b.text}</div>`;
+        else if (b.type === 'warning') inner = `<div class="b-warning">${b.text}</div>`;
+        else if (b.type === 'summary') inner = `<div class="b-summary"><strong>Summary:</strong> ${b.text}</div>`;
+        else {
+          const cit = b.sourceRef ? ` <span class="cit-badge" onclick="event.stopPropagation();showProvenance('${b.sourceRef.document_id}', ${b.sourceRef.page})">[${b.sourceRef.document_id}, p.${b.sourceRef.page}]</span>` : '';
+          inner = `<p contenteditable="true">${b.text}${cit}</p>`;
+        }
+
+        node.innerHTML = inner;
+        body.appendChild(node);
+      });
+    });
+
+    sheet.appendChild(body);
+
+    const footer = document.createElement('div');
+    footer.className = 'sheet-footer';
+    footer.innerHTML = `<span>${pageNumber++}</span>`;
+    sheet.appendChild(footer);
+
+    canvas.appendChild(sheet);
+  });
+
+  $('pageCountLabel').textContent = `Page 1 of ${Math.max(1, pageNumber - 1)}`;
 }
 
-function setPickedFiles(fileList) {
-  const incoming = [...fileList].filter((f) => /\.(pdf|txt)$/i.test(f.name));
-  const skipped = fileList.length - incoming.length;
-  for (const f of incoming) {
-    if (!pickedFiles.some((p) => p.name === f.name && p.size === f.size)) pickedFiles.push(f);
+function selectBlock(secId, bi, b) {
+  activeSectionId = secId;
+  activeBlockIndex = bi;
+  document.querySelectorAll('.block-node').forEach((n) => n.classList.remove('active-block'));
+  if (b.sourceRef) {
+    showProvenance(b.sourceRef.document_id, b.sourceRef.page, b.text);
   }
-  syncInputFiles();
-  renderFileChips();
-  if (skipped > 0) toast(skipped + ' file(s) skipped â€” only PDF and TXT are supported', 'err');
 }
 
-dz.onclick = () => fileInput.click();
-dz.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } };
-['dragover', 'dragenter'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add('over'); }));
-['dragleave', 'drop'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove('over'); }));
-dz.addEventListener('drop', (e) => setPickedFiles(e.dataTransfer.files));
-fileInput.onchange = () => setPickedFiles(fileInput.files);
-$('clearFiles').onclick = () => { pickedFiles = []; syncInputFiles(); renderFileChips(); };
+function showProvenance(docId, page, text) {
+  switchRightTab('tabProvenance');
+  $('provDocTitle').textContent = docId || 'Source Document';
+  $('provExcerpt').textContent = text ? `"${text.slice(0, 240)}..."` : 'Cited factual claim grounded in source evidence.';
+}
 
-$('noteText').addEventListener('input', () => {
-  const v = $('noteText').value;
-  const stats = $('noteStats');
-  if (!v.trim()) { stats.style.display = 'none'; return; }
-  stats.style.display = 'block';
-  const words = v.trim().split(/\s+/).length;
-  stats.textContent = v.length.toLocaleString() + ' chars Â· ' + words.toLocaleString() + ' words Â· ~' +
-    Math.ceil(v.length / 1800) + ' page(s) of source text';
-});
+/* ---------- Left Outline Tree ---------- */
+function renderOutlineTree() {
+  const container = $('chapterTreeItems');
+  container.innerHTML = '';
+  (ws.chapters || []).forEach((ch, ci) => {
+    const item = document.createElement('div');
+    item.className = 'tree-item';
+    item.innerHTML = `<span>📖</span> Chapter ${ci + 1}: ${ch.title}`;
+    item.onclick = () => {
+      renderPaginatedCanvas();
+    };
+    container.appendChild(item);
+  });
+}
 
-/* ---------- pdf.js client-side extraction (with OCR fallback) ---------- */
+/* ---------- Source Library & Multi-PDF / DOCX Ingestion ---------- */
+let jsZipLoading = null;
+function loadJsZip() {
+  if (window.JSZip) return Promise.resolve(window.JSZip);
+  if (jsZipLoading) return jsZipLoading;
+  jsZipLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = '/vendor/jszip.min.js';
+    s.onload = () => resolve(window.JSZip);
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  return jsZipLoading;
+}
+
 let pdfJsLoading = null;
 function loadPdfJs() {
   if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
@@ -1626,896 +947,247 @@ function loadPdfJs() {
     const s = document.createElement('script');
     s.src = '/vendor/pdf.min.js';
     s.onload = () => {
-      try {
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdf.worker.min.js';
-        resolve(window.pdfjsLib);
-      } catch (e) { reject(e); }
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdf.worker.min.js';
+      resolve(window.pdfjsLib);
     };
-    s.onerror = () => { pdfJsLoading = null; reject(new Error('Could not load the PDF engine â€” try reloading the page')); };
+    s.onerror = reject;
     document.head.appendChild(s);
   });
   return pdfJsLoading;
 }
 
-const OCR_SPARSE = 40;
-let tessLoading = null;
-function loadTesseract() {
-  if (window.Tesseract) return Promise.resolve(window.Tesseract);
-  if (tessLoading) return tessLoading;
-  tessLoading = new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = '/vendor/tesseract.min.js';
-    s.onload = () => resolve(window.Tesseract);
-    s.onerror = () => { tessLoading = null; reject(new Error('Could not load the OCR engine â€” check your connection and reload')); };
-    document.head.appendChild(s);
-  });
-  return tessLoading;
-}
-
-let ocrWorkerPromise = null;
-let ocrWorkerLang = 'eng';
-function getOcrWorker() {
-  const desiredLang = (aiCfg && aiCfg.ocrLang) || 'eng';
-  if (ocrWorkerPromise && ocrWorkerLang === desiredLang) return ocrWorkerPromise;
-  if (ocrWorkerPromise) {
-    try { ocrWorkerPromise.then((w) => w.terminate()); } catch (_e) {}
-    ocrWorkerPromise = null;
-  }
-  ocrWorkerLang = desiredLang;
-  ocrWorkerPromise = loadTesseract().then((T) => T.createWorker(desiredLang, 1, {
-    workerPath: '/vendor/tesseract.worker.min.js',
-    corePath: '/vendor/tesseract-core-simd.wasm.js',
-    langPath: '/vendor/lang',
-    logger: () => {}
-  })).catch((e) => { ocrWorkerPromise = null; throw e; });
-  return ocrWorkerPromise;
-}
-
-async function ocrPage(page) {
-  const worker = await getOcrWorker();
-  const base = page.getViewport({ scale: 1 });
-  const targetWidth = Math.min(2200, Math.round(base.width * 2));
-  const viewport = page.getViewport({ scale: targetWidth / base.width });
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.round(viewport.width);
-  canvas.height = Math.round(viewport.height);
-  const ctx = canvas.getContext('2d');
-  await page.render({ canvasContext: ctx, viewport }).promise;
-  const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
-  const { data } = await worker.recognize(blob);
-  canvas.width = 0; canvas.height = 0;
-  const text = String(data && data.text || '').trim();
-  const confidence = (data && typeof data.confidence === 'number') ? data.confidence : null;
-  return { text, confidence };
-}
-
-function dzHint(msg) { $('dzHint').textContent = msg || 'or click to browse â€” text is extracted right in your browser, files never leave your device'; }
-
-let extractionCancelled = false;
-
-async function extractPdfPages(file, onProgress) {
-  const pdfjs = await loadPdfJs();
-  const buf = await file.arrayBuffer();
-  const doc = await pdfjs.getDocument({ data: buf }).promise;
-  const pages = [];
-  let ocrCount = 0;
-  let ocrFailed = 0;
-  let ocrError = '';
-  const shortPages = [];
-  for (let i = 1; i <= doc.numPages; i++) {
-    if (extractionCancelled) throw Object.assign(new Error('Extraction stopped'), { cancelled: true });
-    onProgress && onProgress(i, doc.numPages, 'reading');
-    const page = await doc.getPage(i);
-    const tc = await page.getTextContent();
+async function extractDocxText(file) {
+  await loadJsZip();
+  const zip = await window.JSZip.loadAsync(file);
+  const docFile = zip.file('word/document.xml');
+  if (!docFile) throw new Error('Invalid DOCX document');
+  const xmlStr = await docFile.async('string');
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlStr, 'application/xml');
+  const paragraphs = [];
+  const pEls = xmlDoc.getElementsByTagName('w:p');
+  for (let i = 0; i < pEls.length; i++) {
+    const tEls = pEls[i].getElementsByTagName('w:t');
     let text = '';
-    for (const it of tc.items) {
-      if (typeof it.str !== 'string') continue;
-      text += it.str;
-      text += it.hasEOL ? '\n' : ' ';
-    }
-    text = text.replace(/[ \t]+\n/g, '\n').replace(/ {2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
-    if (text.length < OCR_SPARSE) {
-      onProgress && onProgress(i, doc.numPages, 'ocr');
-      try {
-        const { text: ocrText, confidence } = await ocrPage(page);
-        if (ocrText.length > text.length) { text = ocrText; ocrCount++; }
-        if (confidence !== null && confidence < 50) {
-          shortPages.push({ page: i, chars: text.length, confidence });
-        }
-      } catch (e) {
-        ocrFailed++;
-        if (!ocrError) ocrError = String((e && e.message) || e).slice(0, 140);
-      }
-    }
-    if (text.length < 100 && !shortPages.find((sp) => sp.page === i)) {
-      shortPages.push({ page: i, chars: text.length, confidence: null });
-    }
-    pages.push({ pageNumber: i, text });
-    if (page.cleanup) page.cleanup();
+    for (let j = 0; j < tEls.length; j++) text += tEls[j].textContent;
+    if (text.trim()) paragraphs.push(text.trim());
   }
-  return { pages, ocrCount, ocrFailed, ocrError, shortPages };
+  return paragraphs.join('\n\n');
 }
 
-const MAX_SOURCE_CHARS = 600000;
-
-function wsTotalChars() {
-  return (ws.sources || []).reduce((n, s) => n + s.chars, 0);
+async function extractPdfText(file) {
+  const pdfjs = await loadPdfJs();
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const strings = content.items.map((item) => item.str);
+    pages.push({ pageNumber: i, text: strings.join(' ') });
+  }
+  return pages;
 }
 
-function pushSource({ title, type, pages, ocrCount }) {
-  const clean = pages.map((p) => ({ pageNumber: p.pageNumber, text: String(p.text || '') })).filter((p) => p.text.trim());
-  if (!clean.length) return false;
-  const chars = clean.reduce((n, p) => n + p.text.length, 0);
-  if (wsTotalChars() + chars > MAX_SOURCE_CHARS) {
-    toast('"' + title + '" skipped â€” workspace would exceed ~600k characters', 'err');
-    return false;
-  }
-  ws.sources.push({
-    id: 'src_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
-    title: String(title || 'Source').slice(0, 160),
-    type,
-    pages: clean,
-    chars,
-    ocrCount: ocrCount || 0,
-    refined: false,
-    addedAt: new Date().toISOString()
-  });
-  return true;
-}
-
-function renderSources() {
-  const ul = $('sources');
-  ul.innerHTML = '';
-  const sources = (ws && ws.sources) || [];
-  if (!sources.length) {
-    const li = document.createElement('li'); li.className = 'static';
-    li.innerHTML = '<span class="li-sub">No sources yet â€” paste notes or drop PDFs above.</span>';
-    ul.appendChild(li);
-  }
-  for (const s of sources) {
-    const li = document.createElement('li'); li.className = 'static';
-    const left = document.createElement('div'); left.style.minWidth = '0';
-    const t = document.createElement('div'); t.className = 'li-title'; t.textContent = s.title;
-    const tags = [
-      s.type.toUpperCase(),
-      s.type === 'pdf' ? s.pages.length + ' page(s)' : null,
-      s.chars.toLocaleString() + ' chars',
-      s.ocrCount > 0 ? 'OCR Ã—' + s.ocrCount : null,
-      s.refined ? 'AI notes' : null
-    ].filter(Boolean);
-    const meta = document.createElement('span'); meta.className = 'li-sub';
-    meta.textContent = tags.join(' Â· ');
-    left.append(t, meta);
-    const right = document.createElement('div');
-    right.style.cssText = 'display:flex;align-items:center;gap:6px;';
-    const nb2 = document.createElement('button');
-    nb2.className = 'ghost small'; nb2.textContent = 'Notes';
-    nb2.onclick = () => openNotesModal(s.id);
-    const rm = document.createElement('button');
-    rm.className = 'danger small'; rm.textContent = 'Remove';
-    rm.onclick = () => {
-      ws.sources = ws.sources.filter((x) => x.id !== s.id);
-      saveWs(); renderSources(); updateStepper();
+$('sourceDropzone').onclick = () => $('fileInput').click();
+$('fileInput').onchange = async (e) => {
+  const files = Array.from(e.target.files || []);
+  for (const f of files) {
+    const src = {
+      id: 'src-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name: f.name,
+      size: f.size,
+      status: 'Extracting...',
+      pages: []
     };
-    right.append(nb2, rm);
-    li.append(left, right);
-    ul.appendChild(li);
-  }
-}
+    ws.sources.push(src);
+    renderSourcesList();
 
-/* ---------- notes viewer ---------- */
-function openNotesModal(sid) {
-  if (!ws) return;
-  const src = ws.sources.find((x) => x.id === sid);
-  if (!src) return;
-  $('notesTitle').textContent = 'Page notes â€” ' + src.title;
-  const body = $('notesBody');
-  body.innerHTML = '';
-  src.pages.forEach((p) => {
-    const wrap = document.createElement('div'); wrap.style.marginBottom = '14px';
-    const lab = document.createElement('div'); lab.className = 'nb-label';
-    lab.textContent = src.type === 'pdf' ? 'Page ' + p.pageNumber : 'Full text';
-    const ta = document.createElement('textarea');
-    ta.value = p.text;
-    ta.rows = Math.min(12, Math.max(3, p.text.split('\n').length + 1));
-    ta.oninput = () => {
-      p.text = ta.value;
-      src.chars = src.pages.reduce((n, x) => n + x.text.length, 0);
-      saveWs();
-    };
-    wrap.append(lab, ta);
-    body.appendChild(wrap);
-  });
-  $('notesModal').classList.add('open');
-}
-function closeNotesModal() { $('notesModal').classList.remove('open'); }
-$('notesModal').addEventListener('click', (e) => { if (e.target === $('notesModal')) closeNotesModal(); });
-
-$('cancelExtract').onclick = () => {
-  extractionCancelled = true;
-  dzHint('Stopping after this pageâ€¦');
-};
-
-$('addSrc').onclick = async () => {
-  if (!ws) { toast('Create a project first', 'err'); return; }
-  const text = $('noteText').value.trim();
-  if (!text && !pickedFiles.length) { toast('Add some notes or choose files first', 'err'); return; }
-  const btn = $('addSrc');
-  busy(btn, true, 'Workingâ€¦', '+ Add sources');
-  btn.disabled = true;
-  extractionCancelled = false;
-  $('cancelExtract').style.display = 'inline-flex';
-  const added = [];
-  try {
-    if (text) {
-      if (pushSource({ title: $('noteTitle').value.trim() || 'Pasted Notes', type: 'text', pages: [{ pageNumber: 1, text }] })) {
-        added.push(ws.sources[ws.sources.length - 1]);
-      }
-      $('noteText').value = ''; $('noteTitle').value = ''; $('noteStats').style.display = 'none';
-    }
-    for (const f of pickedFiles) {
-      if (/\.pdf$/i.test(f.name)) {
-        const shortName = f.name.length > 18 ? f.name.slice(0, 15) + 'â€¦' : f.name;
-        const { pages, ocrCount, ocrFailed, ocrError, shortPages } = await extractPdfPages(f, (i, n, mode) => {
-          const verb = mode === 'ocr' ? 'OCR page ' : 'page ';
-          busy(btn, true, shortName + ' ' + i + '/' + n, '+ Add sources');
-          dzHint('"' + f.name + '" \u2014 ' + verb + i + '/' + n);
-        });
-        if (ocrFailed > 0) {
-          toast(ocrFailed + ' scanned page(s) in "' + f.name.slice(0, 24) + '" could not be OCR-read' +
-            (ocrError ? ': ' + ocrError : ''), 'err');
-        }
-        if (shortPages && shortPages.length) {
-          const spList = shortPages.slice(0, 5).map((sp) => 'p' + sp.page + '(' + sp.chars + 'ch)').join(', ');
-          toast(shortPages.length + ' page(s) under 100 chars: ' + spList + (shortPages.length > 5 ? '...' : ''), 'err');
-        }
-        if (!extractionCancelled && pushSource({ title: f.name.replace(/\.pdf$/i, ''), type: 'pdf', pages, ocrCount })) {
-          added.push(ws.sources[ws.sources.length - 1]);
-        }
+    try {
+      if (f.name.endsWith('.pdf')) {
+        src.pages = await extractPdfText(f);
+      } else if (f.name.endsWith('.docx')) {
+        const text = await extractDocxText(f);
+        src.pages = [{ pageNumber: 1, text }];
       } else {
-        const t = await f.text();
-        if (pushSource({ title: f.name.replace(/\.txt$/i, ''), type: 'text', pages: [{ pageNumber: 1, text: t }] })) {
-          added.push(ws.sources[ws.sources.length - 1]);
-        }
+        const text = await f.text();
+        src.pages = [{ pageNumber: 1, text }];
       }
+      src.status = 'Ready';
+      src.pageCount = src.pages.length;
+      src.wordCount = src.pages.reduce((acc, p) => acc + (p.text || '').split(/\s+/).length, 0);
+      toast(`Extracted ${src.name} (${src.pageCount} pages)`, 'ok');
+    } catch (err) {
+      src.status = 'Error';
+      toast(`Failed to extract ${src.name}: ${err.message}`, 'err');
     }
-
-    pickedFiles = []; syncInputFiles(); renderFileChips(); dzHint('');
-    if (added.length) {
-      saveWs(true); renderSources(); updateStepper();
-      toast(added.length + ' source(s) added â€” go to step 2 to build the knowledge base', 'ok');
-    } else {
-      toast(extractionCancelled ? 'Extraction stopped â€” nothing added' : 'No readable text found in the selected file(s)', 'err');
-    }
-  } catch (e) {
-    dzHint('');
-    if (e && e.cancelled) toast('Extraction stopped', 'err');
-    else showError(e.message || 'Could not add source', () => $('addSrc').click());
-  }
-  finally {
-    $('cancelExtract').style.display = 'none';
-    busy(btn, false, '', '+ Add sources');
+    saveWorkspace();
+    renderSourcesList();
   }
 };
 
-/* ================= KB pipeline ================= */
-function kbDigestFromKb(kb) {
-  return (kb.topics || []).map((t) => ({
-    id: t.id, name: t.canonical_name, aliases: t.aliases || [], summary: t.summary || '',
-    counts: {
-      definitions: (t.definitions || []).length, facts: (t.facts || []).length,
-      examples: (t.examples || []).length, formulas: (t.formulas || []).length, procedures: (t.procedures || []).length
-    },
-    related: (t.relationships || []).map((r) => r.target_name || r.target_id),
-    sources: (t.source_refs || []).map((r) => r.file_name || r.document_id)
-  }));
-}
+function renderSourcesList() {
+  const container = $('sourcesList');
+  container.innerHTML = '';
+  $('srcCountBadge').textContent = ws.sources.length;
 
-function applyKbStats(kb, pagesRead) {
-  const st = kb.stats || {};
-  const glossaryCount = Object.keys(kb.glossary || {}).length;
-  const openConflicts = (kb.conflicts || []).filter((c) => c.status === 'unresolved').length;
-  $('sTopics').textContent = st.topics ?? (kb.topics || []).length;
-  $('sFacts').textContent = st.facts ?? 'â€“';
-  $('sGloss').textContent = glossaryCount || 'â€“';
-  $('sConflicts').textContent = st.conflictsOpen ?? openConflicts;
-  $('sPages').textContent = pagesRead ?? st.documents ?? ws.sources.reduce((n, s) => n + s.pages.length, 0);
-  $('confStat').className = 'stat' + (openConflicts > 0 ? ' warn' : '');
-  $('stats').style.display = 'grid';
-  $('kbBar').style.display = 'none';
-  $('kbNote').className = 'notice show';
-  $('kbNote').textContent = openConflicts > 0
-    ? openConflicts + ' unresolved conflict(s) â€” review in Knowledge Manager before writing.'
-    : 'Knowledge base looks clean. Ready to write.';
-  flow.kbBuilt = true;
-}
-
-async function buildKb() {
-  const btn = $('analyzeBtn');
-  if (!ws || !ws.sources.length) { toast('Add at least one source first', 'err'); return; }
-  const allPages = [];
-  for (const src of ws.sources) {
-    for (const p of (src.pages || [])) {
-      if (p.text && p.text.trim().length > 20) allPages.push({ src, page: p });
-    }
-  }
-  if (!allPages.length) { toast('No readable pages found', 'err'); return; }
-  const total = allPages.length;
-  let kb = ws.kb || {};
-  let pagesRead = 0;
-  busy(btn, true, 'Starting extraction\u2026', 'Extract knowledge');
-  $('stats').style.display = 'none';
-  $('kbBar').style.display = 'block';
-  $('kbBar').querySelector('i').style.width = '0%';
-  logEvent('Extraction started: ' + total + ' page(s) from ' + ws.sources.length + ' source(s)');
-  try {
-    for (const { src, page } of allPages) {
-      try {
-        const prevTopicIds = new Set((kb.topics || []).map((t) => t.id));
-        const res = await apiPost('/api/knowledge/extract', {
-          pageText: page.text, kb, documentId: src.id,
-          pageNumber: page.pageNumber, fileName: src.title,
-          docContext: ws.title,
-          contextWindowSize: aiCfg.contextWindowSize || 5,
-          recentTopics: (kb.topics || []).slice(-5).map((t) => t.canonical_name)
-        });
-        kb = res.kb || kb;
-        const newTopics = (kb.topics || []).filter((t) => !prevTopicIds.has(t.id));
-        const dupTopics = (res.extraction && res.extraction.mode === 'merged') || (res.extraction && res.extraction.mode === 'resolved_duplicate');
-        if (newTopics.length) logEvent('Page ' + page.pageNumber + ': +' + newTopics.length + ' new topic(s)');
-        else if (dupTopics) logEvent('Page ' + page.pageNumber + ': merged into existing topic(s)');
-        if (pagesRead % 10 === 0 && pagesRead > 0) logEvent('Page ' + pagesRead + '/' + total + ' \u2014 ' + (kb.topics || []).length + ' topics');
-      } catch (_e) { logEvent('Page ' + page.pageNumber + ' failed: ' + (_e.message || 'error').slice(0, 80), 'err'); }
-      pagesRead++;
-      const pct = Math.round((pagesRead / total) * 100);
-      $('kbBar').querySelector('i').style.width = pct + '%';
-      $('sPages').textContent = pagesRead;
-      $('sTopics').textContent = (kb.topics || []).length;
-      $('sFacts').textContent = (kb.topics || []).reduce((n, t) => n + (t.facts || []).length, 0);
-      $('sGloss').textContent = Object.keys(kb.glossary || {}).length;
-      $('sConflicts').textContent = (kb.conflicts || []).filter((c) => c.status === 'unresolved').length;
-      $('confStat').className = 'stat' + ((kb.conflicts || []).filter((c) => c.status === 'unresolved').length > 0 ? ' warn' : '');
-      $('stats').style.display = 'grid';
-      busy(btn, true, 'Extractingâ€¦ ' + pct + '% (' + pagesRead + '/' + total + ')', 'Extract knowledge');
-      if (pagesRead % 5 === 0) saveWs(true);
-    }
-    if ((kb.topics || []).length > 1) {
-      busy(btn, true, 'Consolidating duplicatesâ€¦', 'Extract knowledge');
-      try {
-        const cons = await apiPost('/api/knowledge/consolidate', { kb });
-        kb = cons.kb || kb;
-      } catch (_e) { /* keep unconsolidated */ }
-    }
-    ws.kb = kb;
-    saveWs(true);
-    applyKbStats(kb, total);
-    updateStepper();
-    logEvent('KB built: ' + (kb.topics || []).length + ' topic(s), ' + Object.keys(kb.glossary || {}).length + ' glossary terms', 'ok');
-    toast('Knowledge base built â€" ' + (kb.topics || []).length + ' topic(s)', 'ok');
-  } catch (e) {
-    showError(e.message || 'Extraction failed', buildKb);
-  } finally {
-    busy(btn, false, '', 'Extract knowledge');
-    $('kbBar').style.display = 'none';
-  }
-}
-$('analyzeBtn').onclick = buildKb;
-
-/* ================= markdown & rendering ================= */
-function preprocessWiki(md) {
-  return String(md).replace(/\[\[([^\]]+)\]\]/g, (_m, name) => `[${name}](#wiki-${name.trim()})`);
-}
-function renderMarkdown(md) {
-  md = preprocessWiki(md);
-  const esc = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return esc.split(/\n{2,}/).map((block) => {
-    const b = block.trim();
-    if (/^###\s/.test(b)) return '<h3>' + inlineMd(b.replace(/^###\s/, '')) + '</h3>';
-    if (/^##\s/.test(b)) return '<h2>' + inlineMd(b.replace(/^##\s/, '')) + '</h2>';
-    if (/^#\s/.test(b)) return '<h1>' + inlineMd(b.replace(/^#\s/, '')) + '</h1>';
-    if (/^[-*]\s/m.test(b)) {
-      const items = b.split('\n');
-      let html = '', level = 1;
-      for (const raw of items) {
-        const ind = Math.min(4, Math.floor((raw.match(/^\s*/)[0].length) / 2)) + 1;
-        const txt = raw.replace(/^\s*[-*]\s*/, '');
-        while (ind > level) { html += '<ul>'; level++; }
-        while (ind < level) { html += '</ul>'; level--; }
-        html += '<li>' + inlineMd(txt) + '</li>';
-      }
-      while (level > 1) { html += '</ul>'; level--; }
-      return html;
-    }
-    return '<p>' + inlineMd(b).replace(/\n/g, '<br>') + '</p>';
-  }).join('');
-}
-function inlineMd(s) {
-  return s
-    .replace(/\[([^\]]+)\]\(#wiki-([^)]+)\)/g, '<a class="wikilink" data-wiki="$2">$1</a>')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>');
-}
-function renderBlocks(blocks) {
-  let html = '';
-  for (const b of (blocks || [])) {
-    switch (b.type) {
-      case 'paragraph': html += '<p>' + inlineMd(b.text || '') + '</p>'; break;
-      case 'definition': html += '<dl><dt>' + inlineMd(b.term || '') + '</dt><dd>' + inlineMd(b.definition || '') + '</dd></dl>'; break;
-      case 'bullet_list': html += '<ul>' + (b.items || []).map((i) => '<li>' + inlineMd(i) + '</li>').join('') + '</ul>'; break;
-      case 'example': html += '<div class="example"><strong>' + inlineMd(b.title || 'Example') + ':</strong> ' + inlineMd(b.content || '') + '</div>'; break;
-      case 'formula': html += '<div class="formula"><code>' + inlineMd(b.expression || '') + '</code>' + (b.explanation ? ' â€” ' + inlineMd(b.explanation) : '') + '</div>'; break;
-      case 'table': {
-        const hdrs = (b.headers || []).map((h) => '<th>' + inlineMd(h) + '</th>').join('');
-        const rows = (b.rows || []).map((r) => '<tr>' + r.map((c) => '<td>' + inlineMd(c) + '</td>').join('') + '</tr>').join('');
-        html += '<div class="table-wrap"><table><thead><tr>' + hdrs + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
-        break;
-      }
-      case 'warning': html += '<div class="notice warn">' + inlineMd(b.text || '') + '</div>'; break;
-      case 'note': html += '<div class="notice">' + inlineMd(b.text || '') + '</div>'; break;
-      case 'summary': html += '<div class="notice good">' + inlineMd(b.text || '') + '</div>'; break;
-      case 'relationship_map': {
-        const rels = b.relationships || [];
-        if (rels.length) {
-          html += '<div class="notice" style="margin:12px 0"><strong>Relationships:</strong><ul style="margin:6px 0 0 16px">';
-          for (const r of rels) html += '<li><strong>' + inlineMd(r.from) + '</strong> <span style="color:var(--muted)">' + inlineMd(r.type || 'related') + '</span> <strong>' + inlineMd(r.to) + '</strong>' + (r.label ? ' (' + inlineMd(r.label) + ')' : '') + '</li>';
-          html += '</ul></div>';
-        }
-        break;
-      }
-      case 'importance': {
-        const lvl = b.level || 'medium';
-        const cls = lvl === 'high' ? 'warn' : lvl === 'low' ? '' : 'good';
-        html += '<div class="notice ' + cls + '"><strong>[' + lvl.toUpperCase() + ']</strong> ' + inlineMd(b.text || '') + '</div>';
-        break;
-      }
-      default: if (b.text) html += '<p>' + inlineMd(b.text) + '</p>';
-    }
-  }
-  return html;
-}
-
-/* ================= generation effects ================= */
-const GEN_MSGS = ['Warming up the authorâ€¦','Reading your sourcesâ€¦','Selecting the best evidenceâ€¦','Weaving chapters togetherâ€¦','Smoothing transitionsâ€¦','Adding final polishâ€¦'];
-let genTimer = null;
-function startGenFx() {
-  $('genFx').style.display = 'block';
-  $('chapters').style.display = 'none';
-  let i = 0;
-  $('genMsg').textContent = GEN_MSGS[0];
-  genTimer = setInterval(() => { i = Math.min(i + 1, GEN_MSGS.length - 1); $('genMsg').textContent = GEN_MSGS[i]; }, 1800);
-}
-function stopGenFx() {
-  if (genTimer) { clearInterval(genTimer); genTimer = null; }
-  $('genFx').style.display = 'none';
-  $('chapters').style.display = '';
-}
-
-/* ================= book generation ================= */
-async function apiPost(url, body) {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...(aiRequestHeaders() || {}) },
-    body: JSON.stringify(body)
+  ws.sources.forEach((s) => {
+    const card = document.createElement('div');
+    card.className = 'source-card';
+    card.innerHTML = `
+      <div class="src-head">
+        <span>📄 ${s.name}</span>
+        <span style="font-size:11px;color:${s.status === 'Ready' ? 'var(--ok)' : 'var(--warn)'}">${s.status}</span>
+      </div>
+      <div class="src-meta">
+        <span>${s.pageCount || 0} pages</span>
+        <span>·</span>
+        <span>~${(s.wordCount || 0).toLocaleString()} words</span>
+      </div>
+    `;
+    container.appendChild(card);
   });
-  if (!res.ok) {
-    let msg = res.status + ' ' + res.statusText;
-    try { msg = (await res.json()).error || msg; } catch (_e) {}
-    throw new Error(msg);
-  }
-  return res.json();
 }
 
-async function generateBook() {
-  const btn = $('genBtn');
-  if (!ws || !ws.sources.length) { toast('Add at least one source first', 'err'); return; }
-  if (!ws.kb || !(ws.kb.topics || []).length) { toast('Build the knowledge base first', 'err'); return; }
-  const preset = currentPreset();
-  startGenFx();
-  logEvent('Book generation started: preset=' + preset.id + ', ' + (ws.kb.topics || []).length + ' topics');
+/* ---------- Semantic Search Across Sources ---------- */
+$('doSearchBtn').onclick = async () => {
+  const query = $('sourceSearchInput').value.trim();
+  if (!query) return;
+  $('searchAnswerBox').style.display = 'block';
+  $('searchAnswerText').textContent = 'Searching sources with AI…';
+
   try {
-    $('genMsg').textContent = 'Planning book structureâ€¦';
-    const digest = kbDigestFromKb(ws.kb);
-    const planRes = await apiPost('/api/book/plan', { title: ws.title, digest, presetId: preset.id });
-    const plan = planRes.plan;
-    if (!plan || !plan.chapters || !plan.chapters.length) {
-      throw new Error('The planner could not produce chapters â€” add more topics or adjust the preset');
-    }
-    logEvent('Plan ready: ' + plan.chapters.length + ' chapters planned');
-    const chapterResults = [];
-    const recentSummaries = [];
-    for (let i = 0; i < plan.chapters.length; i++) {
-      const ch = plan.chapters[i];
-      $('genMsg').textContent = 'Writing "' + ch.title.slice(0, 40) + '"â€¦ (' + (i + 1) + '/' + plan.chapters.length + ')';
-      const kbSlice = (ws.kb.topics || []).filter((t) => (ch.topicIds || []).includes(t.id));
-      const writeRes = await apiPost('/api/book/write', {
-        title: ws.title,
-        chapter: { title: ch.title, purpose: ch.purpose, topicIds: ch.topicIds },
-        presetId: preset.id, kbSlice, recentSummaries
-      });
-      chapterResults.push({ plan: ch, result: writeRes });
-      if (writeRes.summary) recentSummaries.push(writeRes.summary);
-      if (writeRes.openQuestions && writeRes.openQuestions.length) logEvent('Chapter ' + (i + 1) + ' raised ' + writeRes.openQuestions.length + ' open question(s)');
-      if (recentSummaries.length > 6) recentSummaries.shift();
-      saveWs(true);
-    }
-    const chapters = chapterResults.map((cr) => ({
-      title: cr.plan.title, purpose: cr.plan.purpose,
-      sections: cr.result.sections || [],
-      openQuestions: cr.result.openQuestions || [],
-      continuityNote: cr.result.continuityNote || '',
-      content: (cr.result.sections || []).map((s) =>
-        (s.title ? '### ' + s.title + '\n\n' : '') +
-        (s.blocks || []).map((b) => {
-          if (b.type === 'paragraph') return b.text || '';
-          if (b.type === 'bullet_list') return (b.items || []).map((it) => '- ' + it).join('\n');
-          if (b.type === 'definition') return '**' + (b.term || '') + '**: ' + (b.definition || '');
-          if (b.type === 'example') return '> **' + (b.title || 'Example') + ':** ' + (b.content || '');
-          if (b.type === 'formula') return '`' + (b.expression || '') + '`';
-          if (b.type === 'warning') return '> ' + (b.text || '');
-          if (b.type === 'note') return '> ' + (b.text || '');
-          if (b.type === 'summary') return '> **Summary:** ' + (b.text || '');
-          if (b.type === 'importance') return '**[' + (b.level || 'medium').toUpperCase() + ']** ' + (b.text || '');
-          if (b.type === 'relationship_map') {
-            return (b.relationships || []).map((r) => '- **' + (r.from || '') + '** ' + (r.type || 'related') + ' **' + (r.to || '') + '**' + (r.label ? ' (' + r.label + ')' : '')).join('\n');
-          }
-          return b.text || '';
-        }).join('\n')
-      ).join('\n')
-    }));
-    const book = {
-      title: plan.title || ws.title, subtitle: plan.subtitle || '',
-      preface: plan.preface || '', chapters, presetId: preset.id
-    };
-    $('genMsg').textContent = 'Running quality checksâ€¦';
-    let qaRes = { status: 'skip', errors: [], warnings: [], statistics: {} };
-    try { qaRes = await apiPost('/api/book/qa', { book, kb: ws.kb }); } catch (_e) { /* non-blocking */ }
-    ws.bookJSON = book;
-    ws.chapters = chapters;
-    ws.qa = qaRes;
-    ws.engine = { mode: planRes.mode || 'ai', preset: preset.id, provider: aiCfg.provider };
-    flow.chapters = true;
-    saveWs(true);
-    stopGenFx();
-    renderBook(true);
-    updateStepper();
-    logEvent('Book complete: ' + chapters.length + ' chapter(s), QA=' + qaRes.status, qaRes.status === 'fail' ? 'err' : 'ok');
-    let msg = 'Book complete â€” ' + chapters.length + ' chapter(s)';
-    if (qaRes.status === 'warn') msg += ' Â· ' + (qaRes.warnings || []).length + ' warning(s)';
-    if (qaRes.status === 'fail') msg += ' Â· ' + (qaRes.errors || []).length + ' issue(s)';
-    toast(msg, qaRes.status === 'fail' ? 'err' : 'ok');
-  } catch (e) {
-    stopGenFx();
-    showError(e.message || 'Generation failed', generateBook);
+    const res = await fetch('/api/sources/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, sources: ws.sources })
+    });
+    const data = await res.json();
+    $('searchAnswerText').textContent = data.answer || 'No answer found.';
+    const resultsContainer = $('searchResultsList');
+    resultsContainer.innerHTML = '';
+    (data.matches || []).forEach((m) => {
+      const item = document.createElement('div');
+      item.style.padding = '8px';
+      item.style.background = 'var(--panel)';
+      item.style.borderRadius = '6px';
+      item.style.marginBottom = '6px';
+      item.style.fontSize = '11.5px';
+      item.innerHTML = `<strong>${m.sourceTitle} (p. ${m.pageNumber})</strong><p style="margin:4px 0 0;color:var(--text2)">"${m.snippet.slice(0, 160)}..."</p>`;
+      resultsContainer.appendChild(item);
+    });
+  } catch (err) {
+    $('searchAnswerText').textContent = 'Search failed: ' + err.message;
   }
-}
-$('genBtn').onclick = generateBook;
+};
 
-function engineBadgeText(eng) {
-  if (!eng) return '';
-  const label = eng.model || eng.provider || 'AI';
-  return eng.mode === 'ai' ? 'AI Â· ' + label : 'Extractive fallback';
-}
-
-/* ================= reader ================= */
-let readerFs = Number(localStorage.getItem('pdf2book.readerSize')) || 14.5;
-function applyReaderFs() {
-  document.documentElement.style.setProperty('--reader-fs', readerFs.toFixed(1) + 'px');
-  localStorage.setItem('pdf2book.readerSize', String(readerFs));
-}
-$('fontPlus').onclick = () => { readerFs = Math.min(21, readerFs + 1); applyReaderFs(); };
-$('fontMinus').onclick = () => { readerFs = Math.max(11, readerFs - 1); applyReaderFs(); };
-applyReaderFs();
-$('tocBtn').onclick = () => $('tocDrawer').classList.toggle('open');
-$('tocClose').onclick = () => $('tocDrawer').classList.remove('open');
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('tocDrawer').classList.remove('open'); });
-
-/* ================= export ================= */
-async function exportBook(fmt) {
-  if (!ws || !ws.chapters || !ws.chapters.length) { toast('Generate a book first', 'err'); return; }
+/* ---------- Book Generation Pipeline ---------- */
+$('generateBookBtn').onclick = async () => {
+  if (!ws.sources.length) {
+    toast('Please upload at least one PDF or source document first', 'warn');
+    switchLeftTab('tabSources');
+    return;
+  }
+  toast('Building knowledge graph and structuring chapters…', 'ok');
+  // Plan and write
   try {
-    const ext = fmt === 'markdown' ? 'md' : fmt;
-    if (fmt === 'json') {
-      const payload = JSON.stringify({ book: ws.bookJSON || { chapters: ws.chapters, title: ws.title }, kb: ws.kb || null }, null, 2);
-      const blob = new Blob([payload], { type: 'application/json' });
-      const name = (ws.title || 'book').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '.json';
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = name;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-      toast('Export downloaded â€” ' + name, 'ok');
-      return;
+    const digest = (ws.kb.topics || []).length ? ws.kb.topics : [{ name: 'Core Foundations', summary: 'Foundational principles from sources.' }];
+    const planRes = await fetch('/api/book/plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: ws.title, digest, presetId: ws.bookType })
+    });
+    const planData = await planRes.json();
+    if (planData.plan && planData.plan.chapters) {
+      ws.chapters = planData.plan.chapters.map((ch) => ({
+        id: 'ch-' + Date.now().toString(36),
+        title: ch.title,
+        purpose: ch.purpose,
+        sections: [{ id: 'sec-' + Date.now().toString(36), title: 'Introduction', blocks: [{ type: 'paragraph', text: ch.purpose || 'Section content.' }] }]
+      }));
+      saveWorkspace();
+      renderOutlineTree();
+      renderPaginatedCanvas();
+      toast('Book chapters generated successfully!', 'ok');
     }
-    const res = await fetch('/api/export/' + fmt, {
+  } catch (err) {
+    toast('Generation error: ' + err.message, 'err');
+  }
+};
+
+/* ---------- Section AI Actions ---------- */
+async function runSectionAction(action) {
+  toast(`Running AI ${action} on active section…`, 'ok');
+  try {
+    const res = await fetch('/api/book/section/rewrite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        book: { title: ws.title, subtitle: (ws.bookJSON || {}).subtitle || '', preface: (ws.bookJSON || {}).preface || '', chapters: ws.chapters },
-        kb: ws.kb || undefined
+        section: ws.chapters[0]?.sections[0] || { title: 'Section', blocks: [] },
+        action,
+        customInstruction: $('aiDirective').value,
+        presetId: ws.bookType
       })
     });
-    if (!res.ok) {
-      let msg = res.status;
-      try { msg = (await res.json()).error || msg; } catch (_e) {}
-      throw new Error(msg);
+    const data = await res.json();
+    if (data.section) {
+      if (ws.chapters[0] && ws.chapters[0].sections[0]) {
+        ws.chapters[0].sections[0] = data.section;
+        saveWorkspace();
+        renderPaginatedCanvas();
+        toast('Section updated with AI!', 'ok');
+      }
     }
-    const blob = await res.blob();
-    const cd = res.headers.get('Content-Disposition') || '';
-    const m = cd.match(/filename="([^"]+)"/);
-    const name = m ? m[1] : ((ws.title || 'book').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'book') + '.' + ext;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = name;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
-    toast('Export downloaded â€” ' + name, 'ok');
-  } catch (e) {
-    showError(e.message || 'Export failed', () => exportBook(fmt));
+  } catch (err) {
+    toast('AI action failed: ' + err.message, 'err');
   }
 }
-$('expMd').onclick = () => exportBook('markdown');
-$('expHtml').onclick = () => exportBook('html');
-$('expJson').onclick = () => exportBook('json');
-$('expEpub').onclick = () => exportBook('epub');
-$('expDocx').onclick = () => exportBook('docx');
-$('expPdf').onclick = () => window.print();
-$('expPrint').onclick = () => window.print();
+$('applyAiDirectiveBtn').onclick = () => runSectionAction('rewrite');
 
-/* ================= book renderer ================= */
-function renderBook(scrollTo) {
-  const chapters = (ws && ws.chapters) || [];
-  const wrap = $('chapters');
-  wrap.innerHTML = '';
-  $('engineBadge').textContent = engineBadgeText(ws.engine);
-  if (!chapters.length) {
-    wrap.innerHTML = '<div class="empty">Build the knowledge base first, then write your book.</div>';
-    $('exports').style.display = 'none'; $('readerBar').style.display = 'none';
+/* ---------- Export System ---------- */
+async function exportBook(fmt) {
+  if (fmt === 'pdf') {
+    window.print();
     return;
   }
-  $('exports').style.display = 'flex'; $('readerBar').style.display = 'flex';
-  flow.chapters = true;
-  updateStepper();
-  const tocList = $('tocList');
-  tocList.innerHTML = '';
-  const chapterEls = [];
-  chapters.forEach((ch, ci) => {
-    const words = (ch.content || '').trim().split(/\s+/).length || 0;
-    const mins = Math.max(1, Math.round(words / 220));
-    const div = document.createElement('div');
-    div.className = 'chapter';
-    div.id = 'ch-' + (ch.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    const head = document.createElement('div'); head.className = 'chapter-head';
-    const h = document.createElement('h4'); h.textContent = ch.title;
-    const wc = document.createElement('span'); wc.className = 'wc';
-    wc.textContent = '~' + words.toLocaleString() + ' words Â· ' + mins + ' min read';
-    head.append(h, wc);
-    const body = document.createElement('div'); body.className = 'ch-body';
-    const reader = document.createElement('div'); reader.className = 'reader';
-    if (ch.sections && ch.sections.length) {
-      reader.innerHTML = ch.sections.map((s) =>
-        (s.title ? '<h3>' + inlineMd(s.title) + '</h3>' : '') + renderBlocks(s.blocks)
-      ).join('');
-    } else {
-      reader.innerHTML = renderMarkdown(ch.content || '');
-    }
-    bindWikiLinks(reader);
-    const editor = document.createElement('textarea');
-    editor.value = ch.content || '';
-    editor.rows = Math.max(8, (ch.content || '').split('\n').length + 2);
-    editor.style.display = 'none';
-    body.append(reader, editor);
-    const row = document.createElement('div'); row.className = 'row'; row.style.marginTop = '12px';
-    const edit = document.createElement('button'); edit.className = 'ghost small'; edit.textContent = 'Edit';
-    const save = document.createElement('button'); save.className = 'small'; save.textContent = 'Save changes';
-    save.style.display = 'none';
-    const cancel = document.createElement('button'); cancel.className = 'danger small'; cancel.textContent = 'Cancel';
-    cancel.style.display = 'none';
-    const copy = document.createElement('button');
-    copy.className = 'iconbtn'; copy.title = 'Copy chapter'; copy.textContent = 'Copy';
-    copy.onclick = async () => { toast(await copyText(ch.content || '') ? 'Chapter copied to clipboard' : 'Copy failed', 'ok'); };
-    const collapse = document.createElement('button');
-    collapse.className = 'iconbtn'; collapse.title = 'Collapse chapter';
-    collapse.innerHTML = '<span class="chev">â–¾</span>';
-    collapse.onclick = () => {
-      body.classList.toggle('collapsed');
-      collapse.querySelector('.chev').classList.toggle('closed', body.classList.contains('collapsed'));
-    };
-    edit.onclick = () => {
-      reader.style.display = 'none'; editor.style.display = 'block';
-      edit.style.display = 'none'; save.style.display = 'inline-flex'; cancel.style.display = 'inline-flex';
-      editor.focus();
-    };
-    cancel.onclick = () => {
-      editor.value = ch.content || '';
-      reader.style.display = ''; editor.style.display = 'none';
-      edit.style.display = 'inline-flex'; save.style.display = 'none'; cancel.style.display = 'none';
-    };
-    save.onclick = () => {
-      ch.content = editor.value;
-      reader.innerHTML = renderMarkdown(ch.content);
-      bindWikiLinks(reader);
-      saveWs();
-      toast('Chapter saved in this browser', 'ok');
-      cancel.onclick();
-    };
-    row.append(edit, save, cancel);
-    head.append(copy, collapse);
-    div.append(head, body, row);
-    wrap.appendChild(div);
-    chapterEls.push(div);
-    const tocItem = document.createElement('button');
-    tocItem.type = 'button'; tocItem.className = 'toc-item'; tocItem.textContent = ch.title;
-    tocItem.onclick = () => {
-      div.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      tocList.querySelectorAll('.toc-item').forEach((x) => x.classList.remove('active'));
-      tocItem.classList.add('active');
-      $('tocDrawer').classList.remove('open');
-    };
-    tocList.appendChild(tocItem);
-    if (ci < chapters.length - 1 || ci > 0) {
-      const nav = document.createElement('div'); nav.className = 'navbtns';
-      const prevB = document.createElement('button');
-      prevB.className = 'ghost small'; prevB.textContent = 'â†‘ Previous chapter';
-      prevB.style.visibility = ci > 0 ? 'visible' : 'hidden';
-      prevB.onclick = () => chapterEls[ci - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
-      const nextB = document.createElement('button');
-      nextB.className = 'ghost small'; nextB.textContent = 'Next chapter â†“';
-      nextB.style.visibility = ci < chapters.length - 1 ? 'visible' : 'hidden';
-      nextB.onclick = () => chapterEls[ci + 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
-      nav.append(prevB, nextB);
-      wrap.appendChild(nav);
-    }
-  });
-  if (scrollTo) $('chapters').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  try {
+    const res = await fetch('/api/export/' + fmt, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ book: ws, kb: ws.kb, design: ws.design, pageSize: ws.pageSize })
+    });
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (ws.title || 'book').toLowerCase().replace(/\s+/g, '-') + '.' + (fmt === 'markdown' ? 'md' : fmt);
+    a.click();
+    toast(`Downloaded ${fmt.toUpperCase()} export!`, 'ok');
+  } catch (err) {
+    toast('Export failed: ' + err.message, 'err');
+  }
 }
 
-/* ================= Knowledge Manager ================= */
-function openKm() {
-  if (!ws || !ws.kb || !(ws.kb.topics || []).length) { toast('Build the knowledge base first', 'err'); return; }
-  $('kmModal').classList.add('open');
-  renderKm();
-}
-function closeKm() { $('kmModal').classList.remove('open'); }
-function renderKm() {
-  const kb = ws.kb || {};
-  const topics = kb.topics || [];
-  const list = $('kmList'); list.innerHTML = '';
-  if (!topics.length) { list.innerHTML = '<div class="empty">No topics yet</div>'; return; }
-  topics.forEach((t, idx) => {
-    const li = document.createElement('li');
-    li.style.cssText = 'padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)' + (t.excluded ? 'opacity:.45' : '');
-    li.innerHTML = '<b>' + esc(t.canonical_name || t.id) + '</b>'
-      + '<div style="font-size:.82em;color:var(--muted);margin-top:4px">'
-      + (t.definitions || []).length + ' def Â· ' + (t.facts || []).length + ' facts Â· '
-      + (t.aliases || []).length + ' aliases Â· ' + (t.source_refs || []).length + ' source(s)</div>';
-    if (t.summary) li.innerHTML += '<div style="font-size:.82em;margin-top:4px;color:var(--subtle)">' + esc(t.summary).slice(0, 140) + '</div>';
-    li.onclick = () => { $('kmDetail').innerHTML = renderKmTopic(t, idx); };
-    list.appendChild(li);
-  });
-}
-function renderKmTopic(t, idx) {
-  let html = '<h3 style="margin:0 0 12px">' + esc(t.canonical_name || t.id) + '</h3>';
-  if (t.summary) html += '<p>' + esc(t.summary) + '</p>';
-  if ((t.aliases || []).length) html += '<p class="hint"><b>Aliases:</b> ' + t.aliases.map(esc).join(', ') + '</p>';
-  if ((t.definitions || []).length) {
-    html += '<h4>Definitions</h4><ul>';
-    for (const d of t.definitions) html += '<li>' + esc(d.text) + '</li>';
-    html += '</ul>';
-  }
-  if ((t.facts || []).length) {
-    html += '<h4>Facts</h4><ul>';
-    for (const f of t.facts) html += '<li>' + esc(f.text) + '</li>';
-    html += '</ul>';
-  }
-  if ((t.examples || []).length) {
-    html += '<h4>Examples</h4>';
-    for (const e of t.examples) html += '<div class="example"><strong>' + esc(e.title || 'Example') + ':</strong> ' + esc(e.text) + '</div>';
-  }
-  if ((t.formulas || []).length) {
-    html += '<h4>Formulas</h4>';
-    for (const f of t.formulas) html += '<div class="formula"><code>' + esc(f.expression || f.text) + '</code></div>';
-  }
-  if ((t.terminology || []).length) {
-    html += '<h4>Terminology</h4><dl>';
-    for (const term of t.terminology) html += '<dt>' + esc(term.term) + '</dt><dd>' + esc(term.meaning) + '</dd>';
-    html += '</dl>';
-  }
-  html += '<div style="margin-top:16px">';
-  html += '<button class="ghost small" onclick="toggleExcludeTopic(' + idx + ')">' + (t.excluded ? 'Include topic' : 'Exclude topic') + '</button>';
-  html += '</div>';
-  return html;
-}
-function toggleExcludeTopic(idx) {
-  const topics = (ws.kb || {}).topics || [];
-  if (!topics[idx]) return;
-  topics[idx].excluded = !topics[idx].excluded;
-  saveWs(true);
-  renderKm();
-  applyKbStats(ws.kb);
-}
-$('kmBtn').onclick = openKm;
-$('kmClose').onclick = closeKm;
-$('kmConsolidate').onclick = async () => {
-  if (!ws || !ws.kb) return;
-  try {
-    toast('Merging similar topicsâ€¦', 'ok');
-    const res = await apiPost('/api/knowledge/consolidate', { kb: ws.kb });
-    ws.kb = res.kb || ws.kb;
-    saveWs(true);
-    renderKm();
-    applyKbStats(ws.kb);
-    toast('Consolidation complete â€” ' + ((ws.kb.topics || []).length) + ' topic(s) remain', 'ok');
-  } catch (e) { showError(e.message || 'Consolidation failed'); }
+/* ---------- Zoom Handlers ---------- */
+$('zoomInBtn').onclick = () => { currentZoom = Math.min(180, currentZoom + 10); $('zoomLabel').textContent = currentZoom + '%'; renderPaginatedCanvas(); };
+$('zoomOutBtn').onclick = () => { currentZoom = Math.max(50, currentZoom - 10); $('zoomLabel').textContent = currentZoom + '%'; renderPaginatedCanvas(); };
+
+/* ---------- Initialize Studio ---------- */
+window.onload = () => {
+  loadWorkspace();
+  $('bookTitle').value = ws.title || 'Untitled Research Book';
+  $('selBookType').value = ws.bookType || 'textbook';
+  $('selDesign').value = ws.design || 'modern';
+  $('selPageSize').value = ws.pageSize || 'trade_6x9';
+
+  $('bookTitle').oninput = (e) => { ws.title = e.target.value; saveWorkspace(); };
+  $('selBookType').onchange = (e) => { ws.bookType = e.target.value; saveWorkspace(); };
+  $('selDesign').onchange = (e) => { ws.design = e.target.value; saveWorkspace(); renderPaginatedCanvas(); };
+  $('selPageSize').onchange = (e) => { ws.pageSize = e.target.value; saveWorkspace(); renderPaginatedCanvas(); };
+
+  renderOutlineTree();
+  renderSourcesList();
+  renderPaginatedCanvas();
 };
-
-/* ================= QA modal ================= */
-function openQa() {
-  if (!ws || !ws.qa) { toast('No QA report yet', 'err'); return; }
-  $('qaModal').classList.add('open');
-  const qa = ws.qa;
-  const body = $('qaBody');
-  let html = '<div class="notice ' + (qa.status === 'pass' ? 'good' : qa.status === 'warn' ? 'warn' : 'bad') + '">'
-    + '<b>Status:</b> ' + qa.status.toUpperCase() + '</div>';
-  if (qa.statistics) {
-    html += '<h4>Statistics</h4><ul>';
-    for (const [k, v] of Object.entries(qa.statistics)) html += '<li>' + esc(k) + ': ' + v + '</li>';
-    html += '</ul>';
-  }
-  if ((qa.errors || []).length) {
-    html += '<h4 style="color:var(--danger)">Errors</h4><ul>';
-    for (const e of qa.errors) html += '<li>' + esc(e) + '</li>';
-    html += '</ul>';
-  }
-  if ((qa.warnings || []).length) {
-    html += '<h4 style="color:var(--accent)">Warnings</h4><ul>';
-    for (const w of qa.warnings) html += '<li>' + esc(w) + '</li>';
-    html += '</ul>';
-  }
-  if (!(qa.errors || []).length && !(qa.warnings || []).length) {
-    html += '<p style="margin-top:12px">All checks passed.</p>';
-  }
-  body.innerHTML = html;
-}
-function closeQa() { $('qaModal').classList.remove('open'); }
-$('qaClose').onclick = closeQa;
-$('qaOk').onclick = closeQa;
-$('qaExportAnyway').onclick = () => { closeQa(); exportBook('markdown'); };
-function esc(s) { const d = document.createElement('span'); d.textContent = s || ''; return d.innerHTML; }
-
-/* ================= health + boot ================= */
-function logEvent(msg, kind) {
-  const el = $('logEntries');
-  if (!el) return;
-  $('logPanel').style.display = 'block';
-  const d = document.createElement('div');
-  const t = new Date().toLocaleTimeString();
-  const color = kind === 'err' ? 'var(--danger)' : kind === 'ok' ? 'var(--green)' : 'var(--muted)';
-  d.innerHTML = '<span style="color:' + color + '">[' + t + ']</span> ' + esc(msg);
-  el.appendChild(d);
-  el.scrollTop = el.scrollHeight;
-}
-$('clearLog').onclick = () => { $('logEntries').innerHTML = ''; $('logPanel').style.display = 'none'; };
-
-(async () => {
-  try {
-    await api('/health');
-    if (!aiCfg.apiKey) {
-      $('provider').textContent = 'AI: add API key in settings';
-      $('provDot').classList.remove('ok');
-    }
-  } catch (_e) { $('provider').textContent = 'offline'; }
-})();
-
-(async () => {
-  try { await loadProviders(); } catch (_e) {}
-  refreshBadge();
-  loadSavedPreset(); renderPresetGrid(); savePresetPrefs();
-  loadProjects();
-  const activeId = localStorage.getItem(WS_ACTIVE_KEY);
-  if (activeId && localStorage.getItem(wsStoreKey(activeId))) {
-    openWorkspace(activeId);
-  } else {
-    showWorkspace(false);
-  }
-})();
 </script>
 </body>
 </html>
