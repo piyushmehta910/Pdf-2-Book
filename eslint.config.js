@@ -28,6 +28,28 @@ module.exports = [
     }
   },
   {
+    files: ['public/app-data.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        self: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
+        Blob: 'readonly',
+        FileReader: 'readonly',
+        URL: 'readonly',
+        btoa: 'readonly',
+        crypto: 'readonly',
+        navigator: 'readonly',
+        location: 'readonly',
+        localStorage: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        console: 'readonly'
+      }
+    }
+  },
+  {
     files: ['tests/**/*.js'],
     languageOptions: {
       globals: {
@@ -38,7 +60,10 @@ module.exports = [
         afterAll: 'readonly',
         beforeEach: 'readonly',
         afterEach: 'readonly',
-        jest: 'readonly'
+        jest: 'readonly',
+        Blob: 'readonly',
+        FileReader: 'readonly',
+        indexedDB: 'readonly'
       }
     }
   }

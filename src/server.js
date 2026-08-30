@@ -16,6 +16,17 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 app.use('/vendor', express.static(path.join(__dirname, '..', 'public', 'vendor'), { maxAge: '1d' }));
+app.use('/pwa', express.static(path.join(__dirname, '..', 'public', 'pwa'), { maxAge: '1d' }));
+
+const publicDir = path.join(__dirname, '..', 'public');
+app.get('/app-data.js', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.type('application/javascript').sendFile(path.join(publicDir, 'app-data.js'));
+});
+app.get('/sw.js', (req, res) => {
+  res.set('Cache-Control', 'no-store, max-age=0');
+  res.type('application/javascript').sendFile(path.join(publicDir, 'sw.js'));
+});
 
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store');

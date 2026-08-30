@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="pdf2book — Browser-Based AI Book Creation Studio & Publishing Software.">
 <title>pdf2book — AI Book Creation & Publishing Studio</title>
+<meta name="theme-color" content="#07080d">
+<link rel="manifest" href="/pwa/manifest.webmanifest">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='18' y='30' width='64' height='44' rx='6' fill='%236366f1'/><rect x='26' y='22' width='64' height='44' rx='6' fill='none' stroke='%238b5cf6' stroke-width='5'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -353,6 +355,22 @@
   .src-head { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
   .src-meta { display: flex; gap: 8px; font-size: 11.5px; color: var(--muted); align-items: center; }
 
+  /* Project dashboard cards */
+  .proj-card {
+    position: relative; border: 1px solid var(--border); border-radius: 11px; background: var(--panel);
+    padding: 13px; cursor: pointer; transition: border-color .15s, transform .1s; overflow: hidden;
+  }
+  .proj-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .proj-thumb { font-size: 30px; line-height: 1; margin-bottom: 9px; }
+  .proj-title { font-weight: 700; font-size: 13.5px; margin-bottom: 3px; word-break: break-word; }
+  .proj-date { font-size: 11px; color: var(--muted); }
+  .proj-active { position: absolute; top: 11px; right: 30px; font-size: 10px; color: var(--ok); font-weight: 700; }
+  .proj-del {
+    position: absolute; top: 8px; right: 8px; background: transparent; border: 0; color: var(--muted);
+    cursor: pointer; font-size: 12px; padding: 2px 4px; border-radius: 6px; line-height: 1;
+  }
+  .proj-del:hover { color: var(--err); background: rgba(239,68,68,.12); }
+
   /* Modals */
   .modal-backdrop {
     position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(5px);
@@ -462,6 +480,8 @@
   <button class="ghost small" id="themeToggle" title="Toggle Light/Dark Theme">Theme</button>
   <button class="ghost small" onclick="openSettings()" title="AI Provider & API Key Settings">⚙ AI settings</button>
   <button class="ghost small" id="helpBtn" title="Keyboard shortcuts & help (?)">?</button>
+  <button class="ghost small" id="projectBtn" title="Project dashboard: open, create and delete projects">☰ Projects</button>
+  <button class="ghost small" id="backupBtn" title="Export the whole database as a downloadable JSON backup">💾 Backup</button>
   <button class="ghost small" id="generateBookBtn">✨ Write Book</button>
   <button class="small" id="exportBtn">📥 Export ▾</button>
 </header>
@@ -635,6 +655,24 @@
       <div id="auditItemsList"></div>
     </div>
   </aside>
+</div>
+
+<!-- PROJECT DASHBOARD MODAL -->
+<div class="modal-backdrop" id="dashboardModal">
+  <div class="modal" style="max-width:860px">
+    <div class="modal-head">
+      <h3>Projects</h3>
+      <button class="iconbtn" onclick="closeDashboard()">✕</button>
+    </div>
+    <div class="modal-body">
+      <button class="small" id="newProjectBtn" style="width:100%;margin-bottom:16px">＋ New Project</button>
+      <div id="projectGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px"></div>
+    </div>
+    <div class="modal-foot">
+      <span style="flex:1;color:var(--muted);font-size:12px">Projects, sources and extracted text are stored locally in your browser (IndexedDB).</span>
+      <button class="ghost" onclick="closeDashboard()">Close</button>
+    </div>
+  </div>
 </div>
 
 <!-- SETTINGS MODAL -->
@@ -825,9 +863,16 @@
 <div id="toasts"></div>
 
 <!-- JSZip & PDF.js Lazy Loaders -->
+<script src="/vendor/local-first.js"></script>
+<script src="/app-data.js"></script>
+
 <script>
 'use strict';
 const $ = (id) => document.getElementById(id);
+
+/* ---------- Local-first data layer (Dexie + Zustand) ---------- */
+const data = (typeof pdf2bookData !== 'undefined') ? pdf2bookData : null;
+const DB_READY = !!data;
 
 /* ---------- State Management ---------- */
 const WS_KEY = 'pdf2book.activeWorkspace';
@@ -885,10 +930,10 @@ let redoStack = [];
 const UNDO_LIMIT = 60;
 let dirty = false;
 
-function setSaveStatus(state) {
+function setSaveStatus(state, at) {
   const el = $('saveStatus');
   if (!el) return;
-  if (state === 'saved') { el.textContent = 'SAVED'; el.style.color = 'var(--muted)'; }
+  if (state === 'saved') { el.textContent = at ? 'Saved ' + at : 'SAVED'; el.style.color = 'var(--muted)'; }
   else if (state === 'saving') { el.textContent = 'SAVING…'; el.style.color = 'var(--accent)'; }
   else { el.textContent = 'CHANGED'; el.style.color = 'var(--warn)'; }
 }
@@ -913,6 +958,7 @@ function historyPush() {
 function applySnapshot(snap) {
   if (!snap) return;
   try { ws = JSON.parse(snap); } catch (_e) { return; }
+  if (data) data.setWorkspace(ws);
   syncUiAfterStateChange();
 }
 
@@ -948,8 +994,12 @@ function syncUiAfterStateChange() {
 
 function saveWorkspace() {
   setSaveStatus('saving');
-  localStorage.setItem(WS_KEY, JSON.stringify(ws));
+  try { localStorage.setItem(WS_KEY, JSON.stringify(ws)); } catch (_e) {}
   dirty = false;
+  if (data) {
+    data.scheduleSave(400);
+    return;
+  }
   setSaveStatus('saved');
 }
 
@@ -965,7 +1015,10 @@ function loadWorkspace() {
 }
 
 // Autosave every 5 seconds when changes are pending
-setInterval(() => { if (dirty) saveWorkspace(); }, 5000);
+setInterval(async () => {
+  if (dirty && data) { dirty = false; await data.flushSave(); }
+  else if (dirty) saveWorkspace();
+}, 5000);
 
 /* ---------- Theme Switcher ---------- */
 const THEME_KEY = 'pdf2book.theme';
@@ -977,6 +1030,7 @@ $('themeToggle').onclick = () => {
   const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
   localStorage.setItem(THEME_KEY, next);
   applyTheme(next);
+  if (data) data.writeSettings({ theme: next });
 };
 applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
 
@@ -1000,8 +1054,35 @@ function switchRightTab(tabId) {
 }
 
 /* ---------- Modals ---------- */
-function openSettings() { $('settingsModal').style.display = 'flex'; }
+function openSettings() {
+  $('settingsModal').style.display = 'flex';
+  if (data && data.getState) {
+    const settings = data.getState().settings || {};
+    if ($('setProvider')) $('setProvider').value = settings.provider || 'zen';
+    if ($('setApiKey')) $('setApiKey').value = settings.apiKey || '';
+    if ($('setCitationStyle')) $('setCitationStyle').value = settings.citationStyle || 'APA';
+  }
+}
 function closeSettings() { $('settingsModal').style.display = 'none'; }
+function saveSettingsFromModal() {
+  if (!data) { closeSettings(); return; }
+  const settings = data.getState().settings || {};
+  const next = {
+    ...settings,
+    provider: $('setProvider') ? $('setProvider').value : settings.provider,
+    apiKey: $('setApiKey') ? $('setApiKey').value.trim() : settings.apiKey,
+    citationStyle: $('setCitationStyle') ? $('setCitationStyle').value : settings.citationStyle
+  };
+  data.writeSettings(next).then(() => {
+    data.store.setState({ settings: next });
+    if (next.citationStyle) ws.citationStyle = next.citationStyle;
+    closeSettings();
+    toast('Settings saved locally', 'ok');
+  });
+}
+if (DB_READY && $('saveSettingsBtn')) {
+  $('saveSettingsBtn').onclick = saveSettingsFromModal;
+}
 function openKm() { $('kmModal').style.display = 'flex'; renderKm(); }
 function closeKm() { $('kmModal').style.display = 'none'; }
 function openQaModal() { $('qaModal').style.display = 'flex'; renderQaModal(); }
@@ -1294,18 +1375,34 @@ async function extractPdfText(file) {
 $('sourceDropzone').onclick = () => $('fileInput').click();
 $('fileInput').onchange = async (e) => {
   const files = Array.from(e.target.files || []);
+  const projectId = data ? data.getState().activeProjectId : null;
   for (const f of files) {
+    let stored = null;
     const src = {
       id: 'src-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       name: f.name,
       size: f.size,
-      status: 'Extracting...',
+      type: (f.type || '').split('/')[0] || 'file',
+      status: 'Pending',
       pages: []
     };
+
+    // Store the raw file blob in IndexedDB first (pending status).
+    if (data && projectId) {
+      try {
+        stored = await data.addSourceFile(projectId, f);
+        src.id = stored.id;
+      } catch (err) {
+        toast('Storage unavailable: ' + err.message, 'err');
+      }
+    }
+
     ws.sources.push(src);
     renderSourcesList();
 
     try {
+      src.status = 'Extracting…';
+      renderSourcesList();
       if (f.name.endsWith('.pdf')) {
         src.pages = await extractPdfText(f);
       } else if (f.name.endsWith('.docx')) {
@@ -1319,9 +1416,14 @@ $('fileInput').onchange = async (e) => {
       src.pageCount = src.pages.length;
       src.wordCount = src.pages.reduce((acc, p) => acc + (p.text || '').split(/\s+/).length, 0);
       toast(`Extracted ${src.name} (${src.pageCount} pages)`, 'ok');
+      if (data && stored) {
+        await data.updateSource(projectId, stored.id, { status: 'ready', pageCount: src.pageCount, wordCount: src.wordCount });
+        await data.storeExtracted(projectId, stored.id, src.pages);
+      }
     } catch (err) {
       src.status = 'Error';
       toast(`Failed to extract ${src.name}: ${err.message}`, 'err');
+      if (data && stored) await data.updateSource(projectId, stored.id, { status: 'error' });
     }
     saveWorkspace();
     renderSourcesList();
@@ -1333,22 +1435,38 @@ function renderSourcesList() {
   container.innerHTML = '';
   $('srcCountBadge').textContent = ws.sources.length;
 
+  function statusColor(st) {
+    const s = String(st || '').toLowerCase();
+    if (s.indexOf('ready') >= 0) return 'var(--ok)';
+    if (s.indexOf('error') >= 0) return 'var(--err)';
+    if (s.indexOf('extract') >= 0) return 'var(--accent)';
+    return 'var(--warn)';
+  }
+
   ws.sources.forEach((s) => {
     const card = document.createElement('div');
     card.className = 'source-card';
     card.innerHTML = `
       <div class="src-head">
         <span>📄 ${s.name}</span>
-        <span style="font-size:11px;color:${s.status === 'Ready' ? 'var(--ok)' : 'var(--warn)'}">${s.status}</span>
+        <span style="font-size:11px;color:${statusColor(s.status)}">${s.status || 'Pending'}</span>
       </div>
       <div class="src-meta">
         <span>${s.pageCount || 0} pages</span>
         <span>·</span>
         <span>~${(s.wordCount || 0).toLocaleString()} words</span>
+        ${s.size ? `<span>·</span><span>${formatBytes(s.size)}</span>` : ''}
       </div>
     `;
     container.appendChild(card);
   });
+}
+
+function formatBytes(bytes) {
+  if (!bytes && bytes !== 0) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
 /* ---------- Semantic Search Across Sources ---------- */
@@ -1719,6 +1837,7 @@ async function importProject(file) {
     if (!restored) throw new Error('Not a pdf2book project file');
     ws = { ...ws, ...restored };
     if (!ws.meta) ws.meta = {};
+    if (data) data.setWorkspace(ws);
     historyPush();
     syncUiAfterStateChange();
     toast('Project imported: ' + (ws.title || 'book'), 'ok');
@@ -1727,6 +1846,86 @@ async function importProject(file) {
   }
 }
 $('importProjInput').onchange = (e) => { const f = e.target.files && e.target.files[0]; if (f) importProject(f); e.target.value = ''; };
+
+/* ---------- Project Dashboard (local-first) ---------- */
+function openDashboard() { $('dashboardModal').style.display = 'flex'; renderProjectGrid(); }
+function closeDashboard() { $('dashboardModal').style.display = 'none'; }
+
+function renderProjectGrid() {
+  const grid = $('projectGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  const projects = (data && data.getState ? data.getState().projects : []) || [];
+  if (!projects.length) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:13px;grid-column:1/-1">No projects yet. Create your first one below.</div>';
+    return;
+  }
+  projects.forEach((p) => {
+    const card = document.createElement('div');
+    card.className = 'proj-card';
+    const created = p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '';
+    const updated = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : '';
+    const active = data.getState().activeProjectId === p.id;
+    card.innerHTML = `
+      <div class="proj-thumb">📕</div>
+      <div class="proj-title">${p.title}</div>
+      <div class="proj-date">created ${created}</div>
+      <div class="proj-date">updated ${updated}</div>
+      ${active ? '<div class="proj-active">● open</div>' : ''}
+      <button class="proj-del" title="Delete project">✕</button>
+    `;
+    card.onclick = async () => {
+      const { workspace } = await openProjectById(p.id);
+      if (workspace) { closeDashboard(); }
+    };
+    card.querySelector('.proj-del').onclick = async (e) => {
+      e.stopPropagation();
+      if (!confirm('Delete project "' + p.title + '"? This cannot be undone.')) return;
+      await data.deleteProject(p.id);
+      renderProjectGrid();
+      toast('Project deleted', 'ok');
+    };
+    grid.appendChild(card);
+  });
+}
+
+async function openProjectById(id) {
+  if (!data) return {};
+  const loaded = await data.loadProject(id);
+  if (!loaded) { toast('Project not found', 'err'); return {}; }
+  ws = data.getWorkspace();
+  if (ws) {
+    $('bookTitle').value = ws.title || '';
+    $('selBookType').value = ws.bookType || 'textbook';
+    $('selDesign').value = ws.design || 'modern';
+    $('selPageSize').value = ws.pageSize || 'trade_6x9';
+    renderOutlineTree();
+    renderSourcesList();
+    renderPaginatedCanvas();
+    saveWorkspace();
+    toast('Opened: ' + (ws.title || 'book'), 'ok');
+  }
+  return loaded;
+}
+
+if (DB_READY) {
+  $('projectBtn').onclick = openDashboard;
+  $('newProjectBtn').onclick = async () => {
+    const count = (data.getState().projects || []).length + 1;
+    const id = await data.createProject('Untitled Book ' + count);
+    await openProjectById(id);
+    closeDashboard();
+  };
+  $('backupBtn').onclick = async () => {
+    toast('Building JSON backup…');
+    try {
+      await data.exportBackup();
+      toast('Backup downloaded', 'ok');
+    } catch (err) {
+      toast('Backup failed: ' + err.message, 'err');
+    }
+  };
+}
 
 async function exportBook(fmt) {
   if (fmt === 'pdf') {
@@ -1854,9 +2053,43 @@ document.addEventListener('keydown', (e) => {
   if (!editing && k === '?') { e.preventDefault(); openHelp(); }
 });
 
-/* ---------- Initialize Studio ---------- */
-window.onload = () => {
-  loadWorkspace();
+/* ---------- Initialize Studio (local-first boot) ---------- */
+window.onload = async () => {
+  if (data) {
+    data.setHooks({
+      onSaveStatus: (state, ts) => {
+        if (state === 'saved') {
+          const at = ts ? new Date(ts).toLocaleTimeString() : '';
+          setSaveStatus('saved', at);
+        } else {
+          setSaveStatus(state);
+        }
+      },
+      onProjectsChanged: () => { if (typeof renderProjectGrid === 'function') renderProjectGrid(); }
+    });
+    applyTheme((data.getState().settings && data.getState().settings.theme) || localStorage.getItem(THEME_KEY) || 'dark');
+    await data.init({});
+
+    // One-time migration of a previous localStorage workspace into the fresh DB project.
+    if (!data.getState().activeProjectId) { await data.createProject('Untitled Research Book'); }
+    if (!localStorage.getItem('pdf2book.migrated') && localStorage.getItem(WS_KEY)) {
+      try {
+        const legacy = JSON.parse(localStorage.getItem(WS_KEY));
+        if (legacy && typeof legacy === 'object' && !(data.getState().workspace && (data.getState().workspace.chapters || []).length > 1)) {
+          const id = data.getState().activeProjectId;
+          ws = data.setWorkspace({ ...data.defaultShell(legacy.title), ...legacy });
+          if (!ws.meta) ws.meta = {};
+          await data.flushSave();
+          localStorage.setItem('pdf2book.migrated', '1');
+          toast('Migrated your previous workspace into the local database', 'ok');
+        }
+      } catch (_e) { /* ignore corrupt legacy data */ }
+    }
+  }
+
+  ws = data ? data.getWorkspace() : ws;
+  if (!ws) { ws = data ? data.setWorkspace(data.defaultShell('Untitled Research Book')) : ws; }
+
   $('bookTitle').value = ws.title || 'Untitled Research Book';
   $('selBookType').value = ws.bookType || 'textbook';
   $('selDesign').value = ws.design || 'modern';
@@ -1877,6 +2110,13 @@ window.onload = () => {
     setTimeout(openHelp, 350);
   }
 };
+
+/* ---------- Offline shell (PWA service worker) ---------- */
+if ('serviceWorker' in navigator && location.protocol !== 'http:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,26 @@
+{
+  "name": "pdf2book - AI Book Creation Studio",
+  "short_name": "pdf2book",
+  "description": "Local-first browser-based AI book creation and publishing studio. Converts PDFs and notes into professionally formatted books.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07080d",
+  "theme_color": "#07080d",
+  "lang": "en",
+  "categories": ["books", "productivity", "education"],
+  "icons": [
+    {
+      "src": "/pwa/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
