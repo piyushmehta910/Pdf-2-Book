@@ -212,11 +212,131 @@
     display: flex;
     align-items: center;
     padding: 0 16px;
-    gap: 12px;
+    gap: 10px;
     font-size: 12px;
     color: var(--muted);
     flex: none;
+    overflow-x: auto;
   }
+
+  /* Formatting Toolbar Controls */
+  .fmt-select {
+    height: 28px;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 0 8px;
+    cursor: pointer;
+    outline: none;
+  }
+  .fmt-select:focus { border-color: var(--accent); }
+  .fmt-btn {
+    padding: 4px 7px;
+    font-size: 12px;
+    min-width: 26px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    background: transparent;
+    border: 0;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .fmt-btn:hover { background: var(--panel2); color: var(--text); }
+  .fmt-btn:active { background: var(--glow); color: var(--accent); }
+
+  /* Dropdown Popover */
+  .dropdown-popover {
+    display: none;
+    position: absolute;
+    top: 32px;
+    left: 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    padding: 4px;
+    z-index: 200;
+    min-width: 170px;
+  }
+  .dropdown-popover .pop-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 10px;
+    font-size: 12px;
+    background: transparent;
+    border: 0;
+    border-radius: 5px;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    box-shadow: none;
+  }
+  .dropdown-popover .pop-item:hover {
+    background: var(--panel2);
+    color: var(--accent);
+  }
+
+  /* Focus / Zen Mode */
+  body.focus-mode .studio-bar { opacity: 0.15; transition: opacity .2s; }
+  body.focus-mode .studio-bar:hover { opacity: 1; }
+  body.focus-mode .panel-sidebar { display: none !important; }
+  body.focus-mode .studio-body { grid-template-columns: 1fr !important; }
+  body.focus-mode #focusExitBtn { display: inline-flex !important; }
+
+  #focusExitBtn {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 28px;
+    background: var(--panel);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    box-shadow: var(--shadow-lg);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 500;
+    align-items: center;
+    gap: 6px;
+    transition: transform .15s, background .15s;
+  }
+  #focusExitBtn:hover {
+    background: var(--accent);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+
+  /* Tree outline controls */
+  .tree-ch-actions, .tree-sec-actions {
+    display: none;
+    align-items: center;
+    gap: 3px;
+  }
+  .tree-item:hover .tree-ch-actions, .tree-item:hover .tree-sec-actions {
+    display: inline-flex;
+  }
+  .tree-badge-btn {
+    padding: 2px 6px;
+    font-size: 10.5px;
+    font-weight: 600;
+    border-radius: 4px;
+    background: var(--panel3);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .tree-badge-btn:hover { background: var(--glow); color: var(--accent); border-color: var(--accent); }
+  .tree-badge-btn.danger:hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
   .canvas-scroll-area {
     flex: 1;
     overflow-y: auto;
@@ -297,22 +417,29 @@
   .block-node.active-block {
     background: rgba(99,102,241,.06);
     border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(99,102,241,.18);
+  }
+  .editable-content {
+    outline: none !important;
+    min-height: 1.3em;
+    cursor: text;
   }
   .block-ctrls {
     position: absolute;
-    right: 6px;
-    top: -12px;
+    right: 8px;
+    top: -14px;
     display: none;
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 2px 4px;
-    gap: 4px;
-    box-shadow: 0 4px 12px rgba(0,0,0,.2);
-    z-index: 10;
+    border-radius: 20px;
+    padding: 2px 6px;
+    gap: 3px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.25);
+    z-index: 20;
   }
   .block-node:hover .block-ctrls, .block-node.active-block .block-ctrls {
     display: inline-flex;
+    align-items: center;
   }
 
   /* Block Types Formatting inside Book Sheets */
@@ -693,18 +820,62 @@
   <!-- CENTER PANEL: VISUAL PAGINATED STUDIO CANVAS -->
   <main class="studio-canvas-wrap">
     <div class="canvas-toolbar">
-      <div style="display:flex;gap:4px">
+      <div style="display:flex;gap:4px;align-items:center">
         <button class="iconbtn active" id="viewPaginatedBtn" title="Paginated Sheet View (Spec §15)"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg> Pages</button>
         <button class="iconbtn" id="viewContinuousBtn" title="Continuous Reader View"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1"></path><path d="M19 7v13a2 2 0 0 1-2 2H7"></path></svg> Continuous</button>
+        <button class="iconbtn" id="focusModeBtn" onclick="toggleFocusMode()" title="Focus / Zen Writing Mode (Ctrl+\)"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg> Focus</button>
       </div>
+
+      <span style="color:var(--border)">|</span>
+
+      <!-- Block Type Selector -->
+      <select id="editorBlockTypeSel" class="fmt-select" title="Change Block Style" onchange="changeActiveBlockType(this.value)">
+        <option value="paragraph">Paragraph</option>
+        <option value="heading">Heading (H3)</option>
+        <option value="callout">💡 Callout Box</option>
+        <option value="quote">❝ Quotation</option>
+        <option value="summary">📌 Key Summary</option>
+        <option value="warning">⚠️ Method Note</option>
+        <option value="definition">📖 Definition</option>
+        <option value="formula">∑ Formula</option>
+      </select>
+
+      <!-- Inline Formatting Group -->
+      <div style="display:flex;gap:1px;align-items:center">
+        <button class="iconbtn fmt-btn" title="Bold (Ctrl+B)" onclick="formatDoc('bold')"><b>B</b></button>
+        <button class="iconbtn fmt-btn" title="Italic (Ctrl+I)" onclick="formatDoc('italic')"><i>I</i></button>
+        <button class="iconbtn fmt-btn" title="Underline (Ctrl+U)" onclick="formatDoc('underline')"><u>U</u></button>
+        <button class="iconbtn fmt-btn" title="Strikethrough" onclick="formatDoc('strikeThrough')"><s>S</s></button>
+        <button class="iconbtn fmt-btn" title="Bullet List" onclick="formatDoc('insertUnorderedList')">• List</button>
+        <button class="iconbtn fmt-btn" title="Numbered List" onclick="formatDoc('insertOrderedList')">1. List</button>
+      </div>
+
+      <span style="color:var(--border)">|</span>
+
+      <!-- Insert Block Menu -->
+      <div style="position:relative">
+        <button class="ghost small" id="addBlockBtn" onclick="toggleAddBlockMenu(event)">+ Add Block ▾</button>
+        <div id="addBlockMenu" class="dropdown-popover">
+          <button class="pop-item" onclick="insertNewBlock('paragraph')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="17" y1="18" x2="3" y2="18"></line></svg> Paragraph</button>
+          <button class="pop-item" onclick="insertNewBlock('heading')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12h12"></path><path d="M6 4v16"></path><path d="M18 4v16"></path></svg> Heading</button>
+          <button class="pop-item" onclick="insertNewBlock('callout')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> Callout Box</button>
+          <button class="pop-item" onclick="insertNewBlock('quote')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2H4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2h3c0 3-2 4-4 4"></path></svg> Quotation</button>
+          <button class="pop-item" onclick="insertNewBlock('summary')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Key Summary</button>
+          <button class="pop-item" onclick="insertNewBlock('definition')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> Definition</button>
+          <button class="pop-item" onclick="insertNewBlock('formula')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg> Formula</button>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <!-- Live Stats & Zoom -->
+      <span id="editorStatsLabel" style="font-size:11.5px;color:var(--muted);font-weight:500;white-space:nowrap">0 words · 0 min</span>
       <span style="color:var(--border)">|</span>
       <button class="iconbtn" id="zoomOutBtn" title="Zoom Out">−</button>
       <span id="zoomLabel" style="font-weight:600;min-width:38px;text-align:center">100%</span>
       <button class="iconbtn" id="zoomInBtn" title="Zoom In">+</button>
       <span style="color:var(--border)">|</span>
-      <span id="pageCountLabel">Page 1 of 1</span>
-      <div class="spacer"></div>
-      <button class="ghost small" id="addBlockBtn">+ Add Block</button>
+      <span id="pageCountLabel" style="white-space:nowrap">Page 1 of 1</span>
     </div>
 
     <div class="canvas-scroll-area" id="canvasScroll">
@@ -731,6 +902,10 @@
         </div>
       </div>
     </div>
+
+    <button id="focusExitBtn" onclick="toggleFocusMode()" title="Exit Focus Mode (Ctrl+\)">
+      <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg> Exit Focus
+    </button>
   </main>
 
   <!-- RIGHT PANEL: AI ACTIONS / PROVENANCE / DESIGN / QUALITY -->
@@ -1537,19 +1712,69 @@ function measureItems(groups) {
 
 function pagBlockNode(secId, bi, b) {
   const node = document.createElement('div');
-  node.className = 'block-node';
-  let inner;
-  if (b.type === 'heading') inner = `<h3>${escHtml(b.text)}</h3>`;
-  else if (b.type === 'definition') inner = `<div class="b-def"><strong>${escHtml(b.term)}:</strong> ${escHtml(b.definition)}</div>`;
-  else if (b.type === 'formula') inner = `<div class="b-formula"><code>${escHtml(b.expression)}</code></div>`;
-  else if (b.type === 'quote') inner = `<blockquote class="b-quote">&quot;${escHtml(b.text)}&quot;</blockquote>`;
-  else if (b.type === 'callout') inner = `<div class="b-callout">${escHtml(b.text)}</div>`;
-  else if (b.type === 'warning') inner = `<div class="b-warning">${escHtml(b.text)}</div>`;
-  else if (b.type === 'summary') inner = `<div class="b-summary"><strong>Summary:</strong> ${escHtml(b.text)}</div>`;
-  else { const cit = renderBlockCitations(b); inner = `<p contenteditable="true">${escHtml(b.text)}${cit}</p>`; }
-  node.innerHTML = inner;
+  node.className = 'block-node block-' + (b.type || 'paragraph');
+  if (secId === activeSectionId && bi === activeBlockIndex) {
+    node.classList.add('active-block');
+  }
   node.dataset.sec = secId;
   node.dataset.bi = bi;
+
+  let innerHtml = '';
+  const cit = renderBlockCitations(b);
+  if (b.type === 'heading') {
+    innerHtml = `<h3 contenteditable="true" class="editable-content" data-field="text" placeholder="Subsection title...">${escHtml(b.text || '')}</h3>`;
+  } else if (b.type === 'definition') {
+    innerHtml = `<div class="b-def"><strong contenteditable="true" class="editable-content" data-field="term">${escHtml(b.term || 'Term')}</strong>: <span contenteditable="true" class="editable-content" data-field="definition">${escHtml(b.definition || '')}</span></div>`;
+  } else if (b.type === 'formula') {
+    innerHtml = `<div class="b-formula"><code contenteditable="true" class="editable-content" data-field="expression">${escHtml(b.expression || '')}</code></div>`;
+  } else if (b.type === 'quote') {
+    innerHtml = `<blockquote class="b-quote" contenteditable="true" class="editable-content" data-field="text">${escHtml(b.text || '')}</blockquote>`;
+  } else if (b.type === 'callout') {
+    innerHtml = `<div class="b-callout" contenteditable="true" class="editable-content" data-field="text">${escHtml(b.text || '')}</div>`;
+  } else if (b.type === 'warning') {
+    innerHtml = `<div class="b-warning" contenteditable="true" class="editable-content" data-field="text">${escHtml(b.text || '')}</div>`;
+  } else if (b.type === 'summary') {
+    innerHtml = `<div class="b-summary"><strong>Summary:</strong> <span contenteditable="true" class="editable-content" data-field="text">${escHtml(b.text || '')}</span></div>`;
+  } else {
+    innerHtml = `<p contenteditable="true" class="editable-content" data-field="text">${escHtml(b.text || '')}${cit}</p>`;
+  }
+
+  node.innerHTML = innerHtml;
+
+  const ctrls = document.createElement('div');
+  ctrls.className = 'block-ctrls';
+  ctrls.innerHTML = `
+    <button class="iconbtn" title="AI Polish Block" onclick="event.stopPropagation();triggerBlockAi('rewrite', '${secId}', ${bi})">
+      <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg>
+    </button>
+    <button class="iconbtn" title="Move Up" onclick="event.stopPropagation();moveBlock('${secId}', ${bi}, -1)">
+      <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    </button>
+    <button class="iconbtn" title="Move Down" onclick="event.stopPropagation();moveBlock('${secId}', ${bi}, 1)">
+      <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </button>
+    <button class="iconbtn" title="Add Block Below" onclick="event.stopPropagation();insertBlockBelow('${secId}', ${bi})">
+      <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    </button>
+    <button class="iconbtn danger" title="Delete Block" onclick="event.stopPropagation();deleteBlockAt('${secId}', ${bi})">
+      <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+    </button>
+  `;
+  node.appendChild(ctrls);
+
+  node.querySelectorAll('.editable-content').forEach((el) => {
+    el.addEventListener('input', () => {
+      const field = el.dataset.field || 'text';
+      b[field] = el.innerText || el.textContent || '';
+      markDirty();
+      updateEditorStats();
+    });
+    el.addEventListener('blur', () => {
+      saveWorkspace();
+      updateEditorStats();
+    });
+  });
+
   node.onclick = (ev) => {
     selectBlock(secId, bi, b);
     document.querySelectorAll('.block-node').forEach((n) => n.classList.remove('active-block'));
@@ -1796,6 +2021,7 @@ function renderPaginatedCanvas() {
   const matterCnt = build.fmCount + build.bmCount;
   $('pageCountLabel').textContent = 'Page 1 of ' + Math.max(1, total) + (matterCnt ? ' (structure + chapters)' : '');
   renderDesignPreview();
+  updateEditorStats();
 }
 
 function renderDesignPreview() {
@@ -1931,6 +2157,7 @@ function renderContinuousView() {
   });
   canvas.appendChild(roll);
   $('pageCountLabel').textContent = 'Continuous';
+  updateEditorStats();
 }
 
 function setView(mode) {
@@ -1944,9 +2171,204 @@ function selectBlock(secId, bi, b) {
   activeSectionId = secId;
   activeBlockIndex = bi;
   document.querySelectorAll('.block-node').forEach((n) => n.classList.remove('active-block'));
+  const sel = $('editorBlockTypeSel');
+  if (sel && b && b.type) sel.value = b.type;
   if (b.sourceRef || b.citations) {
     showProvenance(b);
   }
+}
+
+/* ---------- Editor Rich Formatting & Block Actions ---------- */
+function formatDoc(cmd, val) {
+  document.execCommand(cmd, false, val || null);
+  markDirty();
+  saveWorkspace();
+  updateEditorStats();
+}
+
+function changeActiveBlockType(newType) {
+  const target = findSection(activeSectionId);
+  if (!target || !target.section || !target.section.blocks) {
+    toast('Select a block in the book first', 'warn');
+    return;
+  }
+  const bi = (activeBlockIndex != null && activeBlockIndex >= 0) ? activeBlockIndex : 0;
+  const b = target.section.blocks[bi];
+  if (!b) return;
+  historyPush();
+  b.type = newType;
+  if (newType === 'heading') b.headingLevel = 3;
+  markDirty();
+  saveWorkspace();
+  renderPaginatedCanvas();
+  toast('Block changed to ' + newType, 'ok');
+}
+
+function createDefaultBlock(type) {
+  switch (type) {
+    case 'heading': return { type: 'heading', text: 'New Subsection', headingLevel: 3 };
+    case 'callout': return { type: 'callout', text: 'Key insight or takeaway...' };
+    case 'quote': return { type: 'quote', text: 'Notable quotation from source material...' };
+    case 'summary': return { type: 'summary', text: 'Executive summary point...' };
+    case 'warning': return { type: 'warning', text: 'Important methodological caveat...' };
+    case 'definition': return { type: 'definition', term: 'Term', definition: 'Formal definition...' };
+    case 'formula': return { type: 'formula', expression: 'E = mc^2' };
+    default: return { type: 'paragraph', text: '' };
+  }
+}
+
+function insertBlockBelow(secId, bi, blockType) {
+  const target = findSection(secId || activeSectionId);
+  if (!target || !target.section) {
+    toast('Select a section in the outline or editor first', 'warn');
+    return;
+  }
+  if (!target.section.blocks) target.section.blocks = [];
+  const newBlock = createDefaultBlock(blockType || 'paragraph');
+  const insertIdx = (bi != null && bi >= 0) ? bi + 1 : target.section.blocks.length;
+  target.section.blocks.splice(insertIdx, 0, newBlock);
+  activeSectionId = target.section.id;
+  activeBlockIndex = insertIdx;
+  historyPush();
+  markDirty();
+  saveWorkspace();
+  renderPaginatedCanvas();
+  toast('Block added', 'ok');
+}
+
+function toggleAddBlockMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = $('addBlockMenu');
+  if (!menu) return;
+  menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+}
+
+function insertNewBlock(type) {
+  const menu = $('addBlockMenu');
+  if (menu) menu.style.display = 'none';
+  insertBlockBelow(activeSectionId, activeBlockIndex, type);
+}
+
+document.addEventListener('click', (e) => {
+  const menu = $('addBlockMenu');
+  if (menu && menu.style.display === 'block' && !menu.contains(e.target) && e.target !== $('addBlockBtn')) {
+    menu.style.display = 'none';
+  }
+});
+
+function moveBlock(secId, bi, dir) {
+  const target = findSection(secId || activeSectionId);
+  if (!target || !target.section || !target.section.blocks) return;
+  const blocks = target.section.blocks;
+  const targetIdx = bi + dir;
+  if (targetIdx < 0 || targetIdx >= blocks.length) return;
+  const temp = blocks[bi];
+  blocks[bi] = blocks[targetIdx];
+  blocks[targetIdx] = temp;
+  activeBlockIndex = targetIdx;
+  historyPush();
+  markDirty();
+  saveWorkspace();
+  renderPaginatedCanvas();
+  toast(dir < 0 ? 'Block moved up' : 'Block moved down', 'ok');
+}
+
+function deleteBlockAt(secId, bi) {
+  const target = findSection(secId || activeSectionId);
+  if (!target || !target.section || !target.section.blocks) return;
+  if (target.section.blocks.length <= 1) {
+    target.section.blocks[0] = { type: 'paragraph', text: '' };
+  } else {
+    target.section.blocks.splice(bi, 1);
+  }
+  historyPush();
+  markDirty();
+  saveWorkspace();
+  renderPaginatedCanvas();
+  toast('Block deleted', 'ok');
+}
+
+function deleteActiveBlock() {
+  const target = findActiveSection();
+  if (!target || !target.section || !target.section.blocks) return;
+  const bi = (activeBlockIndex != null && activeBlockIndex >= 0) ? activeBlockIndex : (target.section.blocks.length - 1);
+  if (bi >= 0) deleteBlockAt(target.section.id, bi);
+}
+
+async function triggerBlockAi(action, secId, bi) {
+  if (secId) activeSectionId = secId;
+  if (bi !== undefined) activeBlockIndex = bi;
+  const target = findActiveSection();
+  if (!target || !target.section || !target.section.blocks) return;
+  const block = target.section.blocks[activeBlockIndex != null ? activeBlockIndex : 0];
+  if (!block || !block.text) {
+    runSectionAction(action || 'rewrite');
+    return;
+  }
+  toast('AI rewriting block…', 'ok');
+  try {
+    const res = await fetch('/api/book/section/rewrite', {
+      method: 'POST',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, { 'x-ai-config': JSON.stringify(aiConfigHeaders()) }),
+      body: JSON.stringify({
+        section: { ...target.section, blocks: [block] },
+        action: action || 'rewrite',
+        customInstruction: ($('aiDirective') && $('aiDirective').value) || '',
+        presetId: ws.bookType,
+        kbSlice: kbSliceForWrite(),
+        sources: sourcesForApi()
+      })
+    });
+    const data = await res.json();
+    if (data.section && data.section.blocks && data.section.blocks.length) {
+      target.section.blocks[activeBlockIndex] = data.section.blocks[0];
+      historyPush();
+      markDirty();
+      saveWorkspace();
+      renderPaginatedCanvas();
+      toast('Block polished by AI', 'ok');
+    } else {
+      runSectionAction(action || 'rewrite');
+    }
+  } catch (err) {
+    toast('Block AI rewrite failed: ' + err.message, 'err');
+  }
+}
+
+function updateEditorStats() {
+  let words = 0;
+  (ws.chapters || []).forEach((ch) => {
+    (ch.sections || []).forEach((sec) => {
+      (sec.blocks || []).forEach((b) => {
+        const txt = (b.text || '') + ' ' + (b.definition || '') + ' ' + (b.term || '');
+        const w = (txt.match(/\S+/g) || []).length;
+        words += w;
+      });
+    });
+  });
+  const minutes = Math.max(1, Math.ceil(words / 225));
+  const el = $('editorStatsLabel');
+  if (el) {
+    el.textContent = `${words.toLocaleString()} words · ${minutes} min read`;
+  }
+}
+
+function toggleFocusMode() {
+  const isFocus = document.body.classList.toggle('focus-mode');
+  const btn = $('focusModeBtn');
+  if (btn) btn.classList.toggle('active', isFocus);
+  toast(isFocus ? 'Focus Mode on (Ctrl+\\ to exit)' : 'Exited Focus Mode', 'ok');
+}
+
+function findSection(secId) {
+  const chapters = ws.chapters || [];
+  if (secId) {
+    for (const ch of chapters) {
+      const idx = (ch.sections || []).findIndex((s) => s.id === secId);
+      if (idx >= 0) return { chapter: ch, section: ch.sections[idx], index: idx };
+    }
+  }
+  return findActiveSection();
 }
 
 /* ---------- Source Evidence panel (real data from ws.sources / ws.kb / block citations) ---------- */
@@ -2094,20 +2516,79 @@ function viewSourceContext(sourceId, pageNumber, section) {
 
 /* ---------- Left Outline Tree & Live TOC ---------- */
 function matterIcon(type) {
-  const icons = { cover: '\u{1F4D8}', preface: '\u{1F4DC}', toc: '\u{1F4D1}', references: '\u{1F4DA}', glossary: '\u{1F4D6}', index: '\u{1F4C7}' };
-  return icons[type] || '\u{1F4D6}';
+  const icons = {
+    cover: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>',
+    preface: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>',
+    toc: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>',
+    references: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>',
+    glossary: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>',
+    index: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path></svg>'
+  };
+  return icons[type] || icons.preface;
 }
 
 function chapterRowHtml(ch, ci) {
   const num = ch.number || (ci + 1);
   return `
-    <div class="tree-item" data-tree-id="${escHtml(ch.id)}" style="font-weight:700">
-      <span style="flex:1">Chapter ${num}: ${escHtml(ch.title)}</span>
-      <span style="display:flex;gap:4px">
-        <button class="chapter-xport" title="Export this chapter as Markdown (.md)" onclick="event.stopPropagation();exportChapter(${ci}, 'md')">⬇ MD</button>
-        <button class="chapter-xport" title="Export this chapter as HTML" onclick="event.stopPropagation();exportChapter(${ci}, 'html')">⬇ HTML</button>
+    <div class="tree-item tree-ch-row" data-tree-id="${escHtml(ch.id)}">
+      <span class="tree-ch-title" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700">Chapter ${num}: ${escHtml(ch.title || '')}</span>
+      <span class="tree-ch-actions" style="display:flex;gap:3px;align-items:center">
+        <button class="tree-badge-btn" title="Add Section to Chapter" onclick="addSectionToChapter(${ci}, event)">+ Sec</button>
+        <button class="chapter-xport" title="Export as Markdown" onclick="event.stopPropagation();exportChapter(${ci}, 'md')">MD</button>
+        <button class="tree-badge-btn danger" title="Delete Chapter" onclick="deleteChapter(${ci}, event)">✕</button>
       </span>
     </div>`;
+}
+
+function addSectionToChapter(ci, e) {
+  if (e) e.stopPropagation();
+  const ch = ws.chapters && ws.chapters[ci];
+  if (!ch) return;
+  if (!ch.sections) ch.sections = [];
+  const si = ch.sections.length + 1;
+  const newSec = {
+    id: 'sec-' + Date.now().toString(36),
+    title: 'Section ' + si,
+    blocks: [{ type: 'paragraph', text: 'Write section content here...' }]
+  };
+  ch.sections.push(newSec);
+  activeSectionId = newSec.id;
+  activeBlockIndex = 0;
+  historyPush();
+  markDirty();
+  saveWorkspace();
+  renderOutlineTree();
+  renderPaginatedCanvas();
+  selectSection(newSec.id);
+  toast('Section added to Chapter ' + (ci + 1), 'ok');
+}
+
+function deleteSection(ci, si, e) {
+  if (e) e.stopPropagation();
+  const ch = ws.chapters && ws.chapters[ci];
+  if (!ch || !ch.sections || !ch.sections[si]) return;
+  if (!confirm('Delete section "' + (ch.sections[si].title || 'Section') + '"?')) return;
+  ch.sections.splice(si, 1);
+  historyPush();
+  markDirty();
+  saveWorkspace();
+  renderOutlineTree();
+  renderPaginatedCanvas();
+  toast('Section deleted', 'ok');
+}
+
+function deleteChapter(ci, e) {
+  if (e) e.stopPropagation();
+  const ch = ws.chapters && ws.chapters[ci];
+  if (!ch) return;
+  if (!confirm('Delete Chapter "' + (ch.title || '') + '"?')) return;
+  ws.chapters.splice(ci, 1);
+  historyPush();
+  markDirty();
+  saveWorkspace();
+  renderOutlineTree();
+  renderPaginatedCanvas();
+  toast('Chapter deleted', 'ok');
 }
 
 /** Render the outline tree from the approved structure (or chapters-only when legacy). */
@@ -2124,7 +2605,7 @@ function renderOutlineTree() {
       const item = document.createElement('div');
       item.className = 'tree-item';
       item.setAttribute('data-tree-id', f.id);
-      item.innerHTML = `<span>${matterIcon(f.type)} ${escHtml(f.title)}</span>`;
+      item.innerHTML = `<span style="display:flex;align-items:center;gap:6px">${matterIcon(f.type)} ${escHtml(f.title)}</span>`;
       item.onclick = () => selectSection(f.id);
       container.appendChild(item);
     });
@@ -2135,9 +2616,17 @@ function renderOutlineTree() {
         const sub = document.createElement('div');
         sub.className = 'tree-item tree-section';
         sub.setAttribute('data-tree-id', s.id);
-        sub.style.paddingLeft = '24px';
-        sub.style.fontSize = '11.5px';
-        sub.innerHTML = `<span>${escHtml(s.title || 'Section ' + (si + 1))}</span>`;
+        sub.style.paddingLeft = '22px';
+        sub.style.fontSize = '12px';
+        sub.style.display = 'flex';
+        sub.style.alignItems = 'center';
+        sub.style.justifyContent = 'space-between';
+        sub.innerHTML = `
+          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(s.title || 'Section ' + (si + 1))}</span>
+          <span class="tree-sec-actions">
+            <button class="tree-badge-btn danger" title="Delete Section" onclick="deleteSection(${ci}, ${si}, event)">✕</button>
+          </span>
+        `;
         sub.onclick = () => selectSection(s.id);
         container.appendChild(sub);
       });
@@ -2147,7 +2636,7 @@ function renderOutlineTree() {
       const item = document.createElement('div');
       item.className = 'tree-item';
       item.setAttribute('data-tree-id', b.id);
-      item.innerHTML = `<span>${matterIcon(b.type)} ${escHtml(b.title)}</span>`;
+      item.innerHTML = `<span style="display:flex;align-items:center;gap:6px">${matterIcon(b.type)} ${escHtml(b.title)}</span>`;
       item.onclick = () => selectSection(b.id);
       container.appendChild(item);
     });
@@ -3737,11 +4226,17 @@ $('addChapterBtn').onclick = addChapter;
 document.addEventListener('keydown', (e) => {
   const mod = e.ctrlKey || e.metaKey;
   const tag = (e.target && (e.target.tagName || '')).toLowerCase();
-  const editing = tag === 'input' || tag === 'textarea' || (e.target && e.target.isContentEditable) || tag === 'select' || tag === 'button';
+  const isContentEditable = (e.target && e.target.isContentEditable);
+  const editing = tag === 'input' || tag === 'textarea' || isContentEditable || tag === 'select' || tag === 'button';
   const k = (e.key || '').toLowerCase();
+  if (mod && (e.key === '\\' || e.code === 'Backslash')) { e.preventDefault(); toggleFocusMode(); return; }
+  if (e.key === 'Escape' && document.body.classList.contains('focus-mode')) { e.preventDefault(); toggleFocusMode(); return; }
   if (mod && k === 's') { e.preventDefault(); saveWorkspace(); toast('Workspace saved', 'ok'); return; }
-  if (mod && k === 'z') { e.preventDefault(); if (!editing) { if (e.shiftKey) redo(); else undo(); } return; }
-  if (mod && k === 'y') { e.preventDefault(); redo(); return; }
+  if (isContentEditable && mod && k === 'b') { e.preventDefault(); formatDoc('bold'); return; }
+  if (isContentEditable && mod && k === 'i') { e.preventDefault(); formatDoc('italic'); return; }
+  if (isContentEditable && mod && k === 'u') { e.preventDefault(); formatDoc('underline'); return; }
+  if (mod && k === 'z') { if (!editing) { e.preventDefault(); if (e.shiftKey) redo(); else undo(); } return; }
+  if (mod && k === 'y') { if (!editing) { e.preventDefault(); redo(); } return; }
   if (mod && k === '=') { e.preventDefault(); $('zoomInBtn').click(); return; }
   if (mod && k === '-') { e.preventDefault(); $('zoomOutBtn').click(); return; }
   if (mod && k === 'enter') { e.preventDefault(); addChapter(); return; }
