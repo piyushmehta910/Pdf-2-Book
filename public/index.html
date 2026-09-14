@@ -561,42 +561,10 @@
   </div>
 
   <div class="title-wrap">
-    <input type="text" class="title-input" id="bookTitle" value="Untitled Research Book" title="Click to rename book">
+    <input type="text" class="title-input" id="bookTitle" value="Untitled Book" title="Click to rename book">
   </div>
 
   <div class="sel-group">
-    <select class="studio-sel" id="selBookType" title="Book Type (Spec §10)">
-      <option value="textbook">Textbook</option>
-      <option value="academic">Academic Book</option>
-      <option value="research">Research Book</option>
-      <option value="technical">Technical Book</option>
-      <option value="selfhelp">Self-Help</option>
-      <option value="business">Business Book</option>
-      <option value="biography">Biography</option>
-      <option value="novel">Novel</option>
-      <option value="guide">Practical Guide</option>
-      <option value="manual">Instruction Manual</option>
-      <option value="studyguide">Study Notes</option>
-      <option value="coursebook">Course Book</option>
-      <option value="children">Children's Book</option>
-      <option value="reference">Reference Manual</option>
-      <option value="report">Comprehensive Report</option>
-      <option value="custom">Custom Book</option>
-    </select>
-
-    <select class="studio-sel" id="selDesign" title="Visual Design Theme (Spec §13)">
-      <option value="modern">Theme: Modern</option>
-      <option value="academic">Theme: Academic</option>
-      <option value="editorial">Theme: Editorial</option>
-      <option value="luxury">Theme: Luxury</option>
-      <option value="textbook">Theme: Textbook</option>
-      <option value="technical">Theme: Technical</option>
-      <option value="classic">Theme: Classic</option>
-      <option value="minimal">Theme: Minimal</option>
-      <option value="selfhelp">Theme: Self-Help</option>
-      
-    </select>
-
     <select class="studio-sel" id="selPageSize" title="Physical Page Size (Spec §32)">
       <option value="trade_6x9">Size: 6 × 9 in (Trade)</option>
       <option value="a4">Size: A4 (210×297mm)</option>
@@ -609,13 +577,41 @@
 
   <div class="spacer"></div>
 
-  <!-- Hidden state anchors to preserve event listeners -->
+  <!-- Hidden state anchors to preserve event listeners and JS state -->
+  <select id="selBookType" style="display:none">
+    <option value="textbook">Textbook</option>
+    <option value="academic">Academic Book</option>
+    <option value="technical">Technical Book</option>
+    <option value="selfhelp">Self-Help</option>
+    <option value="business">Business Book</option>
+    <option value="biography">Biography</option>
+    <option value="novel">Novel</option>
+    <option value="guide">Practical Guide</option>
+    <option value="manual">Instruction Manual</option>
+    <option value="studyguide">Study Notes</option>
+    <option value="coursebook">Course Book</option>
+    <option value="children">Children's Book</option>
+    <option value="reference">Reference Manual</option>
+    <option value="report">Comprehensive Report</option>
+    <option value="custom">Custom Book</option>
+  </select>
+  <select id="selDesign" style="display:none">
+    <option value="modern">Theme: Modern</option>
+    <option value="academic">Theme: Academic</option>
+    <option value="editorial">Theme: Editorial</option>
+    <option value="luxury">Theme: Luxury</option>
+    <option value="textbook">Theme: Textbook</option>
+    <option value="technical">Theme: Technical</option>
+    <option value="classic">Theme: Classic</option>
+    <option value="minimal">Theme: Minimal</option>
+    <option value="selfhelp">Theme: Self-Help</option>
+  </select>
   <span id="saveStatus" style="display:none"></span>
   <div id="qaScoreBtn" style="display:none"><span id="qaScoreText"></span></div>
   <button id="backupBtn" style="display:none"></button>
+  <button id="themeToggle" style="display:none" title="Toggle Light/Dark Theme"></button>
 
-  <button class="ghost small" id="themeToggle" title="Toggle Light/Dark Theme"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg> Theme</button>
-  <button class="ghost small" onclick="openSettings()" title="AI Provider & API Key Settings"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> AI settings</button>
+  <button class="ghost small" onclick="openSettings()" title="AI Provider & API Key Settings"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> AI settings</button>
   <button class="ghost small" id="helpBtn" title="Keyboard shortcuts & help (?)"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></button>
   <button class="small" id="exportBtn"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export ▾</button>
 </header>
@@ -894,6 +890,12 @@
       <label style="font-weight:600;display:block;margin-bottom:6px">API Key</label>
       <input type="password" id="setApiKey" placeholder="Paste your API key…" style="width:100%;padding:8px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);margin-bottom:14px">
 
+      <label style="font-weight:600;display:block;margin-bottom:6px">Editor Theme</label>
+      <select id="setTheme" style="width:100%;padding:8px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);margin-bottom:14px">
+        <option value="dark">Dark Theme</option>
+        <option value="light">Light Theme</option>
+      </select>
+
       <label style="font-weight:600;display:block;margin-bottom:6px">Citation Style (Spec §8)</label>
       <select id="setCitationStyle" style="width:100%;padding:8px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--text);margin-bottom:14px">
         <option value="APA">APA 7th Edition (Author, Year)</option>
@@ -1001,6 +1003,26 @@
         <div>
           <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Subtitle</label>
           <input type="text" id="bdSubtitle" placeholder="Optional subtitle" class="dlg-inp">
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Book Type</label>
+          <select id="bdBookType" class="dlg-inp" style="width:100%;height:34px">
+            <option value="textbook">Textbook</option>
+            <option value="academic">Academic Book</option>
+            <option value="technical">Technical Book</option>
+            <option value="selfhelp">Self-Help</option>
+            <option value="business">Business Book</option>
+            <option value="biography">Biography</option>
+            <option value="novel">Novel</option>
+            <option value="guide">Practical Guide</option>
+            <option value="manual">Instruction Manual</option>
+            <option value="studyguide">Study Notes</option>
+            <option value="coursebook">Course Book</option>
+            <option value="children">Children's Book</option>
+            <option value="reference">Reference Manual</option>
+            <option value="report">Comprehensive Report</option>
+            <option value="custom">Custom Book</option>
+          </select>
         </div>
         <div>
           <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:4px">Publisher</label>
@@ -1199,9 +1221,10 @@ function redo() {
 function syncUiAfterStateChange() {
   if (!$('bookTitle')) return;
   $('bookTitle').value = ws.title || '';
-  $('selBookType').value = ws.bookType || 'textbook';
-  $('selDesign').value = ws.design || 'modern';
-  $('selPageSize').value = ws.pageSize || 'trade_6x9';
+  if ($('selBookType')) $('selBookType').value = ws.bookType || 'textbook';
+  if ($('bdBookType')) $('bdBookType').value = ws.bookType || 'textbook';
+  if ($('selDesign')) $('selDesign').value = ws.design || 'modern';
+  if ($('selPageSize')) $('selPageSize').value = ws.pageSize || 'trade_6x9';
   saveWorkspace();
   renderOutlineTree();
   renderSourcesList();
@@ -1241,7 +1264,8 @@ setInterval(async () => {
 const THEME_KEY = 'pdf2book.theme';
 function applyTheme(t) {
   document.documentElement.dataset.theme = t;
-  $('themeToggle').textContent = t === 'light' ? 'Light' : 'Dark';
+  if ($('themeToggle')) $('themeToggle').textContent = t === 'light' ? 'Light' : 'Dark';
+  if ($('setTheme')) $('setTheme').value = t;
 }
 $('themeToggle').onclick = () => {
   const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
@@ -1274,6 +1298,7 @@ function switchRightTab(tabId) {
 /* ---------- Modals ---------- */
 function openSettings() {
   $('settingsModal').style.display = 'flex';
+  if ($('setTheme')) $('setTheme').value = document.documentElement.dataset.theme || 'dark';
   if (data && data.getState) {
     const settings = data.getState().settings || {};
     if ($('setProvider')) $('setProvider').value = settings.provider || 'zen';
@@ -1283,10 +1308,16 @@ function openSettings() {
 }
 function closeSettings() { $('settingsModal').style.display = 'none'; }
 function saveSettingsFromModal() {
+  if ($('setTheme')) {
+    const th = $('setTheme').value;
+    applyTheme(th);
+    localStorage.setItem(THEME_KEY, th);
+  }
   if (!data) { closeSettings(); return; }
   const settings = data.getState().settings || {};
   const next = {
     ...settings,
+    theme: $('setTheme') ? $('setTheme').value : (settings.theme || 'dark'),
     provider: $('setProvider') ? $('setProvider').value : settings.provider,
     apiKey: $('setApiKey') ? $('setApiKey').value.trim() : settings.apiKey,
     citationStyle: $('setCitationStyle') ? $('setCitationStyle').value : settings.citationStyle
@@ -3376,10 +3407,11 @@ async function openProjectById(id) {
   if (!loaded) { toast('Project not found', 'err'); return {}; }
   ws = data.getWorkspace();
   if (ws) {
-    $('bookTitle').value = ws.title || '';
-    $('selBookType').value = ws.bookType || 'textbook';
-    $('selDesign').value = ws.design || 'modern';
-    $('selPageSize').value = ws.pageSize || 'trade_6x9';
+    if ($('bookTitle')) $('bookTitle').value = ws.title || '';
+    if ($('selBookType')) $('selBookType').value = ws.bookType || 'textbook';
+    if ($('bdBookType')) $('bdBookType').value = ws.bookType || 'textbook';
+    if ($('selDesign')) $('selDesign').value = ws.design || 'modern';
+    if ($('selPageSize')) $('selPageSize').value = ws.pageSize || 'trade_6x9';
     renderOutlineTree();
     renderSourcesList();
     renderPaginatedCanvas();
@@ -3633,6 +3665,7 @@ function openBookDetails() {
   const meta = ws.meta || (ws.meta = {});
   $('bdAuthor').value = ws.author || meta.author || '';
   $('bdSubtitle').value = meta.subtitle || '';
+  if ($('bdBookType')) $('bdBookType').value = ws.bookType || 'textbook';
   $('bdPublisher').value = meta.publisher || '';
   $('bdYear').value = meta.year || '';
   $('bdIsbn').value = meta.isbn || '';
@@ -3649,6 +3682,10 @@ function saveBookDetails() {
   ws.author = $('bdAuthor').value.trim();
   meta.author = ws.author;
   meta.subtitle = $('bdSubtitle').value.trim();
+  if ($('bdBookType')) {
+    ws.bookType = $('bdBookType').value;
+    if ($('selBookType')) $('selBookType').value = ws.bookType;
+  }
   meta.publisher = $('bdPublisher').value.trim();
   meta.year = $('bdYear').value.trim();
   meta.isbn = $('bdIsbn').value.trim();
@@ -3750,18 +3787,22 @@ window.onload = async () => {
   ws = data ? data.getWorkspace() : ws;
   if (!ws) { ws = data ? data.setWorkspace(data.defaultShell('Untitled Research Book')) : ws; }
 
-  $('bookTitle').value = ws.title || 'Untitled Research Book';
-  $('selBookType').value = ws.bookType || 'textbook';
-  $('selDesign').value = ws.design || 'modern';
-  $('selPageSize').value = ws.pageSize || 'trade_6x9';
+  if ($('bookTitle')) $('bookTitle').value = ws.title || 'Untitled Book';
+  if ($('selBookType')) $('selBookType').value = ws.bookType || 'textbook';
+  if ($('bdBookType')) $('bdBookType').value = ws.bookType || 'textbook';
+  if ($('selDesign')) $('selDesign').value = ws.design || 'modern';
+  if ($('selPageSize')) $('selPageSize').value = ws.pageSize || 'trade_6x9';
   if (ws.author || (ws.meta && ws.meta.author)) ws.author = ws.author || (ws.meta && ws.meta.author);
 
-  $('bookTitle').oninput = (e) => { ws.title = e.target.value; markDirty(); };
-  $('bookTitle').onchange = (e) => { historyPush(); saveWorkspace(); };
-  $('selBookType').onchange = (e) => { ws.bookType = e.target.value; markDirty(); saveWorkspace(); };
-  $('selDesign').onchange = (e) => { ws.design = e.target.value; markDirty(); saveWorkspace(); syncDesignSelects(); renderPaginatedCanvas(); };
-  $('selPageSize').onchange = (e) => { ws.pageSize = e.target.value; if ($('customSizeBox')) $('customSizeBox').style.display = (e.target.value === 'custom') ? 'block' : 'none'; markDirty(); saveWorkspace(); syncDesignSelects(); renderPaginatedCanvas(); };
-  $('applyCustomSizeBtn').onclick = applyCustomSize;
+  if ($('bookTitle')) {
+    $('bookTitle').oninput = (e) => { ws.title = e.target.value; markDirty(); };
+    $('bookTitle').onchange = (e) => { historyPush(); saveWorkspace(); };
+  }
+  if ($('selBookType')) $('selBookType').onchange = (e) => { ws.bookType = e.target.value; if ($('bdBookType')) $('bdBookType').value = e.target.value; markDirty(); saveWorkspace(); };
+  if ($('bdBookType')) $('bdBookType').onchange = (e) => { ws.bookType = e.target.value; if ($('selBookType')) $('selBookType').value = e.target.value; markDirty(); saveWorkspace(); };
+  if ($('selDesign')) $('selDesign').onchange = (e) => { ws.design = e.target.value; markDirty(); saveWorkspace(); syncDesignSelects(); renderPaginatedCanvas(); };
+  if ($('selPageSize')) $('selPageSize').onchange = (e) => { ws.pageSize = e.target.value; if ($('customSizeBox')) $('customSizeBox').style.display = (e.target.value === 'custom') ? 'block' : 'none'; markDirty(); saveWorkspace(); syncDesignSelects(); renderPaginatedCanvas(); };
+  if ($('applyCustomSizeBtn')) $('applyCustomSizeBtn').onclick = applyCustomSize;
 
   renderOutlineTree();
   renderSourcesList();
