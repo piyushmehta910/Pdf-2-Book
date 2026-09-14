@@ -677,6 +677,45 @@
     flex-shrink: 0;
   }
 
+  /* ---- Book Structure page templates ---- */
+  .sheet-half-title { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center; }
+  .sheet-half-title h1 { font-size:2.4em; font-weight:800; letter-spacing:-.02em; margin:0; }
+
+  .sheet-title-page { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center; gap:10px; }
+  .sheet-title-page .tp-title { font-size:2.2em; font-weight:800; letter-spacing:-.02em; }
+  .sheet-title-page .tp-subtitle { font-size:1.1em; color:var(--doc-muted,#64748b); font-style:italic; }
+  .sheet-title-page .tp-author { font-size:1em; margin-top:18px; font-weight:600; }
+  .sheet-title-page .tp-publisher { font-size:.8em; color:var(--doc-muted,#64748b); margin-top:auto; padding-bottom:24px; }
+
+  .sheet-copyright { font-size:.78em; color:var(--doc-muted,#64748b); line-height:1.7; padding-top:60%; }
+  .sheet-copyright p { margin:4px 0; }
+
+  .sheet-dedication { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center; }
+  .sheet-dedication p { font-style:italic; font-size:1.1em; max-width:72%; line-height:1.75; color:var(--sheet-text,#1e293b); }
+
+  .sheet-epigraph { display:flex; flex-direction:column; justify-content:flex-end; height:100%; padding-bottom:18%; }
+  .sheet-epigraph blockquote { margin:0 0 0 10%; font-style:italic; font-size:1em; line-height:1.8; border-left:3px solid var(--doc-accent,#6366f1); padding-left:16px; }
+  .sheet-epigraph cite { display:block; margin-top:8px; font-size:.82em; color:var(--doc-muted,#64748b); font-style:normal; }
+
+  .sheet-back-cover { display:flex; flex-direction:column; height:100%; }
+  .back-cover-blurb { flex:1; display:flex; flex-direction:column; justify-content:center; padding:10%; font-size:.92em; line-height:1.75; }
+  .back-cover-blurb .bc-title { font-weight:800; font-size:1.3em; margin-bottom:12px; }
+  .back-cover-blurb .bc-review { font-style:italic; margin:10px 0; padding:8px 12px; border-left:3px solid currentColor; opacity:.8; font-size:.88em; }
+  .back-cover-foot { display:flex; align-items:flex-end; justify-content:space-between; padding:5% 10%; border-top:1px solid rgba(255,255,255,.2); }
+  .back-cover-barcode { width:70px; height:50px; border:1.5px dashed rgba(255,255,255,.5); border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:9px; opacity:.6; }
+
+  /* Roman numeral page numbers appear smaller / lighter */
+  .sheet-num.roman { opacity:.7; font-weight:600; }
+  .sheet-num.roman b { font-weight:700; }
+
+  /* Add-matter row in structure modal */
+  .add-matter-row { display:flex; gap:7px; align-items:center; margin-top:8px; }
+  .add-matter-row select { flex:1; height:30px; font-size:12px; }
+  .struct-matter-row { display:flex; align-items:center; gap:7px; padding:5px 0; border-bottom:1px solid var(--border); }
+  .struct-matter-row input[type=text] { flex:1; background:var(--input-bg); border:1px solid var(--border); border-radius:5px; color:var(--text); font-size:12px; padding:3px 7px; height:26px; }
+  .fm-content-area { display:none; margin:-2px 0 8px 26px; }
+  .fm-content-area textarea { width:100%; min-height:56px; resize:vertical; }
+
 </style>
 </head>
 <body>
@@ -1837,6 +1876,79 @@ function buildFrontGroups(measure, model, theme, groups) {
         }
       };
       pushItem(g.items, measure, g.id + ':preface', ta, model);
+    } else if (f.type === 'half-title') {
+      const wrap = document.createElement('div');
+      wrap.className = 'sheet-half-title';
+      wrap.innerHTML = `<h1>${escHtml(ws.title || 'Book')}</h1>`;
+      pushItem(g.items, measure, g.id + ':halftitle', wrap, model);
+    } else if (f.type === 'title-page') {
+      const wrap = document.createElement('div');
+      wrap.className = 'sheet-title-page';
+      const meta = ws.meta || {};
+      wrap.innerHTML = `<div class="tp-title">${escHtml(ws.title || 'Book')}</div>` +
+        (meta.subtitle ? `<div class="tp-subtitle">${escHtml(meta.subtitle)}</div>` : '') +
+        (ws.author ? `<div class="tp-author">by ${escHtml(ws.author)}</div>` : '') +
+        `<div class="tp-publisher">${escHtml(meta.publisher || '')}${meta.year ? ' &nbsp;&bull;&nbsp; ' + escHtml(meta.year) : ''}</div>`;
+      pushItem(g.items, measure, g.id + ':titlepage', wrap, model);
+    } else if (f.type === 'copyright') {
+      const meta = ws.meta || {};
+      const year = meta.year || new Date().getFullYear();
+      const holder = meta.copyright || ws.author || ws.title || 'Author';
+      const wrap = document.createElement('div');
+      wrap.className = 'sheet-copyright';
+      wrap.innerHTML = `<p>Copyright &copy; ${escHtml(String(year))} ${escHtml(holder)}</p>` +
+        `<p>All rights reserved. No part of this publication may be reproduced, distributed, or transmitted in any form or by any means without prior written permission.</p>` +
+        (meta.publisher ? `<p>Published by ${escHtml(meta.publisher)}</p>` : '') +
+        (meta.isbn ? `<p>ISBN: ${escHtml(meta.isbn)}</p>` : '') +
+        `<p>First published ${escHtml(String(year))}</p>`;
+      pushItem(g.items, measure, g.id + ':copyright', wrap, model);
+    } else if (f.type === 'dedication') {
+      const wrap = document.createElement('div');
+      wrap.className = 'sheet-dedication';
+      const text = f.content || (ws.meta && ws.meta.dedication) || 'For those who inspired this work.';
+      const p = document.createElement('p');
+      p.contentEditable = 'true';
+      p.textContent = text;
+      p.onblur = () => { f.content = p.textContent || ''; markDirty(); saveWorkspace(); };
+      wrap.appendChild(p);
+      pushItem(g.items, measure, g.id + ':dedication', wrap, model);
+    } else if (f.type === 'epigraph') {
+      const wrap = document.createElement('div');
+      wrap.className = 'sheet-epigraph';
+      const text = f.content || (ws.meta && ws.meta.epigraph) || '';
+      const bq = document.createElement('blockquote');
+      bq.contentEditable = 'true';
+      bq.textContent = text || 'Enter an opening quotation here\u2026';
+      bq.onblur = () => { f.content = bq.textContent || ''; markDirty(); saveWorkspace(); };
+      const cite = document.createElement('cite');
+      cite.contentEditable = 'true';
+      cite.textContent = f.author || '\u2014 Author';
+      cite.onblur = () => { f.author = cite.textContent || ''; markDirty(); saveWorkspace(); };
+      bq.appendChild(cite);
+      wrap.appendChild(bq);
+      pushItem(g.items, measure, g.id + ':epigraph', wrap, model);
+    } else if (f.type === 'illustrations') {
+      const h = document.createElement('h2');
+      h.textContent = f.title || 'List of Illustrations';
+      pushItem(g.items, measure, g.id + ':heading', h, model);
+      const p = document.createElement('p');
+      p.contentEditable = 'true';
+      p.style.color = theme.mutedColor || '#64748b';
+      p.textContent = f.content || 'Figure 1. \u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026 1\nFigure 2. \u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026\u2026 2';
+      p.onblur = () => { f.content = p.textContent || ''; markDirty(); saveWorkspace(); };
+      pushItem(g.items, measure, g.id + ':illist', p, model);
+    } else if (f.type === 'foreword' || f.type === 'acknowledgments' || f.type === 'introduction') {
+      const headingText = { foreword: 'Foreword', acknowledgments: 'Acknowledgments', introduction: 'Introduction' };
+      const h = document.createElement('h2');
+      h.textContent = f.title || headingText[f.type] || f.title || '';
+      pushItem(g.items, measure, g.id + ':heading', h, model);
+      const ta = document.createElement('p');
+      ta.contentEditable = 'true';
+      ta.textContent = f.content || '';
+      ta.style.minHeight = '80px';
+      ta.style.outline = '1px dashed ' + theme.borderColor;
+      ta.onblur = () => { const t = ta.textContent || ''; if (ta.dataset.last !== t) { ta.dataset.last = t; f.content = t; markDirty(); saveWorkspace(); } };
+      pushItem(g.items, measure, g.id + ':body', ta, model);
     } else {
       const h = document.createElement('h3');
       h.textContent = f.title || '';
@@ -1846,14 +1958,19 @@ function buildFrontGroups(measure, model, theme, groups) {
 }
 
 function buildChapterGroups(measure, model, theme, groups) {
+  const SPECIAL_ROLES = { prologue: 'Prologue', epilogue: 'Epilogue', afterword: 'Afterword', conclusion: 'Conclusion' };
   (ws.chapters || []).forEach((ch, ci) => {
-    const g = { kind: 'chapter', id: ch.id, title: ch.title, chapLabel: 'Chapter ' + (ch.number || (ci + 1)), items: [], isCover: false, isToc: false, secId: null };
+    const roleLabel = SPECIAL_ROLES[ch.role];
+    const chapLabel = roleLabel ? roleLabel : ('Chapter ' + (ch.number || (ci + 1)));
+    const g = { kind: 'chapter', id: ch.id, title: ch.title, chapLabel: chapLabel, items: [], isCover: false, isToc: false, secId: null, isSpecialRole: !!roleLabel };
     groups.push(g);
     const opener = document.createElement('div');
     opener.className = 'sheet-chop opener-' + (theme.chapterOpener || 'big');
     const open = TL ? TL.OPENER_STYLES[theme.chapterOpener] : null;
     opener.style.textAlign = (open && open.align === 'center') ? 'center' : 'left';
-    opener.innerHTML = `<div class="sheet-chop-label">${g.chapLabel}</div><h2 contenteditable="true">${escHtml(ch.title || '')}</h2>`;
+    opener.innerHTML = g.isSpecialRole
+      ? `<h2 class="sheet-chop-label" contenteditable="true">${escHtml(ch.title || g.chapLabel)}</h2>`
+      : `<div class="sheet-chop-label">${g.chapLabel}</div><h2 contenteditable="true">${escHtml(ch.title || '')}</h2>`;
     opener.querySelector('h2').onblur = () => {
       ch.title = opener.querySelector('h2').textContent;
       markDirty(); saveWorkspace(); renderOutlineTree(); renderPaginatedCanvas();
@@ -1883,11 +2000,14 @@ function buildChapterGroups(measure, model, theme, groups) {
 function buildBackGroups(measure, model, theme, groups) {
   (Array.isArray(ws.backMatter) ? ws.backMatter : []).forEach((b) => {
     if (!b || b.enabled === false) return;
-    const g = { kind: 'back', id: b.id, title: b.title, secId: b.id, items: [], isCover: false, isToc: false, chapLabel: null };
+    const isBackCover = b.type === 'back-cover';
+    const g = { kind: 'back', id: b.id, title: b.title, secId: b.id, items: [], isCover: isBackCover, isToc: false, chapLabel: null };
     groups.push(g);
-    const h = document.createElement('h2');
-    h.textContent = b.title || '';
-    pushItem(g.items, measure, g.id + ':heading', h, model);
+    if (!isBackCover) {
+      const h = document.createElement('h2');
+      h.textContent = b.title || '';
+      pushItem(g.items, measure, g.id + ':heading', h, model);
+    }
     const topics = (ws.kb && ws.kb.topics) || [];
     if (b.type === 'references') {
       (topics.length ? topics : [null]).forEach((t, i) => {
@@ -1896,10 +2016,17 @@ function buildBackGroups(measure, model, theme, groups) {
         else li.textContent = 'References will be generated from your source documents at export time.';
         pushItem(g.items, measure, g.id + ':ref' + i, li, model);
       });
+    } else if (b.type === 'bibliography') {
+      (topics.length ? topics : [null]).forEach((t, i) => {
+        const li = document.createElement('p');
+        if (t) li.innerHTML = `${escHtml((t.sources || []).join('; ') || 'Source')}. <em>${escHtml(t.name)}</em>.`;
+        else li.textContent = 'Bibliography entries will be formatted from your source documents.';
+        pushItem(g.items, measure, g.id + ':bib' + i, li, model);
+      });
     } else if (b.type === 'glossary') {
       (topics.length ? topics : [null]).forEach((t, i) => {
         const d = document.createElement('p');
-        if (t) d.innerHTML = `<strong>${escHtml(t.name)}</strong> - ${escHtml(t.summary || '')}`;
+        if (t) d.innerHTML = `<strong>${escHtml(t.name)}</strong> — ${escHtml(t.summary || '')}`;
         else d.textContent = 'Glossary terms are generated from your extracted topics.';
         pushItem(g.items, measure, g.id + ':gloss' + i, d, model);
       });
@@ -1909,10 +2036,86 @@ function buildBackGroups(measure, model, theme, groups) {
         d.innerHTML = t ? escHtml(t.name) : 'The index is generated from your book structure.';
         pushItem(g.items, measure, g.id + ':idx' + i, d, model);
       });
-    } else {
+    } else if (b.type === 'endnotes') {
       const d = document.createElement('p');
-      d.textContent = b.title || '';
-      pushItem(g.items, measure, g.id + ':body', d, model);
+      d.style.color = theme.mutedColor || '#64748b';
+      d.textContent = b.content || 'End notes and citations collected from the body of the text will appear here.';
+      pushItem(g.items, measure, g.id + ':endnotes', d, model);
+    } else if (b.type === 'appendix') {
+      const ta = document.createElement('p');
+      ta.contentEditable = 'true';
+      ta.textContent = b.content || 'Enter appendix content here.';
+      ta.style.outline = '1px dashed ' + theme.borderColor;
+      ta.onblur = () => { b.content = ta.textContent || ''; markDirty(); saveWorkspace(); };
+      pushItem(g.items, measure, g.id + ':appendix', ta, model);
+    } else if (b.type === 'about-author') {
+      const meta = ws.meta || {};
+      const ta = document.createElement('p');
+      ta.contentEditable = 'true';
+      ta.textContent = b.content || meta.about || (ws.author ? ws.author + ' is the author of this book.' : 'About the author.');
+      ta.style.outline = '1px dashed ' + theme.borderColor;
+      ta.onblur = () => { b.content = ta.textContent || ''; markDirty(); saveWorkspace(); };
+      pushItem(g.items, measure, g.id + ':about', ta, model);
+    } else if (b.type === 'also-by') {
+      const ta = document.createElement('p');
+      ta.contentEditable = 'true';
+      ta.textContent = b.content || 'List other titles by this author here.';
+      ta.style.outline = '1px dashed ' + theme.borderColor;
+      ta.onblur = () => { b.content = ta.textContent || ''; markDirty(); saveWorkspace(); };
+      pushItem(g.items, measure, g.id + ':alsoby', ta, model);
+    } else if (b.type === 'coming-soon') {
+      const ta = document.createElement('p');
+      ta.contentEditable = 'true';
+      ta.textContent = b.content || 'Coming soon from this author…';
+      ta.style.fontStyle = 'italic';
+      ta.style.outline = '1px dashed ' + theme.borderColor;
+      ta.onblur = () => { b.content = ta.textContent || ''; markDirty(); saveWorkspace(); };
+      pushItem(g.items, measure, g.id + ':coming', ta, model);
+    } else if (b.type === 'back-cover') {
+      const wrap = document.createElement('div');
+      wrap.className = 'sheet-back-cover';
+      wrap.style.background = theme.primaryColor || '#6366f1';
+      wrap.style.color = '#ffffff';
+      const blurb = document.createElement('div');
+      blurb.className = 'back-cover-blurb';
+      const tc = document.createElement('div');
+      tc.className = 'bc-title';
+      tc.contentEditable = 'true';
+      tc.textContent = ws.title || 'Book Title';
+      tc.onblur = () => { markDirty(); saveWorkspace(); };
+      const td = document.createElement('div');
+      td.contentEditable = 'true';
+      td.textContent = b.content || (ws.meta && ws.meta.description) || 'Enter the back cover blurb — a compelling summary to attract readers.';
+      td.onblur = () => { b.content = td.textContent || ''; markDirty(); saveWorkspace(); };
+      const tr = document.createElement('div');
+      tr.className = 'bc-review';
+      tr.contentEditable = 'true';
+      tr.textContent = b.review || '"A must-read." — Review quote';
+      tr.onblur = () => { b.review = tr.textContent || ''; markDirty(); saveWorkspace(); };
+      blurb.appendChild(tc);
+      blurb.appendChild(td);
+      blurb.appendChild(tr);
+      const foot = document.createElement('div');
+      foot.className = 'back-cover-foot';
+      const pub = document.createElement('span');
+      pub.style.fontSize = '11px';
+      pub.style.opacity = '0.7';
+      pub.textContent = (ws.meta && ws.meta.publisher) || '';
+      const barcode = document.createElement('div');
+      barcode.className = 'back-cover-barcode';
+      barcode.textContent = 'ISBN';
+      foot.appendChild(pub);
+      foot.appendChild(barcode);
+      wrap.appendChild(blurb);
+      wrap.appendChild(foot);
+      pushItem(g.items, measure, g.id + ':backcover', wrap, model);
+    } else {
+      const ta = document.createElement('p');
+      ta.contentEditable = 'true';
+      ta.textContent = b.content || '';
+      ta.style.outline = '1px dashed ' + theme.borderColor;
+      ta.onblur = () => { b.content = ta.textContent || ''; markDirty(); saveWorkspace(); };
+      pushItem(g.items, measure, g.id + ':body', ta, model);
     }
   });
 }
@@ -1943,12 +2146,22 @@ function buildPagedBook() {
         cover: g.isCover, toc: g.isToc,
         secId: g.secId, chapterId: g.kind === 'chapter' ? g.id : null,
         chapLabel: g.chapLabel || null,
-        headerLabel: (g.kind === 'chapter') ? (g.chapLabel + ': ' + (g.title || '')) : (g.title || '')
+        headerLabel: (g.kind === 'chapter') ? (g.chapLabel + ': ' + (g.title || '')) : (g.title || ''),
+        pageKind: g.kind
       };
       pages.push(page);
     });
   });
   return { model: model, theme: theme, pages: pages, fmCount: fmCount, bmCount: bmCount };
+}
+
+function toRoman(n) {
+  if (n < 1) return '';
+  const vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
+  const syms = ['m','cm','d','cd','c','xc','l','xl','x','ix','v','iv','i'];
+  let result = '';
+  for (let i = 0; i < vals.length; i++) { while (n >= vals[i]) { result += syms[i]; n -= vals[i]; } }
+  return result;
 }
 
 function makeSheetHeader(model, theme, page) {
@@ -1973,15 +2186,17 @@ function makeSheetHeader(model, theme, page) {
 
 function makePageNumber(model, theme, page, num) {
   const el = document.createElement('div');
-  el.className = 'sheet-num';
+  const isRoman = page.pageKind === 'front';
+  el.className = 'sheet-num' + (isRoman ? ' roman' : '');
   const st = TL ? TL.PAGE_NUM_STYLES[theme.pageNumberStyle] : null;
   const align = (st && st.align === 'right') ? 'flex-end' : 'center';
   const where = (st && st.where === 'header') ? 'header' : 'footer';
   el.style.cssText = 'position:absolute;left:' + model.mL + 'px;right:' + model.mR + 'px;' + (where === 'header' ? 'top:' + Math.round(model.mT * 0.35) + 'px;' : 'bottom:' + Math.round(model.mB * 0.5) + 'px;') + 'justify-content:' + align + ';font-size:' + Math.max(9, Math.round(model.baseFont * 0.62)) + 'px;';
+  const displayNum = isRoman ? toRoman(num) : num;
   let txt = '';
   if (st && st.ornament) txt += '&mdash; ';
   if (st && st.badge) { txt += '&bull; '; }
-  txt += (st && st.prefix ? st.prefix : '') + '<b>' + num + '</b>' + (st && st.suffix ? st.suffix : '');
+  txt += (st && st.prefix ? st.prefix : '') + '<b>' + displayNum + '</b>' + (st && st.suffix ? st.suffix : '');
   if (st && st.ornament) txt += ' &mdash;';
   el.innerHTML = txt;
   return el;
@@ -2012,10 +2227,19 @@ function renderPaginatedCanvas() {
   _lastBuild = build;
   const canvas = $('canvasScroll');
   canvas.innerHTML = '';
-  let num = 0;
+  let fmNum = 0, bodyNum = 0;
   build.pages.forEach((pg) => {
-    if (!pg.cover) num++;
-    buildSheetAndMount(model, theme, pg, canvas, num, currentZoom, false);
+    let pageNum;
+    if (pg.cover) {
+      pageNum = 0; // no number on cover
+    } else if (pg.pageKind === 'front') {
+      fmNum++;
+      pageNum = fmNum;
+    } else {
+      bodyNum++;
+      pageNum = bodyNum;
+    }
+    buildSheetAndMount(model, theme, pg, canvas, pageNum, currentZoom, false);
   });
   const total = build.pages.length;
   const matterCnt = build.fmCount + build.bmCount;
@@ -2516,22 +2740,47 @@ function viewSourceContext(sourceId, pageNumber, section) {
 
 /* ---------- Left Outline Tree & Live TOC ---------- */
 function matterIcon(type) {
+  const ICON_DOC = '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>';
+  const ICON_BOOK = '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>';
   const icons = {
-    cover: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>',
+    cover: ICON_BOOK,
+    'half-title': '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="8" y1="12" x2="16" y2="12"></line></svg>',
+    'title-page': '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="12" y2="16"></line></svg>',
+    copyright: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M14.83 14.83a4 4 0 1 1 0-5.66"></path></svg>',
+    dedication: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>',
+    epigraph: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"></path></svg>',
+    illustrations: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>',
+    foreword: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
+    acknowledgments: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"></path><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>',
+    introduction: ICON_DOC,
     preface: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>',
     toc: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>',
-    references: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>',
+    prologue: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
+    epilogue: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="19 21 5 12 19 3 19 21"></polygon></svg>',
+    afterword: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path></svg>',
+    conclusion: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+    appendix: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>',
+    endnotes: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
+    bibliography: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>',
+    references: ICON_BOOK,
     glossary: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>',
-    index: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path></svg>'
+    index: '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>',
+    'about-author': '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
+    'also-by': '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>',
+    'coming-soon': '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
+    'back-cover': '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18M9 21V9"></path></svg>'
   };
-  return icons[type] || icons.preface;
+  return icons[type] || ICON_DOC;
 }
 
 function chapterRowHtml(ch, ci) {
-  const num = ch.number || (ci + 1);
+  const specialRoles = { prologue: 'Prologue', epilogue: 'Epilogue', afterword: 'Afterword', conclusion: 'Conclusion' };
+  const role = ch.role;
+  const label = specialRoles[role] ? escHtml(ch.title || specialRoles[role]) : ('Chapter ' + (ch.number || (ci + 1)) + ': ' + escHtml(ch.title || ''));
+  const roleIcon = role ? matterIcon(role) + ' ' : '';
   return `
     <div class="tree-item tree-ch-row" data-tree-id="${escHtml(ch.id)}">
-      <span class="tree-ch-title" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700">Chapter ${num}: ${escHtml(ch.title || '')}</span>
+      <span class="tree-ch-title" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700">${roleIcon}${label}</span>
       <span class="tree-ch-actions" style="display:flex;gap:3px;align-items:center">
         <button class="tree-badge-btn" title="Add Section to Chapter" onclick="addSectionToChapter(${ci}, event)">+ Sec</button>
         <button class="chapter-xport" title="Export as Markdown" onclick="event.stopPropagation();exportChapter(${ci}, 'md')">MD</button>
@@ -2600,12 +2849,15 @@ function renderOutlineTree() {
   if (!hasMatter) {
     (ws.chapters || []).forEach((ch, ci) => { container.insertAdjacentHTML('beforeend', chapterRowHtml(ch, ci)); });
   } else {
+    let fmIdx = 0;
     (ws.frontMatter || []).forEach((f) => {
       if (!f || f.enabled === false) return;
+      if (f.type !== 'cover') fmIdx++;
       const item = document.createElement('div');
       item.className = 'tree-item';
       item.setAttribute('data-tree-id', f.id);
-      item.innerHTML = `<span style="display:flex;align-items:center;gap:6px">${matterIcon(f.type)} ${escHtml(f.title)}</span>`;
+      const hint = f.type !== 'cover' ? `<span style="font-size:9px;color:var(--muted);width:16px;text-align:right">${toRoman(fmIdx)}</span>` : '';
+      item.innerHTML = `<span style="display:flex;align-items:center;gap:6px">${hint} ${matterIcon(f.type)} <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(f.title)}</span></span>`;
       item.onclick = () => selectSection(f.id);
       container.appendChild(item);
     });
@@ -2652,8 +2904,10 @@ function renderOutlineTree() {
 function liveTocEntries() {
   const entries = [];
   (ws.frontMatter || []).forEach((f) => { if (f && f.enabled !== false) entries.push({ label: f.title || 'Front Matter', target: f.id, cls: 'front' }); });
+  const SPEC_ROLES = { prologue: 'Prologue', epilogue: 'Epilogue', afterword: 'Afterword', conclusion: 'Conclusion' };
   (ws.chapters || []).forEach((ch, ci) => {
-    entries.push({ label: 'Chapter ' + (ch.number || (ci + 1)) + ': ' + (ch.title || ''), target: ch.id, cls: 'chapter' });
+    const chapLabel = (ch.role && SPEC_ROLES[ch.role]) ? SPEC_ROLES[ch.role] : ('Chapter ' + (ch.number || (ci + 1)));
+    entries.push({ label: chapLabel + ': ' + (ch.title || ''), target: ch.id, cls: 'chapter' });
     (ch.sections || []).forEach((s) => { if (s && s.title) entries.push({ label: '\u00A0\u00A0' + s.title, target: s.id, cls: 'section' }); });
   });
   (ws.backMatter || []).forEach((b) => { if (b && b.enabled !== false) entries.push({ label: b.title || 'Back Matter', target: b.id, cls: 'back' }); });
@@ -3125,20 +3379,31 @@ function renderStructureEditor() {
   const fm = d.frontMatter || [];
   const bm = d.backMatter || [];
 
-  const fmHtml = fm.map((f, i) => `<div class="struct-matter-row">
-      <input type="checkbox" data-fm-i="${i}" ${f.enabled !== false ? 'checked' : ''} title="Toggle this front matter section">
-      <span style="flex:1">${matterIcon(f.type)} ${escHtml(f.title)}</span>
-      ${f.type === 'preface' ? `<button class="ghost small" onclick="event.stopPropagation();$('fmContent-${i}').style.display=$('fmContent-${i}').style.display==='none'?'block':'none'">✎</button>` : ''}
+  /* matter types that have editable content in the structure panel */
+  const EDITABLE_TYPES = new Set(['preface','foreword','acknowledgments','introduction','dedication','epigraph','illustrations','appendix','about-author','also-by','coming-soon']);
+
+  const fmHtml = fm.map((f, i) => {
+    const showEdit = EDITABLE_TYPES.has(f.type);
+    return `<div class="struct-matter-row">
+      <input type="checkbox" data-fm-i="${i}" ${f.enabled !== false ? 'checked' : ''} title="Toggle">
+      ${matterIcon(f.type)}
+      <input type="text" value="${escHtml(f.title || '')}" style="flex:1" onchange="editMatterTitle('front',${i},this.value)" placeholder="Title">
+      ${showEdit ? `<button class="ghost small" onclick="event.stopPropagation();toggleFmContent('fm-ed-${i}')">✎</button>` : ''}
       <button class="ghost small" onclick="moveMatter('front',${i},-1)">↑</button>
       <button class="ghost small" onclick="moveMatter('front',${i},1)">↓</button>
+      <button class="ghost small" onclick="removeMatterDraft('front',${i})" title="Remove" style="color:var(--err)">✕</button>
     </div>
-    ${f.type === 'preface' ? `<div id="fmContent-${i}" style="display:${f.enabled !== false ? 'block' : 'none'};margin:-4px 0 8px 26px"><textarea rows="3" onchange="editMatter('front',${i},this.value)" placeholder="Write a short preface...">${escHtml(f.content || '')}</textarea></div>` : ''}`).join('');
+    ${showEdit ? `<div id="fm-ed-${i}" class="fm-content-area"><textarea rows="3" onchange="editMatter('front',${i},this.value)" placeholder="Content for this section...">${escHtml(f.content || '')}</textarea></div>` : ''}`;
+  }).join('');
 
-  const chCards = ch.map((c, ci) => `
+  const SPECIAL_ROLES = { prologue: 'Prologue', epilogue: 'Epilogue', afterword: 'Afterword', conclusion: 'Conclusion' };
+  const chCards = ch.map((c, ci) => {
+    const roleLabel = c.role && SPECIAL_ROLES[c.role] ? `<span style="font-size:10px;color:var(--accent);margin-right:4px">[${SPECIAL_ROLES[c.role]}]</span>` : `<strong style="font-size:11px;color:var(--accent)">CHAPTER ${c.number || (ci + 1)}</strong>`;
+    return `
     <div class="struct-chapter" draggable="true" ondragstart="dragStruct(event,'ch',${ci})" ondragover="event.preventDefault();event.dataTransfer.dropEffect='move'" ondrop="dropStruct(event,'ch',${ci})">
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
         <span title="Drag to reorder" style="cursor:grab;color:var(--muted)">⠿</span>
-        <strong style="font-size:11px;color:var(--accent)">CHAPTER ${c.number || (ci + 1)}</strong>
+        ${roleLabel}
         <input class="dlg-inp" style="flex:1" value="${escHtml(c.title || '')}" data-ch-title="${ci}" placeholder="Chapter title" onchange="editChapter(${ci},'title',this.value)">
         <button class="ghost small" onclick="moveChapter(${ci},-1)">↑</button>
         <button class="ghost small" onclick="moveChapter(${ci},1)">↓</button>
@@ -3158,29 +3423,59 @@ function renderStructureEditor() {
       <div style="margin-top:6px">
         <button class="ghost small" onclick="addSection(${ci})">+ Section</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
-  const bmHtml = bm.map((b, i) => `<div class="struct-matter-row">
-      <input type="checkbox" data-bm-i="${i}" ${b.enabled !== false ? 'checked' : ''} title="Toggle this back matter section">
-      <span style="flex:1">${matterIcon(b.type)} ${escHtml(b.title)}</span>
+  const bmHtml = bm.map((b, i) => {
+    const showEdit = EDITABLE_TYPES.has(b.type);
+    return `<div class="struct-matter-row">
+      <input type="checkbox" data-bm-i="${i}" ${b.enabled !== false ? 'checked' : ''} title="Toggle">
+      ${matterIcon(b.type)}
+      <input type="text" value="${escHtml(b.title || '')}" style="flex:1" onchange="editMatterTitle('back',${i},this.value)" placeholder="Title">
+      ${showEdit ? `<button class="ghost small" onclick="event.stopPropagation();toggleFmContent('bm-ed-${i}')">✎</button>` : ''}
       <button class="ghost small" onclick="moveMatter('back',${i},-1)">↑</button>
       <button class="ghost small" onclick="moveMatter('back',${i},1)">↓</button>
-    </div>`).join('');
+      <button class="ghost small" onclick="removeMatterDraft('back',${i})" title="Remove" style="color:var(--err)">✕</button>
+    </div>
+    ${showEdit ? `<div id="bm-ed-${i}" class="fm-content-area"><textarea rows="3" onchange="editMatter('back',${i},this.value)" placeholder="Content for this section...">${escHtml(b.content || '')}</textarea></div>` : ''}`;
+  }).join('');
+
+  const FM_OPTIONS = [
+    { v:'half-title', l:'Half-Title Page' }, { v:'title-page', l:'Full Title Page' }, { v:'copyright', l:'Copyright Page' },
+    { v:'dedication', l:'Dedication' }, { v:'epigraph', l:'Epigraph' }, { v:'illustrations', l:'List of Illustrations' },
+    { v:'foreword', l:'Foreword' }, { v:'acknowledgments', l:'Acknowledgments' }, { v:'introduction', l:'Introduction' },
+    { v:'preface', l:'Preface' }, { v:'toc', l:'Table of Contents' }
+  ].map((o) => `<option value="${o.v}">${escHtml(o.l)}</option>`).join('');
+
+  const BM_OPTIONS = [
+    { v:'appendix', l:'Appendix' }, { v:'endnotes', l:'Notes / Endnotes' }, { v:'bibliography', l:'Bibliography' },
+    { v:'references', l:'References' }, { v:'glossary', l:'Glossary' }, { v:'index', l:'Index' },
+    { v:'about-author', l:'About the Author' }, { v:'also-by', l:'Also by the Author' },
+    { v:'coming-soon', l:'Coming Soon' }, { v:'back-cover', l:'Back Cover' }
+  ].map((o) => `<option value="${o.v}">${escHtml(o.l)}</option>`).join('');
 
   body.innerHTML = `
-    <div style="margin-bottom:4px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
       <span style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase">Front Matter</span>
     </div>
-    ${fmHtml || '<div style="color:var(--muted);font-size:11.5px">None</div>'}
+    ${fmHtml || '<div style="color:var(--muted);font-size:11.5px">None added yet.</div>'}
+    <div class="add-matter-row">
+      <select id="addFmType" class="dlg-inp">${FM_OPTIONS}</select>
+      <button class="ghost small" onclick="addMatterDraft('front')">+ Add</button>
+    </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 6px">
       <span style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase">Chapters</span>
       <button class="ghost small" onclick="addChapterDraft()">+ Chapter</button>
     </div>
     ${chCards || '<div style="color:var(--muted);font-size:11.5px">No chapters proposed yet.</div>'}
-    <div style="margin:16px 0 6px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 6px">
       <span style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase">Back Matter</span>
     </div>
-    ${bmHtml || '<div style="color:var(--muted);font-size:11.5px">None</div>'}
+    ${bmHtml || '<div style="color:var(--muted);font-size:11.5px">None added yet.</div>'}
+    <div class="add-matter-row">
+      <select id="addBmType" class="dlg-inp">${BM_OPTIONS}</select>
+      <button class="ghost small" onclick="addMatterDraft('back')">+ Add</button>
+    </div>
     <div style="margin:14px 0 4px">
       <span style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase">Preview Table of Contents</span>
     </div>
@@ -3198,7 +3493,9 @@ function attachDraftToc() {
   const lines = [];
   (d.frontMatter || []).forEach((f) => { if (f.enabled !== false) lines.push(`<div>${escHtml(f.title || '')}</div>`); });
   (d.chapters || []).forEach((c, ci) => {
-    lines.push(`<div style="font-weight:700">Chapter ${c.number || (ci + 1)}: ${escHtml(c.title || '')}</div>`);
+    const SPEC = { prologue: 'Prologue', epilogue: 'Epilogue', afterword: 'Afterword', conclusion: 'Conclusion' };
+    const chapLabel = (c.role && SPEC[c.role]) ? SPEC[c.role] : ('Chapter ' + (c.number || (ci + 1)));
+    lines.push(`<div style="font-weight:700">${chapLabel}: ${escHtml(c.title || '')}</div>`);
     (c.sections || []).forEach((s) => { if (s && s.title) lines.push(`<div>&nbsp;&nbsp;${escHtml(s.title)}</div>`); });
   });
   (d.backMatter || []).forEach((b) => { if (b.enabled !== false) lines.push(`<div>${escHtml(b.title || '')}</div>`); });
@@ -3209,6 +3506,47 @@ function attachDraftToc() {
 function editMatter(which, i, value) {
   const list = which === 'front' ? structureDraft.frontMatter : structureDraft.backMatter;
   if (list && list[i]) { list[i].content = value; }
+}
+
+function editMatterTitle(which, i, value) {
+  const list = which === 'front' ? structureDraft.frontMatter : structureDraft.backMatter;
+  if (list && list[i]) { list[i].title = value; attachDraftToc(); }
+}
+
+function toggleFmContent(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'none' || !el.style.display ? 'block' : 'none';
+}
+
+const MATTER_DEFAULTS = {
+  'half-title': { title: 'Half Title' }, 'title-page': { title: 'Title Page' }, 'copyright': { title: 'Copyright' },
+  'dedication': { title: 'Dedication', content: '' }, 'epigraph': { title: 'Epigraph', content: '' },
+  'illustrations': { title: 'List of Illustrations', content: '' }, 'foreword': { title: 'Foreword', content: '' },
+  'acknowledgments': { title: 'Acknowledgments', content: '' }, 'introduction': { title: 'Introduction', content: '' },
+  'preface': { title: 'Preface', content: '' }, 'toc': { title: 'Table of Contents' },
+  'appendix': { title: 'Appendix A', content: '' }, 'endnotes': { title: 'Notes' },
+  'bibliography': { title: 'Bibliography' }, 'references': { title: 'References' },
+  'glossary': { title: 'Glossary' }, 'index': { title: 'Index' },
+  'about-author': { title: 'About the Author', content: '' }, 'also-by': { title: 'Also by the Author', content: '' },
+  'coming-soon': { title: 'Coming Soon', content: '' }, 'back-cover': { title: 'Back Cover' }
+};
+
+function addMatterDraft(which) {
+  const selId = which === 'front' ? 'addFmType' : 'addBmType';
+  const sel = $(selId);
+  if (!sel) return;
+  const type = sel.value;
+  const defs = MATTER_DEFAULTS[type] || { title: type };
+  const obj = Object.assign({ id: clientUid(which === 'front' ? 'fm' : 'bm'), type: type, enabled: true }, defs);
+  const list = which === 'front' ? (structureDraft.frontMatter = structureDraft.frontMatter || []) : (structureDraft.backMatter = structureDraft.backMatter || []);
+  list.push(obj);
+  renderStructureEditor();
+  attachDraftToc();
+}
+
+function removeMatterDraft(which, i) {
+  const list = which === 'front' ? structureDraft.frontMatter : structureDraft.backMatter;
+  if (list) { list.splice(i, 1); renderStructureEditor(); attachDraftToc(); }
 }
 
 function moveMatter(which, i, dir) {
