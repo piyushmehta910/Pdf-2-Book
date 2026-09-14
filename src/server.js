@@ -27,6 +27,14 @@ app.get('/sw.js', (req, res) => {
   res.set('Cache-Control', 'no-store, max-age=0');
   res.type('application/javascript').sendFile(path.join(publicDir, 'sw.js'));
 });
+app.get('/extract.worker.js', (req, res) => {
+  res.set('Cache-Control', 'no-store, max-age=0');
+  res.type('application/javascript').sendFile(path.join(publicDir, 'extract.worker.js'));
+});
+app.get('/extract-core.js', (req, res) => {
+  res.set('Cache-Control', 'no-store, max-age=0');
+  res.type('application/javascript').sendFile(path.join(publicDir, 'extract-core.js'));
+});
 
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store');

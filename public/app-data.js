@@ -201,10 +201,14 @@
     bookType: 'textbook',
     design: 'modern',
     pageSize: 'trade_6x9',
+    customSize: null,
     citationStyle: 'APA',
     meta: {},
     sources: [],
     kb: { topics: [], conflicts: [], unresolved_refs: [], glossary: {} },
+    frontMatter: [],
+    backMatter: [],
+    structureApproved: false,
     chapters: [
       {
         id: uid('ch'),

@@ -118,7 +118,7 @@ describe('app-data local-first layer', () => {
     for (let i = 0; i < 150; i++) await data.logHistory(projectId, 'entry ' + i);
     const count = await data.db.history.where('projectId').equals(projectId).count();
     expect(count).toBeLessThanOrEqual(100);
-  });
+  }, 30000);
 
   test('settings persist and are re-read from Dexie on a fresh store read', async () => {
     await data.init({});

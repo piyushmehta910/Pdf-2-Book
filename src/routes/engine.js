@@ -10,12 +10,16 @@ const semanticResolver = require('../services/semanticResolver');
 const ocrCleaner = require('../services/ocrCleaner');
 const { extractFromPage } = require('../services/knowledgeExtractor');
 const { planFromDigest } = require('../services/bookPlanner');
+const { proposeStructure } = require('../services/structure');
 const { writeChapter, rewriteSection } = require('../services/bookWriter');
 const { runQa } = require('../services/bookQa');
 const bookPresets = require('../services/bookPresets');
 const { slugify, toMarkdown, toHtml, toProjectJson } = require('../services/exporterv2');
 const { termVector, cosineSimilarity } = require('../services/similarity');
 const { SlidingWindow } = require('../services/contextManager');
+const { processSources } = require('../services/knowledgePipeline');
+const { makeEmbedder } = require('../services/embeddings');
+const { evidenceFromKbSlice } = require('../services/bookWriter');
 
 const router = express.Router();
 
@@ -245,6 +249,33 @@ router.post('/sources/search', async (req, res) => {
   }
 });
 
+/* ---------- knowledge processing (chunk -> embed -> cluster -> detect) ---------- */
+
+router.post('/knowledge/process', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const sources = Array.isArray(body.sources) ? body.sources.slice(0, 60) : [];
+    if (!sources.length) return res.status(400).json({ error: 'sources array is required' });
+
+    const embedder = await makeEmbedder(aiConfigFromRequest(req), aiProvider);
+    const result = await processSources({ sources, embedder });
+    result.evidence = evidenceFromKbSlice(result.topics, sources);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/knowledge/evidence', (req, res) => {
+  try {
+    const body = req.body || {};
+    const kbSlice = Array.isArray(body.kbSlice) ? body.kbSlice : [];
+    res.json({ evidence: evidenceFromKbSlice(kbSlice, body.sources) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 /* ---------- book planning / writing / QA / section rewrite ---------- */
 
 router.post('/book/plan', async (req, res) => {
@@ -266,6 +297,24 @@ router.post('/book/plan', async (req, res) => {
   }
 });
 
+router.post('/book/structure', (req, res) => {
+  try {
+    const body = req.body || {};
+    const topics = Array.isArray(body.topics) ? body.topics : [];
+    if (!topics.length) return res.status(400).json({ error: 'topics array is required' });
+    const bookType = bookPresets.presetExists(body.bookType) ? body.bookType : bookPresets.DEFAULT_PRESET_ID;
+    const structure = proposeStructure({
+      topics,
+      bookType,
+      title: String(body.title || '').slice(0, 160),
+      subtitle: String(body.subtitle || '').slice(0, 200)
+    });
+    res.json(structure);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.post('/book/write', async (req, res) => {
   try {
     const body = req.body || {};
@@ -279,7 +328,8 @@ router.post('/book/write', async (req, res) => {
         chapter: { title: chapter.title.slice(0, 140), purpose: String(chapter.purpose || '').slice(0, 300), topicIds: chapter.topicIds || [] },
         presetId: bookPresets.presetExists(body.presetId) ? body.presetId : undefined,
         kbSlice,
-        recentSummaries: Array.isArray(body.recentSummaries) ? body.recentSummaries.map((s) => String(s).slice(0, 700)).slice(-4) : []
+        recentSummaries: Array.isArray(body.recentSummaries) ? body.recentSummaries.map((s) => String(s).slice(0, 700)).slice(-4) : [],
+        sources: Array.isArray(body.sources) ? body.sources : undefined
       },
       aiConfigFromRequest(req)
     );
@@ -302,7 +352,8 @@ router.post('/book/section/rewrite', async (req, res) => {
         action: body.action || 'rewrite',
         customInstruction: String(body.customInstruction || '').slice(0, 500),
         presetId: body.presetId,
-        kbSlice: Array.isArray(body.kbSlice) ? body.kbSlice : undefined
+        kbSlice: Array.isArray(body.kbSlice) ? body.kbSlice : undefined,
+        sources: Array.isArray(body.sources) ? body.sources : undefined
       },
       aiConfigFromRequest(req)
     );

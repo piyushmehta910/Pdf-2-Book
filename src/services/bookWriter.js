@@ -6,6 +6,7 @@
 const aiProvider = require('./aiProvider');
 const { getPreset } = require('./bookPresets');
 const { parseJsonLoose, isStr, isArr, isObj } = require('./jsonUtils');
+const { attachCitations } = require('./citations');
 
 const WRITE_SYSTEM =
   'You are an expert educational author and technical editor. You receive ONE CHAPTER PLAN, the BOOK PRESET rules, a CANONICAL KNOWLEDGE SLICE (verified facts with sources), and RECENT CHAPTER SUMMARIES for continuity.\n' +
@@ -120,6 +121,7 @@ function sanitizeBlocks(rawSections) {
           break;
       }
       if (b.sourceRef) out.sourceRef = b.sourceRef;
+      if (isArr(b.citations)) out.citations = b.citations.slice(0, 5);
       blocks.push(out);
     }
     if (blocks.length) sections.push({ title: sec.title.trim().slice(0, 140), blocks });
@@ -130,6 +132,48 @@ function sanitizeBlocks(rawSections) {
 function refLabel(ref) {
   if (!ref) return '';
   return `[${ref.file_name || ref.document_id || 'source'}${ref.page ? ', p.' + ref.page : ''}]`;
+}
+
+/** Flatten a KB slice (topics with sourced facts/definitions) into citation evidence. */
+function evidenceFromKbSlice(kbSlice, sources) {
+  const out = [];
+  const pushRecords = (records, pick) => {
+    for (const rec of Array.isArray(records) ? records : []) {
+      if (!isObj(rec)) continue;
+      const content = pick(rec);
+      if (!isStr(content) || !content.trim()) continue;
+      const ref = rec.source_ref || rec.sourceRef || {};
+      const fromSource = findSourceRef(ref, sources);
+      out.push({
+        sourceId: fromSource.sourceId,
+        page: fromSource.page,
+        section: fromSource.section || (ref.section) || '',
+        content: content.trim().slice(0, 2000)
+      });
+    }
+  };
+  const findSourceRef = (ref, list) => {
+    const id = ref.document_id || ref.sourceId || '';
+    const page = Number(ref.page) || 0;
+    const section = ref.section || '';
+    const extra = Array.isArray(list) ? list.find((s) => (s.id || s.sourceId) === id) : null;
+    return { sourceId: id || (extra ? extra.id : 'source'), page, section: section || (extra ? extra.section : '') };
+  };
+
+  for (const t of Array.isArray(kbSlice) ? kbSlice : []) {
+    if (!isObj(t)) continue;
+    const tref = t.source_ref || t.sourceRef || {};
+    const tid = tref.document_id || t.sourceId || '';
+    const tpage = Number(tref.page) || 0;
+    const tsection = tref.section || (t.section || '');
+    if (isStr(t.summary) && t.summary.trim()) out.push({ sourceId: tid || 'source', page: tpage, section: tsection, content: t.summary.slice(0, 2000) });
+    pushRecords(t.facts, (r) => r.text);
+    pushRecords(t.definitions, (r) => r.text || r.definition);
+    pushRecords(t.examples, (r) => r.text);
+    pushRecords(t.procedures, (r) => r.text);
+    pushRecords(t.formulas, (r) => r.expression || r.text);
+  }
+  return out;
 }
 
 /** Deterministic keyless writer — KB items become blocks directly. */
@@ -146,9 +190,11 @@ function deterministicSections(chapter, slice, preset) {
       current.blocks.push({ type: 'definition', term: d.term || topic.name, definition: d.text, sourceRef: d.source_ref });
     }
     if ((topic.facts || []).length) {
+      const withRef = topic.facts.find((f) => f.source_ref || f.sourceRef);
       current.blocks.push({
         type: 'bullet_list',
-        items: topic.facts.map((f) => f.text + (preset.include && preset.include.sources && f.source_ref ? ' ' + refLabel(f.source_ref) : ''))
+        items: topic.facts.map((f) => f.text + (preset.include && preset.include.sources && f.source_ref ? ' ' + refLabel(f.source_ref) : '')),
+        ...(withRef ? { sourceRef: withRef.source_ref || withRef.sourceRef } : {})
       });
     }
     for (const f of topic.formulas || []) {
@@ -161,7 +207,7 @@ function deterministicSections(chapter, slice, preset) {
       });
     }
     for (const e of topic.examples || []) {
-      current.blocks.push({ type: 'example', title: e.title || 'Example', content: e.text });
+      current.blocks.push({ type: 'example', title: e.title || 'Example', content: e.text, ...(e.source_ref || e.sourceRef ? { sourceRef: e.source_ref || e.sourceRef } : {}) });
     }
     if (slice.indexOf(topic) < slice.length - 1) {
       const next = slice[slice.indexOf(topic) + 1];
@@ -183,14 +229,21 @@ function deterministicSections(chapter, slice, preset) {
   return sections.length ? sections : [{ title: chapter.title, blocks: [{ type: 'paragraph', text: chapter.purpose || 'No content generated.' }] }];
 }
 
-async function writeChapter({ title, chapter, presetId, kbSlice, recentSummaries }, aiConfig) {
+async function writeChapter({ title, chapter, presetId, kbSlice, recentSummaries, sources }, aiConfig) {
   const preset = getPreset(presetId);
   const slice = isArr(kbSlice) ? kbSlice : [];
   const recent = isArr(recentSummaries) ? recentSummaries.slice(-4) : [];
+  const evidence = evidenceFromKbSlice(slice, sources);
+
+  const finalize = (rawSections) => {
+    attachCitations(rawSections, evidence);
+    return rawSections;
+  };
 
   if (!aiProvider.available(aiConfig)) {
+    const modes = deterministicSections(chapter, slice, preset);
     return {
-      sections: deterministicSections(chapter, slice, preset),
+      sections: finalize(modes, 'fallback'),
       summary: `${chapter.title}: covered ${slice.map((t) => t.name).join(', ')}.`,
       mode: 'fallback'
     };
@@ -205,7 +258,7 @@ async function writeChapter({ title, chapter, presetId, kbSlice, recentSummaries
       `KNOWLEDGE SLICE:\n${JSON.stringify(slice)}`
     ];
     const raw = await aiProvider.complete(
-      WRITE_SYSTEM,
+      `${WRITE_SYSTEM}\nEvery block that states a fact or makes a claim MUST include a "citations" array of evidence indexes (1-based into the KNOWLEDGE SLICE topics in the order they appear) OR inline [src(N)] markers after the sentence it supports. Never leave a factual block ungrounded.`,
       userParts.join('\n\n'),
       { maxTokens: 2800, temperature: 0.5, timeoutMs: 35000 },
       aiConfig
@@ -213,6 +266,7 @@ async function writeChapter({ title, chapter, presetId, kbSlice, recentSummaries
     const parsed = parseJsonLoose(raw);
     const sections = sanitizeBlocks(parsed && parsed.sections);
     if (!sections.length) throw new Error('writer returned no usable sections');
+    finalize(sections, 'ai');
     const summaryLine = sections
       .flatMap((s) => s.blocks)
       .filter((b) => b.type === 'summary')
@@ -224,8 +278,9 @@ async function writeChapter({ title, chapter, presetId, kbSlice, recentSummaries
     const continuityNote = isStr(parsed.continuityNote) ? parsed.continuityNote.slice(0, 500) : '';
     return { sections, summary: String(summaryLine).slice(0, 700), openQuestions, continuityNote, mode: 'ai' };
   } catch (_err) {
+    const modes = deterministicSections(chapter, slice, preset);
     return {
-      sections: deterministicSections(chapter, slice, preset),
+      sections: finalize(modes, 'fallback'),
       summary: `${chapter.title}: covered ${slice.map((t) => t.name).join(', ')}.`,
       mode: 'fallback'
     };
@@ -236,12 +291,13 @@ async function writeChapter({ title, chapter, presetId, kbSlice, recentSummaries
  * Isolated Section Rewriter (master spec §11, §24)
  * Allows rewrites/expansions of a specific section without modifying other sections.
  */
-async function rewriteSection({ section, action, customInstruction, presetId, kbSlice }, aiConfig) {
+async function rewriteSection({ section, action, customInstruction, presetId, kbSlice, sources }, aiConfig) {
   if (!section || typeof section !== 'object') {
     throw new Error('Section object is required');
   }
   const preset = getPreset(presetId);
   const act = String(action || 'rewrite').toLowerCase();
+  const evidence = evidenceFromKbSlice(isArr(kbSlice) ? kbSlice : [], sources);
 
   const actionDirectives = {
     rewrite: 'Rewrite and polish this section to improve clarity and flow while adhering to the preset tone.',
@@ -260,6 +316,7 @@ async function rewriteSection({ section, action, customInstruction, presetId, kb
   const extra = customInstruction ? ` Additional user instruction: ${customInstruction}` : '';
 
   if (!aiProvider.available(aiConfig)) {
+    if (evidence.length) attachCitations([section], evidence);
     return { section, mode: 'fallback' };
   }
 
@@ -268,11 +325,13 @@ async function rewriteSection({ section, action, customInstruction, presetId, kb
       `PRESET: ${preset.label} (${preset.tone}, reading level: ${preset.readingLevel})`,
       `GOAL: ${directive}${extra}`,
       `ORIGINAL SECTION:\n${JSON.stringify(section)}`,
-      kbSlice ? `RELEVANT EVIDENCE:\n${JSON.stringify(kbSlice)}` : ''
+      `RELEVANT EVIDENCE:\n${JSON.stringify(evidence)}`,
+      'Every factual block MUST include a "citations" array of evidence indexes (1-based) or inline [src(N)] markers. Never emit an ungrounded factual claim.'
     ].filter(Boolean).join('\n\n');
 
     const raw = await aiProvider.complete(
-      'You are a master book editor. Transform the given book section according to the requested directive. Return STRICT JSON only: {"title":string,"blocks":[<block>]} matching the standard block schema (paragraph, definition, bullet_list, example, exercise, formula, table, warning, note, summary, quote, callout, importance).',
+      'You are a master book editor. Transform the given book section according to the requested directive. Return STRICT JSON only: {"title":string,"blocks":[<block>]} matching the standard block schema (paragraph, definition, bullet_list, example, exercise, formula, table, warning, note, summary, quote, callout, importance). ' +
+      'When a block is grounded in evidence, include "citations":[N] where N is a 1-based evidence index, or an inline [src(N)] marker.',
       prompt,
       { maxTokens: 2000, temperature: 0.4, timeoutMs: 25000 },
       aiConfig
@@ -280,10 +339,13 @@ async function rewriteSection({ section, action, customInstruction, presetId, kb
     const parsed = parseJsonLoose(raw);
     const sanitized = sanitizeBlocks([parsed]);
     if (sanitized.length && sanitized[0].blocks.length) {
+      attachCitations(sanitized, evidence);
       return { section: sanitized[0], mode: 'ai' };
     }
+    if (evidence.length) attachCitations([section], evidence);
     return { section, mode: 'fallback' };
   } catch (_err) {
+    if (evidence.length) attachCitations([section], evidence);
     return { section, mode: 'fallback' };
   }
 }
@@ -293,5 +355,6 @@ module.exports = {
   rewriteSection,
   sanitizeBlocks,
   deterministicSections,
+  evidenceFromKbSlice,
   WRITE_SYSTEM
 };

@@ -17,7 +17,10 @@ module.exports = [
         __dirname: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
-        AbortController: 'readonly'
+        AbortController: 'readonly',
+        fetch: 'readonly',
+        URL: 'readonly',
+        crypto: 'readonly'
       }
     },
     rules: {
@@ -28,7 +31,7 @@ module.exports = [
     }
   },
   {
-    files: ['public/app-data.js'],
+    files: ['public/app-data.js', 'public/extract-core.js'],
     languageOptions: {
       sourceType: 'commonjs',
       globals: {
@@ -45,6 +48,23 @@ module.exports = [
         localStorage: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
+        console: 'readonly'
+      }
+    }
+  },
+  {
+    files: ['public/extract.worker.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        self: 'readonly',
+        importScripts: 'readonly',
+        OffscreenCanvas: 'readonly',
+        ImageData: 'readonly',
+        TextDecoder: 'readonly',
+        Blob: 'readonly',
+        Uint8ClampedArray: 'readonly',
+        URL: 'readonly',
         console: 'readonly'
       }
     }

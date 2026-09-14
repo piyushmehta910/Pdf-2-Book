@@ -113,3 +113,56 @@ describe('bookWriter.writeChapter keyless mode', () => {
     expect(mode).toBe('fallback');
   });
 });
+
+describe('bookWriter.evidenceFromKbSlice', () => {
+  test('flattens sourced facts/definitions into citation evidence', () => {
+    const slice = JSON.parse(JSON.stringify(SLICE));
+    slice[0].facts[0].source_ref = { document_id: 'd1', page: 4, section: 'Intro' };
+    slice[0].facts[1].source_ref = { document_id: 'd1', page: 5 };
+    slice[0].definitions[0].source_ref = { document_id: 'd1', page: 6 };
+    const evidence = bookWriter.evidenceFromKbSlice(slice, [{ id: 'd1', name: 'ml.pdf' }]);
+    const fact = evidence.find((e) => e.content.indexOf('iteratively') >= 0);
+    expect(fact).toBeTruthy();
+    expect(fact.sourceId).toBe('d1');
+    expect(fact.page).toBe(4);
+    expect(fact.section).toBe('Intro');
+    expect(evidence.every((e) => e.sourceId && e.content)).toBe(true);
+  });
+
+  test('never drops a record: placeholder source id when no ref is given', () => {
+    const evidence = bookWriter.evidenceFromKbSlice(SLICE, []);
+    expect(evidence.length).toBeGreaterThanOrEqual(5);
+    expect(evidence.every((e) => e.sourceId)).toBe(true);
+  });
+});
+
+describe('bookWriter grounded fallback write', () => {
+  test('attaches citations with sourceId + page to generated blocks', async () => {
+    const slice = [
+      {
+        id: 't1',
+        name: 'Gradient Descent',
+        summary: '',
+        facts: [{ text: 'Gradient descent updates model weights iteratively using the loss gradient.', source_ref: { document_id: 'd1', page: 4, section: 'Math' } }],
+        definitions: [],
+        formulas: [],
+        procedures: [],
+        examples: []
+      }
+    ];
+    const { sections } = await bookWriter.writeChapter(
+      { title: 'B', chapter: { title: 'T' }, presetId: 'textbook', kbSlice: slice },
+      null
+    );
+    const blocks = sections.flatMap((s) => s.blocks);
+    const cited = blocks.filter((b) => b.citations && b.citations.length);
+    expect(cited.length).toBeGreaterThan(0);
+    cited.forEach((b) => {
+      b.citations.forEach((c) => {
+        expect(typeof c.page).toBe('number');
+        expect(c.sourceId).toBeTruthy();
+      });
+      expect(b.sourceRef).toBeTruthy();
+    });
+  });
+});

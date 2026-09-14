@@ -57,6 +57,23 @@ function frontMatterHtml(book) {
   return parts.join('\n');
 }
 
+/** Enabled front/back matter entries from the new structure engine, else null (legacy book). */
+function enabledMatter(book, which) {
+  const key = which === 'front' ? 'frontMatter' : 'backMatter';
+  return Array.isArray(book && book[key])
+    ? book[key].filter((e) => e && e.enabled !== false)
+    : null;
+}
+function findMatter(list, type) {
+  if (!list) return null;
+  return list.find((e) => e && e.type === type) || null;
+}
+/** Gate a front/back section by its structure entry; legacy books default on. */
+function matterOn(list, type, legacyDefault = true) {
+  if (!list) return legacyDefault;
+  return findMatter(list, type) !== null;
+}
+
 /** Back matter (about the author) rendered as an HTML string, empty when not configured. */
 function aboutAuthorHtml(book) {
   const meta = bookMetadata(book);
@@ -149,13 +166,19 @@ function bookToMarkdown(book) {
 
   if (meta.dedication) parts.push(`### Dedication\n\n> ${meta.dedication}\n`);
   if (meta.epigraph) parts.push(`> "${meta.epigraph}"\n`);
-  if (book.preface) parts.push(`## Preface\n\n${book.preface}\n`);
+  const fmList = enabledMatter(book, 'front');
+  const prefaceEntry = fmList ? findMatter(fmList, 'preface') : null;
+  const prefaceText = (prefaceEntry && String(prefaceEntry.content || '').trim()) || book.preface;
+  if (prefaceText) parts.push(`## Preface\n\n${prefaceText}\n`);
 
   const chapters = Array.isArray(book.chapters) ? book.chapters : [];
   if (chapters.length > 1) {
     parts.push('## Contents\n');
     for (const [ci, c] of chapters.entries()) {
       parts.push(`${ci + 1}. ${c.title || 'Chapter ' + (ci + 1)}`);
+      for (const s of Array.isArray(c.sections) ? c.sections : []) {
+        if (s && s.title) parts.push(`    - ${s.title}`);
+      }
     }
     parts.push('');
   }
@@ -173,8 +196,9 @@ function bookToMarkdown(book) {
   }
 
   // Back Matter
+  const bmList = enabledMatter(book, 'back');
   const references = book.references || (book.backMatter && book.backMatter.references) || [];
-  if (Array.isArray(references) && references.length) {
+  if (matterOn(bmList, 'references', true) && Array.isArray(references) && references.length) {
     parts.push('## References\n');
     for (const [idx, r] of references.entries()) {
       parts.push(`${idx + 1}. ${typeof r === 'string' ? r : formatBibliographyEntry(r, citationStyle, idx + 1)}`);
@@ -183,7 +207,7 @@ function bookToMarkdown(book) {
   }
 
   const glossary = book.glossary || (book.backMatter && book.backMatter.glossary) || [];
-  if (Array.isArray(glossary) && glossary.length) {
+  if (matterOn(bmList, 'glossary', true) && Array.isArray(glossary) && glossary.length) {
     parts.push('## Glossary\n');
     for (const g of glossary) {
       parts.push(`- **${g.term || ''}** — ${g.definition || ''}`);
@@ -192,7 +216,7 @@ function bookToMarkdown(book) {
   }
 
   const indexEntries = book.index || (book.backMatter && book.backMatter.index) || [];
-  if (Array.isArray(indexEntries) && indexEntries.length) {
+  if (matterOn(bmList, 'index', true) && Array.isArray(indexEntries) && indexEntries.length) {
     parts.push('## Index\n');
     for (const entry of indexEntries) {
       const term = entry.term || entry.name || '';
@@ -271,13 +295,22 @@ function wikiLinks(html) {
 function generatePrintCss(design, pageSize) {
   const ds = getDesign(design);
   const ps = getPageSize(pageSize);
+  const tl = require('../../public/themeLayer');
+  const model = tl.resolvePageModel(ds, ps);
+  const mm = (px) => Math.round((px * 25.4) / 96 * 10) / 10;
+  const pns = tl.PAGE_NUM_STYLES[ds.pageNumberStyle] || { where: 'footer', align: 'center', prefix: '', suffix: '', ornament: false, badge: false };
+  const hst = tl.HEADER_STYLES[ds.headerStyle] || { text: true, border: 'bottom', weight: 600, caps: true, spacing: 0.08 };
+  const open = tl.OPENER_STYLES[ds.chapterOpener] || { align: 'left', rule: false, size: 1.5 };
+  const hd = tl.HEADING_STYLES[ds.headingStyle] || { border: false, weight: 700 };
+  const numBox = pns.where === 'header' ? (pns.align === 'right' ? '@top-right' : '@top-center') : (pns.align === 'right' ? '@bottom-right' : '@bottom-center');
+  const pageNumContent = `'${pns.prefix || ''}' counter(page) '${pns.suffix || ''}'`;
 
   return `
 @page {
   size: ${ps.cssSize || 'A4'};
-  margin: 20mm 18mm 24mm 18mm;
-  @bottom-center {
-    content: counter(page);
+  margin: ${mm(model.mT)}mm ${mm(model.mR)}mm ${mm(model.mB)}mm ${mm(model.mL)}mm;
+  ${numBox} {
+    content: ${pageNumContent};
     font-family: ${ds.fontFamily};
     font-size: 9pt;
     color: #64748b;
@@ -285,29 +318,29 @@ function generatePrintCss(design, pageSize) {
 }
 
 @page :left {
-  margin-left: 22mm;
-  margin-right: 16mm;
-  @top-left {
+  margin-left: ${mm(model.mL * 1.2)}mm;
+  margin-right: ${mm(model.mR * 0.92)}mm;
+  ${hst.text === false ? '' : `@top-left {
     content: string(book-title);
     font-family: ${ds.fontFamily};
     font-size: 8.5pt;
     color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+    text-transform: ${hst.caps ? 'uppercase' : 'none'};
+    letter-spacing: ${(hst.spacing || 0.05)}em;
+  }`}
 }
 
 @page :right {
-  margin-left: 16mm;
-  margin-right: 22mm;
-  @top-right {
+  margin-left: ${mm(model.mL * 0.92)}mm;
+  margin-right: ${mm(model.mR * 1.2)}mm;
+  ${hst.text === false ? '' : `@top-right {
     content: string(chapter-title);
     font-family: ${ds.fontFamily};
     font-size: 8.5pt;
     color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+    text-transform: ${hst.caps ? 'uppercase' : 'none'};
+    letter-spacing: ${(hst.spacing || 0.05)}em;
+  }`}
 }
 
 body {
@@ -330,9 +363,15 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: ${ds.headingFont || ds.fontFamily};
-  color: ${ds.headingColor || '#0f172a'};
+  color: ${hd.accent ? (ds.primaryColor || '#6366f1') : (hd.muted ? (ds.secondaryColor || '#475569') : (ds.headingColor || '#0f172a'))};
   page-break-after: avoid;
   break-after: avoid;
+  ${hd.caps ? 'text-transform: uppercase; letter-spacing: 0.06em;' : ''}
+}
+
+h2, h3 {
+  ${hd.border ? `border-bottom: ${hd.accent ? '2px' : '1px'} solid ${hd.accent ? (ds.primaryColor || '#6366f1') : (ds.borderColor || '#e2e8f0')}; padding-bottom: 0.25em;` : ''}
+  ${hd.ornament === true ? 'text-align: center;' : ''}
 }
 
 h1.book-title {
@@ -347,11 +386,12 @@ h1.book-title {
   string-set: chapter-title content();
   page-break-before: always;
   break-before: page;
-  font-size: 1.85em;
+  font-size: ${open.size}em;
+  text-align: ${open.align};
   margin-top: 1.5em;
   margin-bottom: 0.6em;
-  border-bottom: 2px solid ${ds.borderColor || '#e2e8f0'};
-  padding-bottom: 0.3em;
+  ${open.rule === true ? `border-bottom: 2px solid ${ds.borderColor || '#e2e8f0'}; padding-bottom: 0.3em;` : ''}
+  ${open.rule === 'ornament' ? 'padding-bottom: 0.3em; border-bottom: 1px solid ' + (ds.borderColor || '#e2e8f0') + ';' : ''}
 }
 
 .chapter-purpose {
@@ -586,28 +626,48 @@ function bookToHtml(book, design = 'modern', pageSize = 'trade_6x9') {
   const sizeId = meta.pageSize || pageSize || 'trade_6x9';
 
   const body = [];
+  const fmList = enabledMatter(book, 'front');
+  const bmList = enabledMatter(book, 'back');
 
   // Front Matter: Cover
   body.push('<div class="book-container">');
-  body.push('<section class="cover-page">');
-  body.push(`<h1 class="cover-title">${esc(book.title || 'Untitled Book')}</h1>`);
-  if (book.subtitle || meta.subtitle) body.push(`<p class="cover-subtitle">${esc(book.subtitle || meta.subtitle)}</p>`);
-  if (book.author || meta.author) body.push(`<p class="cover-author">by ${esc(book.author || meta.author)}</p>`);
-  body.push('</section>');
+  if (matterOn(fmList, 'cover')) {
+    body.push('<section class="cover-page">');
+    body.push(`<h1 class="cover-title">${esc(book.title || 'Untitled Book')}</h1>`);
+    if (book.subtitle || meta.subtitle) body.push(`<p class="cover-subtitle">${esc(book.subtitle || meta.subtitle)}</p>`);
+    if (book.author || meta.author) body.push(`<p class="cover-author">by ${esc(book.author || meta.author)}</p>`);
+    body.push('</section>');
+  }
 
   // Front Matter: Title page, copyright page, dedication, epigraph
   body.push(frontMatterHtml(book));
 
   // Preface
-  if (book.preface) {
-    body.push(`<section class="preface page-break"><h2>Preface</h2><p>${wikiLinks(esc(book.preface)).replace(/\n+/g, '</p><p>')}</p></section>`);
+  const prefaceEntry = fmList ? findMatter(fmList, 'preface') : null;
+  const prefaceText = (prefaceEntry && String(prefaceEntry.content || '').trim()) || book.preface;
+  if (prefaceText) {
+    body.push(`<section class="preface page-break" id="preface"><h2>Preface</h2><p>${wikiLinks(esc(prefaceText)).replace(/\n+/g, '</p><p>')}</p></section>`);
   }
 
-  // Table of Contents
-  if (chapters.length > 0) {
-    body.push('<nav class="toc page-break"><h2>Table of Contents</h2><ol>');
+  // Table of Contents (live from the structure)
+  if (matterOn(fmList, 'toc') && chapters.length > 0) {
+    body.push('<nav class="toc page-break" id="toc"><h2>Table of Contents</h2><ol>');
+    for (const f of fmList || []) {
+      if (f.type === 'toc' || f.type === 'cover') continue;
+      body.push(`<li class="toc-front"><a href="#${f.type === 'preface' ? 'preface' : slugify(f.title)}"><span>${esc(f.title)}</span></a></li>`);
+    }
     for (const [ci, ch] of chapters.entries()) {
-      body.push(`<li><a href="#${slugify(ch.title)}"><span>Chapter ${ci + 1}: ${esc(ch.title)}</span></a></li>`);
+      body.push(`<li><a href="#${slugify(ch.title)}"><span>Chapter ${ci + 1}: ${esc(ch.title)}</span></a>`);
+      const secs = (Array.isArray(ch.sections) ? ch.sections : []).filter((s) => s && s.title);
+      if (secs.length) {
+        body.push('<ol class="toc-sections">');
+        for (const s of secs) body.push(`<li><a href="#${slugify(s.title)}">${esc(s.title)}</a></li>`);
+        body.push('</ol>');
+      }
+      body.push('</li>');
+    }
+    for (const b of bmList || []) {
+      body.push(`<li class="toc-back"><a href="#${slugify(b.title)}"><span>${esc(b.title)}</span></a></li>`);
     }
     body.push('</ol></nav>');
   }
@@ -632,8 +692,8 @@ function bookToHtml(book, design = 'modern', pageSize = 'trade_6x9') {
 
   // Back Matter: References
   const references = book.references || (book.backMatter && book.backMatter.references) || [];
-  if (Array.isArray(references) && references.length) {
-    body.push('<section class="references page-break"><h2>References</h2><ol class="reference-list">');
+  if (matterOn(bmList, 'references', true) && Array.isArray(references) && references.length) {
+    body.push('<section class="references page-break" id="references"><h2>References</h2><ol class="reference-list">');
     for (const [idx, r] of references.entries()) {
       const formatted = typeof r === 'string' ? r : formatBibliographyEntry(r, citationStyle, idx + 1);
       body.push(`<li>${esc(formatted)}</li>`);
@@ -643,8 +703,8 @@ function bookToHtml(book, design = 'modern', pageSize = 'trade_6x9') {
 
   // Back Matter: Glossary
   const glossary = book.glossary || (book.backMatter && book.backMatter.glossary) || [];
-  if (Array.isArray(glossary) && glossary.length) {
-    body.push('<section class="glossary page-break"><h2>Glossary</h2><dl>');
+  if (matterOn(bmList, 'glossary', true) && Array.isArray(glossary) && glossary.length) {
+    body.push('<section class="glossary page-break" id="glossary"><h2>Glossary</h2><dl>');
     for (const g of glossary) {
       body.push(`<dt id="topic-${slugify(g.term)}">${esc(g.term)}</dt><dd>${esc(g.definition || '')}</dd>`);
     }
@@ -653,8 +713,8 @@ function bookToHtml(book, design = 'modern', pageSize = 'trade_6x9') {
 
   // Back Matter: Index
   const indexEntries = book.index || (book.backMatter && book.backMatter.index) || [];
-  if (Array.isArray(indexEntries) && indexEntries.length) {
-    body.push('<section class="index-section page-break"><h2>Index</h2><ul class="index-list">');
+  if (matterOn(bmList, 'index', true) && Array.isArray(indexEntries) && indexEntries.length) {
+    body.push('<section class="index-section page-break" id="index"><h2>Index</h2><ul class="index-list">');
     for (const entry of indexEntries) {
       const term = entry.term || entry.name || '';
       const pages = Array.isArray(entry.pages) ? entry.pages.join(', ') : (entry.pages || '');

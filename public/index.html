@@ -338,6 +338,20 @@
   }
   .tree-item:hover { background: var(--panel2); color: var(--text); }
   .tree-item.active { background: var(--glow); color: var(--accent); font-weight: 600; }
+  .tree-item.tree-section { font-weight: 400; }
+  .toc-line { padding: 3px 6px; border-radius: 6px; cursor: pointer; color: var(--text2); }
+  .toc-line:hover { background: var(--panel2); color: var(--accent); }
+  .toc-line.toc-chapter { font-weight: 700; color: var(--text); margin-top: 4px; }
+  .toc-line.toc-section { padding-left: 16px; font-size: 11.5px; }
+  .toc-line.toc-front, .toc-line.toc-back { color: var(--muted); font-size: 11.5px; }
+  .flash-selected { animation: flashSel 1.1s ease; }
+  @keyframes flashSel { 0% { box-shadow: 0 0 0 0 rgba(99,102,241,.55); } 60% { box-shadow: 0 0 0 8px rgba(99,102,241,0); } 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); } }
+  .matter-sheet .matter-body { padding: 24px 32px; }
+  .sec-node { padding-bottom: 4px; }
+  .struct-matter-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; font-size: 12.5px; }
+  .struct-chapter { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+  .struct-section { display: flex; align-items: center; gap: 6px; padding: 5px 8px; background: var(--panel2); border: 1px solid var(--border); border-radius: 7px; margin-bottom: 5px; }
+  #structureBody textarea { width: 100%; background: var(--panel2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 8px; font-family: inherit; font-size: 12px; resize: vertical; }
   .chapter-xport {
     background: var(--panel2); border: 1px solid var(--border); color: var(--text2);
     border-radius: 5px; font-size: 10px; font-weight: 700; padding: 2px 6px; cursor: pointer; letter-spacing: .3px;
@@ -370,6 +384,50 @@
     cursor: pointer; font-size: 12px; padding: 2px 4px; border-radius: 6px; line-height: 1;
   }
   .proj-del:hover { color: var(--err); background: rgba(239,68,68,.12); }
+
+  /* Source card status / review */
+  .src-err { font-size: 11px; color: var(--err); margin-top: 5px; word-break: break-word; }
+  .src-prog { color: var(--accent); font-size: 10.5px; margin-left: 6px; font-weight: 600; }
+  .src-actions { margin-top: 8px; }
+  .src-review {
+    background: transparent; border: 1px solid var(--border2); color: var(--accent);
+    border-radius: 7px; padding: 4px 10px; font-size: 11.5px; font-weight: 600; cursor: pointer; transition: border-color .15s;
+  }
+  .src-review:hover { border-color: var(--accent); background: var(--glow); }
+
+  /* Page review modal */
+  .review-modal { max-width: 1220px; width: 96vw; }
+  .review-toolbar { display: flex; gap: 10px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+  .review-body { display: grid; grid-template-columns: 1fr 1fr; flex: 1; min-height: 0; }
+  .review-col { padding: 16px 18px; overflow: auto; }
+  .review-col + .review-col { border-left: 1px solid var(--border); }
+  .review-col-label {
+    font-size: 10.5px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px;
+  }
+  #reviewImgBox canvas { border: 1px solid var(--border); border-radius: 6px; background: #fff; box-shadow: var(--shadow-lg); }
+  .flag-chip {
+    display: inline-block; font-size: 10.5px; font-weight: 700; padding: 3px 9px;
+    border-radius: 999px; background: rgba(99,102,241,.14); color: var(--accent); margin: 6px 6px 0 0;
+  }
+  .flag-chip.warn { background: rgba(245,158,11,.14); color: var(--warn); }
+  .flag-chip.ocr-done { background: rgba(16,185,129,.14); color: var(--ok); }
+  .unit-row { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+  .unit-chip {
+    flex: 0 0 auto; font-size: 10px; font-weight: 800; padding: 3px 7px; border-radius: 6px;
+    background: var(--panel2); color: var(--muted); margin-top: 6px; letter-spacing: .4px;
+  }
+  .unit-heading .unit-chip { background: rgba(99,102,241,.16); color: var(--accent); }
+  .unit-table .unit-chip { background: rgba(245,158,11,.16); color: var(--warn); }
+  .unit-image .unit-chip { background: rgba(16,185,129,.14); color: var(--ok); }
+  .unit-caption .unit-chip { background: rgba(217,70,239,.16); color: #d946ef; }
+  .unit-text {
+    flex: 1; min-height: 44px; background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: inherit; font-size: 13px; line-height: 1.55;
+    padding: 8px 10px; resize: vertical;
+  }
+  .unit-text:focus { outline: none; border-color: var(--accent); }
+  .unit-text[readonly] { opacity: .6; cursor: default; }
 
   /* Modals */
   .modal-backdrop {
@@ -412,6 +470,86 @@
   }
   .toast.ok { border-left: 4px solid var(--ok); }
   .toast.err { border-left: 4px solid var(--err); }
+
+  /* ---------- Design / Theme layer ----------
+     Content is styled entirely by theme DATA through these CSS variables;
+     the paginated preview reflows as the user switches theme and page size. */
+  .sheet-ink {
+    width: 100%; box-sizing: border-box; overflow: hidden;
+    font-family: var(--doc-font, 'Inter', sans-serif);
+    font-size: var(--doc-base-font, 14.5px);
+    line-height: var(--doc-line-height, 1.6);
+    color: var(--doc-ink, #1e293b);
+  }
+  .sheet-ink p { margin: 0 0 var(--doc-mb, .6em); text-align: var(--doc-align, justify); }
+  .sheet-ink h1 { font-size: 2em; margin: .2em 0 .3em; color: var(--doc-heading-color, #0f172a); }
+  .sheet-ink h2 {
+    font-family: var(--doc-heading-font, inherit);
+    font-size: 1.55em; margin: .15em 0 .3em;
+    color: var(--doc-heading-color, #0f172a); font-weight: 800;
+  }
+  .sheet-ink h3 {
+    font-family: var(--doc-heading-font, inherit);
+    font-size: 1.22em; margin: .2em 0 .25em;
+    color: var(--doc-heading-color, #0f172a); font-weight: 700;
+  }
+  .sheet-ink .block-node { margin: 0 0 var(--doc-mb, .6em); padding: 0; border: 0; }
+  .sheet-ink .block-node.active-block { border: 1px dashed var(--doc-accent, var(--accent)); }
+  .sheet-ink .b-callout, .sheet-ink .b-warning, .sheet-ink .b-summary,
+  .sheet-ink .b-def, .sheet-ink .b-formula { margin: 0 0 var(--doc-mb, .6em); }
+  .sheet-ink blockquote { margin: 0 0 var(--doc-mb, .6em); }
+  .sheet-ink .b-quote { border-left-color: var(--doc-accent, var(--accent)); }
+  .sheet-chop-label {
+    font-size: .72em; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--doc-muted, #94a3b8); margin-bottom: .3em;
+  }
+  .sheet-purpose { font-style: italic; color: var(--doc-muted, #64748b); margin-bottom: var(--doc-mb, .8em); }
+  .sheet-hdr {
+    position: absolute; display: flex; justify-content: space-between; align-items: center;
+    text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; font-weight: 600;
+  }
+  .sheet-hdr.banded { background: var(--doc-accent, var(--accent)); color: #ffffff; padding: 3px 10px; border-radius: 4px; }
+  .sheet-hdr.pilled { background: var(--doc-panel, #f1f5f9); padding: 2px 10px; border-radius: 999px; }
+  .sheet-hdr.bordered { border-bottom: 1px solid var(--doc-border, #e2e8f0); }
+  .sheet-hdr.bordered2 { border-bottom: 2px double var(--doc-border, #e2e8f0); }
+  .sheet-hdr.orn { border-bottom: 1px solid var(--doc-accent, var(--accent)); text-align: center; }
+  .sheet-num { position: absolute; display: flex; align-items: center; color: #94a3b8; font-weight: 600; }
+  .sheet-num b { font-weight: 800; margin: 0 3px; }
+
+  /* Live Design preview strip (actual paginated result, scaled) */
+  .theme-card {
+    display: flex; align-items: center; gap: 9px; padding: 8px 10px; cursor: pointer;
+    border: 1px solid var(--border); border-radius: 9px; background: var(--panel);
+    margin-bottom: 7px; transition: border-color .12s, background .12s;
+  }
+  .theme-card:hover { border-color: var(--border2); background: var(--panel2); }
+  .theme-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .theme-swatch { width: 5px; align-self: stretch; border-radius: 3px; }
+  .theme-name { font-weight: 700; font-size: 12.5px; color: var(--text); }
+  .theme-sample {
+    font-size: 11.5px; color: var(--text2); white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; max-width: 180px;
+  }
+  .size-chip {
+    padding: 5px 9px; font-size: 11.5px; font-weight: 600; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--panel); color: var(--text2);
+    cursor: pointer; margin: 0 5px 7px 0; transition: border-color .12s, color .12s;
+  }
+  .size-chip:hover { border-color: var(--accent); color: var(--text); }
+  .size-chip.active { border-color: var(--accent); color: var(--accent); background: var(--glow); }
+  .dvp-page {
+    position: relative; margin: 0 auto 18px; background: #e6e8ee;
+    border-radius: 3px; box-shadow: 0 6px 18px rgba(0,0,0,.25); overflow: hidden;
+  }
+  .dvp-page .book-sheet { box-shadow: none; }
+
+  .ui-icon {
+    display: inline-block;
+    vertical-align: -0.15em;
+    stroke: currentColor;
+    flex-shrink: 0;
+  }
+
 </style>
 </head>
 <body>
@@ -419,7 +557,7 @@
 <!-- TOP STUDIO BAR -->
 <header class="studio-bar">
   <div class="brand">
-    <span>📚</span> pdf2book <small style="font-size:10.5px;font-weight:600;letter-spacing:1px;color:var(--muted)">STUDIO</small>
+    <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> <span>pdf2book</span> <small style="font-size:10.5px;font-weight:600;letter-spacing:1px;color:var(--muted)">STUDIO</small>
   </div>
 
   <div class="title-wrap">
@@ -456,7 +594,7 @@
       <option value="classic">Theme: Classic</option>
       <option value="minimal">Theme: Minimal</option>
       <option value="selfhelp">Theme: Self-Help</option>
-      <option value="research">Theme: Research</option>
+      
     </select>
 
     <select class="studio-sel" id="selPageSize" title="Physical Page Size (Spec §32)">
@@ -465,25 +603,21 @@
       <option value="a5">Size: A5 (148×210mm)</option>
       <option value="letter">Size: US Letter (8.5×11in)</option>
       <option value="digest_55x85">Size: 5.5 × 8.5 in (Digest)</option>
+      <option value="custom">Size: Custom</option>
     </select>
   </div>
 
   <div class="spacer"></div>
 
-  <span id="saveStatus" style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.4px" title="Autosaves every 5 seconds">SAVED</span>
+  <!-- Hidden state anchors to preserve event listeners -->
+  <span id="saveStatus" style="display:none"></span>
+  <div id="qaScoreBtn" style="display:none"><span id="qaScoreText"></span></div>
+  <button id="backupBtn" style="display:none"></button>
 
-  <div class="qa-score-btn" id="qaScoreBtn" title="Click to open Quality Audit report">
-    <span>🛡️</span> <span id="qaScoreText">98/100</span>
-  </div>
-
-  <button class="ghost small" id="bookDetailsBtn" title="Book metadata: author, title page, copyright, dedication">✎ Book Details</button>
-  <button class="ghost small" id="themeToggle" title="Toggle Light/Dark Theme">Theme</button>
-  <button class="ghost small" onclick="openSettings()" title="AI Provider & API Key Settings">⚙ AI settings</button>
-  <button class="ghost small" id="helpBtn" title="Keyboard shortcuts & help (?)">?</button>
-  <button class="ghost small" id="projectBtn" title="Project dashboard: open, create and delete projects">☰ Projects</button>
-  <button class="ghost small" id="backupBtn" title="Export the whole database as a downloadable JSON backup">💾 Backup</button>
-  <button class="ghost small" id="generateBookBtn">✨ Write Book</button>
-  <button class="small" id="exportBtn">📥 Export ▾</button>
+  <button class="ghost small" id="themeToggle" title="Toggle Light/Dark Theme"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg> Theme</button>
+  <button class="ghost small" onclick="openSettings()" title="AI Provider & API Key Settings"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> AI settings</button>
+  <button class="ghost small" id="helpBtn" title="Keyboard shortcuts & help (?)"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></button>
+  <button class="small" id="exportBtn"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Export ▾</button>
 </header>
 
 <!-- STUDIO 3-PANEL LAYOUT -->
@@ -491,43 +625,59 @@
 
   <!-- LEFT PANEL: OUTLINE / SOURCES / KNOWLEDGE -->
   <aside class="panel-sidebar" id="leftPanel">
+    <div class="sidebar-action-bar" style="display:flex;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--panel2)">
+      <button class="ghost small" id="projectBtn" style="flex:1" title="Project dashboard: open, create and delete projects">
+        <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Projects
+      </button>
+      <button class="ghost small" id="bookDetailsBtn" style="flex:1" title="Book metadata: author, title page, copyright, dedication">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Book Details
+      </button>
+    </div>
     <div class="tab-head">
-      <button class="tab-btn active" data-tab="tabOutline" onclick="switchLeftTab('tabOutline')">📑 Outline</button>
-      <button class="tab-btn" data-tab="tabSources" onclick="switchLeftTab('tabSources')">📚 Sources (<span id="srcCountBadge">0</span>)</button>
-      <button class="tab-btn" data-tab="tabKnowledge" onclick="switchLeftTab('tabKnowledge')">🧠 Knowledge</button>
+      <button class="tab-btn active" data-tab="tabOutline" onclick="switchLeftTab('tabOutline')"><svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg> Outline</button>
+      <button class="tab-btn" data-tab="tabSources" onclick="switchLeftTab('tabSources')"><svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> Sources (<span id="srcCountBadge">0</span>)</button>
+      <button class="tab-btn" data-tab="tabKnowledge" onclick="switchLeftTab('tabKnowledge')"><svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z"></path></svg> Knowledge</button>
     </div>
 
     <!-- TAB 1: OUTLINE -->
     <div class="tab-content" id="tabOutline">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase">Book Structure</span>
         <button class="ghost small" id="addChapterBtn" style="padding:3px 8px;font-size:11.5px">+ Chapter</button>
       </div>
+      <button class="primary small" id="generateBookBtnOutline" onclick="$('generateBookBtn').click()" style="width:100%;margin-bottom:10px;justify-content:center">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg> Write Book
+      </button>
 
-      <div id="outlineTree">
-        <div class="tree-item active" onclick="selectSection('front-cover')"><span>📘</span> Cover Page</div>
-        <div class="tree-item" onclick="selectSection('front-preface')"><span>📜</span> Preface</div>
-        <div class="tree-item" onclick="selectSection('front-toc')"><span>📑</span> Table of Contents</div>
-        <div id="chapterTreeItems"></div>
-        <div class="tree-item" onclick="selectSection('back-references')"><span>📚</span> References</div>
-        <div class="tree-item" onclick="selectSection('back-glossary')"><span>📖</span> Glossary</div>
-        <div class="tree-item" onclick="selectSection('back-index')"><span>📇</span> Index</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="ghost small" id="proposeStructureBtn" style="flex:1" title="Propose a chapter outline from your processed sources, then review it before writing prose">Propose Structure</button>
+        <button class="ghost small" id="reviewStructureBtn" style="flex:1" title="Open the structure editor to add, remove, reorder chapters and sections">Review &amp; Edit</button>
       </div>
+
+      <div id="outlineTree"></div>
+
+      <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin:14px 0 6px">Live Table of Contents</div>
+      <div id="liveToc" style="font-size:12px;line-height:1.55"></div>
     </div>
 
     <!-- TAB 2: SOURCES -->
     <div class="tab-content" id="tabSources" style="display:none">
       <div class="dropzone" id="sourceDropzone">
-        <div style="font-size:24px;margin-bottom:4px">📄</div>
+        <div style="margin-bottom:8px"><svg class="ui-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></div>
         <b style="font-size:13px">Drop PDF, DOCX, TXT, or MD</b><br>
         <span style="font-size:11.5px;color:var(--muted)">or click to browse multiple sources</span>
         <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt,.md" hidden>
       </div>
 
-      <div style="margin:12px 0 8px;display:flex;justify-content:space-between;align-items:center">
+      <button id="generateBookBtn" class="primary" style="width:100%;margin:10px 0;padding:9px 12px;font-size:13px;font-weight:600">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg> Write Book from Sources
+      </button>
+      <div style="margin:6px 0 8px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase">Source Files</span>
-        <button class="ghost small" id="extractSourcesBtn" style="font-size:11.5px">⚡ Extract All</button>
+        <button class="ghost small" id="extractSourcesBtn" style="font-size:11.5px">Extract All</button>
       </div>
+      <button class="ghost small" id="processSourcesBtn" style="width:100%;margin-bottom:10px">Process sources into topics, duplicates & conflicts</button>
+      <div id="processStatus" style="font-size:11.5px;color:var(--muted);margin-bottom:10px"></div>
       <div id="sourcesList"></div>
     </div>
 
@@ -539,6 +689,8 @@
       </div>
       <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Extracted Topics</div>
       <div id="kbTopicsList"></div>
+      <div style="font-weight:700;font-size:12px;color:var(--warn);text-transform:uppercase;margin:14px 0 8px">Conflicts Flagged</div>
+      <div id="kbConflictsList"></div>
     </div>
   </aside>
 
@@ -546,8 +698,8 @@
   <main class="studio-canvas-wrap">
     <div class="canvas-toolbar">
       <div style="display:flex;gap:4px">
-        <button class="iconbtn active" id="viewPaginatedBtn" title="Paginated Sheet View (Spec §15)">📄 Pages</button>
-        <button class="iconbtn" id="viewContinuousBtn" title="Continuous Reader View">📜 Continuous</button>
+        <button class="iconbtn active" id="viewPaginatedBtn" title="Paginated Sheet View (Spec §15)"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg> Pages</button>
+        <button class="iconbtn" id="viewContinuousBtn" title="Continuous Reader View"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1"></path><path d="M19 7v13a2 2 0 0 1-2 2H7"></path></svg> Continuous</button>
       </div>
       <span style="color:var(--border)">|</span>
       <button class="iconbtn" id="zoomOutBtn" title="Zoom Out">−</button>
@@ -573,8 +725,8 @@
           <div class="block-node active-block" id="demoBlock">
             <p contenteditable="true">pdf2book automatically ingests your source PDFs, extracts canonical knowledge, resolves conflicting evidence, and writes publication-ready books.</p>
             <div class="block-ctrls">
-              <button class="iconbtn" title="AI Rewrite" onclick="triggerBlockAi('rewrite')">✨</button>
-              <button class="iconbtn" title="Delete Block" onclick="deleteActiveBlock()">🗑</button>
+              <button class="iconbtn" title="AI Rewrite" onclick="triggerBlockAi('rewrite')"><svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg></button>
+              <button class="iconbtn" title="Delete Block" onclick="deleteActiveBlock()"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
             </div>
           </div>
         </div>
@@ -588,43 +740,39 @@
   <!-- RIGHT PANEL: AI ACTIONS / PROVENANCE / DESIGN / QUALITY -->
   <aside class="panel-sidebar right" id="rightPanel">
     <div class="tab-head">
-      <button class="tab-btn active" data-tab="tabAi" onclick="switchRightTab('tabAi')">🤖 AI Writing</button>
-      <button class="tab-btn" data-tab="tabProvenance" onclick="switchRightTab('tabProvenance')">🔍 Sources</button>
-      <button class="tab-btn" data-tab="tabSearch" onclick="switchRightTab('tabSearch')">🔎 Search</button>
-      <button class="tab-btn" data-tab="tabAudit" onclick="switchRightTab('tabAudit')">🛡️ Audit</button>
+      <button class="tab-btn active" data-tab="tabAi" onclick="switchRightTab('tabAi')"><svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg> AI Writing</button>
+      <button class="tab-btn" data-tab="tabProvenance" onclick="switchRightTab('tabProvenance')"><svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Evidence</button>
+      <button class="tab-btn" data-tab="tabSearch" onclick="switchRightTab('tabSearch')"><svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Search</button>
+      <button class="tab-btn" data-tab="tabAudit" onclick="switchRightTab('tabAudit')"><svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Audit</button>
+      <button class="tab-btn" data-tab="tabDesign" onclick="switchRightTab('tabDesign')"><svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.5-.68 1.5-1.5 0-.38-.15-.74-.42-1.01-.27-.27-.43-.63-.43-1.01 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-5.5-4.5-9.98-10-9.98z"></path></svg> Design</button>
     </div>
 
     <!-- TAB 1: AI WRITING ACTIONS -->
     <div class="tab-content" id="tabAi">
       <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Section Actions</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
-        <button class="ghost small" onclick="runSectionAction('rewrite')">✨ Polish Flow</button>
-        <button class="ghost small" onclick="runSectionAction('expand')">📈 Expand</button>
-        <button class="ghost small" onclick="runSectionAction('condense')">📉 Condense</button>
-        <button class="ghost small" onclick="runSectionAction('simplify')">💡 Simplify</button>
-        <button class="ghost small" onclick="runSectionAction('academic')">🎓 Academic</button>
-        <button class="ghost small" onclick="runSectionAction('examples')">📌 Add Examples</button>
-        <button class="ghost small" onclick="runSectionAction('exercises')">📝 Add Exercises</button>
-        <button class="ghost small" onclick="runSectionAction('summary')">📑 Add Summary</button>
+        <button class="ghost small" onclick="runSectionAction('rewrite')"><svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg> Polish Flow</button>
+        <button class="ghost small" onclick="runSectionAction('expand')">Expand</button>
+        <button class="ghost small" onclick="runSectionAction('condense')">Condense</button>
+        <button class="ghost small" onclick="runSectionAction('simplify')">Simplify</button>
+        <button class="ghost small" onclick="runSectionAction('academic')">Academic</button>
+        <button class="ghost small" onclick="runSectionAction('examples')">Add Examples</button>
+        <button class="ghost small" onclick="runSectionAction('exercises')">Add Exercises</button>
+        <button class="ghost small" onclick="runSectionAction('summary')">Add Summary</button>
       </div>
 
       <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Custom AI Directive</div>
       <textarea id="aiDirective" rows="3" placeholder="e.g. Focus on practical engineering trade-offs..." style="width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px;font-family:inherit;font-size:12.5px;resize:vertical;margin-bottom:10px"></textarea>
-      <button id="applyAiDirectiveBtn" style="width:100%">⚡ Regenerate Section</button>
+      <button id="applyAiDirectiveBtn" style="width:100%"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Regenerate Section</button>
     </div>
 
     <!-- TAB 2: PROVENANCE / TRACEABILITY -->
     <div class="tab-content" id="tabProvenance" style="display:none">
       <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Source Evidence</div>
       <div id="provenanceContent" style="font-size:12.5px;color:var(--text2)">
-        <div style="padding:12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;margin-bottom:10px">
-          <div style="font-weight:700;color:var(--text);margin-bottom:4px" id="provDocTitle">Research Paper A.pdf</div>
-          <div style="color:var(--muted);font-size:11.5px;margin-bottom:8px">Page 14 · Section: Methods · Confidence 94%</div>
-          <div style="font-style:italic;background:var(--panel2);padding:8px;border-radius:6px;border-left:3px solid var(--accent);font-size:12px" id="provExcerpt">
-            "Muscle contraction produces mechanical torque across joint axes..."
-          </div>
-        </div>
-        <button class="ghost small" style="width:100%" onclick="viewSourceContext()">📖 View Original Context in Source</button>
+        <div id="provBlockLabel" style="padding:2px 0 8px;color:var(--muted);font-size:11.5px"></div>
+        <div id="provItems"></div>
+        <div id="provEmpty" style="padding:12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--muted)">Select a paragraph in the editor to see the actual sources, page numbers and sections it is grounded in. Blocks generated from your extracted sources carry citation badges.</div>
       </div>
     </div>
 
@@ -654,6 +802,29 @@
       <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Audit Items</div>
       <div id="auditItemsList"></div>
     </div>
+
+    <!-- TAB 5: DESIGN / THEME LIVE PREVIEW -->
+    <div class="tab-content" id="tabDesign" style="display:none">
+      <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Theme</div>
+      <div id="designThemeList"></div>
+      <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin:14px 0 8px">Page Size</div>
+      <div id="designSizeChips"></div>
+      <div id="customSizeBox" style="display:none;background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:10px;margin:8px 0 12px">
+        <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">Custom page size (inches)</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="number" id="customWIn" min="3" max="22" step="0.1" value="6" placeholder="Width" style="width:70px" class="dlg-inp">
+          <span style="color:var(--muted)">x</span>
+          <input type="number" id="customHIn" min="4" max="30" step="0.1" value="9" placeholder="Height" style="width:70px" class="dlg-inp">
+          <button class="small" id="applyCustomSizeBtn" style="margin-left:auto">Apply</button>
+        </div>
+      </div>
+      <div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;margin:14px 0 8px">Live Preview
+        <span style="font-weight:500;color:var(--border2);text-transform:none;font-size:10.5px">(the actual paginated book - theme &amp; size reflow instantly)</span>
+      </div>
+      <div id="designPreviewWrap" style="max-height:74vh;overflow-y:auto;padding:4px 2px 12px">
+        <div id="designPreview"><div style="font-size:11.5px;color:var(--muted)">Rendering preview...</div></div>
+      </div>
+    </div>
   </aside>
 </div>
 
@@ -662,7 +833,7 @@
   <div class="modal" style="max-width:860px">
     <div class="modal-head">
       <h3>Projects</h3>
-      <button class="iconbtn" onclick="closeDashboard()">✕</button>
+      <button class="iconbtn" onclick="closeDashboard()"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     </div>
     <div class="modal-body">
       <button class="small" id="newProjectBtn" style="width:100%;margin-bottom:16px">＋ New Project</button>
@@ -675,12 +846,39 @@
   </div>
 </div>
 
+<!-- PAGE REVIEW MODAL -->
+<div class="modal-backdrop" id="reviewModal">
+  <div class="modal review-modal">
+    <div class="modal-head">
+      <h3 id="reviewTitle">Page Review</h3>
+      <button class="iconbtn" onclick="closeReview()"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <div class="review-toolbar">
+      <select id="reviewSourceSel" style="flex:1;max-width:320px" title="Choose a source file"></select>
+      <button class="ghost small" onclick="reviewNav(-1)">← Prev</button>
+      <span id="reviewPageLabel" style="font-size:12px;color:var(--muted);min-width:90px;text-align:center">Page 1 of 1</span>
+      <button class="ghost small" onclick="reviewNav(1)">Next →</button>
+    </div>
+    <div class="review-body">
+      <div class="review-col">
+        <div class="review-col-label">Original page</div>
+        <div id="reviewImgBox"><span class="hint">Render page to view it here.</span></div>
+        <div id="reviewFlags" style="margin-top:10px"></div>
+      </div>
+      <div class="review-col">
+        <div class="review-col-label">Extracted content (editable)</div>
+        <div id="reviewUnits"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- SETTINGS MODAL -->
 <div class="modal-backdrop" id="settingsModal">
   <div class="modal">
     <div class="modal-head">
       <h3>AI Provider Settings</h3>
-      <button class="iconbtn" onclick="closeSettings()">✕</button>
+      <button class="iconbtn" onclick="closeSettings()"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     </div>
     <div class="modal-body">
       <label style="font-weight:600;display:block;margin-bottom:6px">Provider</label>
@@ -717,7 +915,7 @@
   <div class="modal" style="max-width:860px">
     <div class="modal-head">
       <h3>Knowledge Base & Entity Graph</h3>
-      <button class="iconbtn" id="kmClose" onclick="closeKm()">✕</button>
+      <button class="iconbtn" id="kmClose" onclick="closeKm()"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     </div>
     <div class="modal-body" id="kmBody" style="display:grid;grid-template-columns:260px 1fr;gap:14px;min-height:360px">
       <div id="kmTopicNav" style="border-right:1px solid var(--border);padding-right:10px;overflow-y:auto"></div>
@@ -734,7 +932,7 @@
   <div class="modal">
     <div class="modal-head">
       <h3>Book Quality Audit</h3>
-      <button class="iconbtn" id="qaClose" onclick="closeQaModal()">✕</button>
+      <button class="iconbtn" id="qaClose" onclick="closeQaModal()"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     </div>
     <div class="modal-body" id="qaBody"></div>
     <div class="modal-foot">
@@ -744,12 +942,28 @@
   </div>
 </div>
 
+<!-- STRUCTURE REVIEW MODAL -->
+<div class="modal-backdrop" id="structureModal">
+  <div class="modal" style="max-width:860px">
+    <div class="modal-head">
+      <h3>Review &amp; Edit Book Structure</h3>
+      <button class="iconbtn" onclick="closeStructureModal()"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+    <div class="modal-body" id="structureBody" style="max-height:62vh;overflow-y:auto"></div>
+    <div class="modal-foot">
+      <button class="ghost" onclick="closeStructureModal()">Cancel</button>
+      <button class="ghost" id="structureApproveBtn" onclick="commitStructure(false)">Approve &amp; Set Structure</button>
+      <button id="structureWriteBtn" onclick="commitStructure(true)">Approve &amp; Write Book</button>
+    </div>
+  </div>
+</div>
+
 <!-- NOTES VIEWER MODAL -->
 <div class="modal-backdrop" id="notesModal">
   <div class="modal">
     <div class="modal-head">
       <h3 id="notesTitle">Source Inspector</h3>
-      <button class="iconbtn" onclick="closeNotesModal()">✕</button>
+      <button class="iconbtn" onclick="closeNotesModal()"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     </div>
     <div class="modal-body" id="notesBody"></div>
     <div class="modal-foot">
@@ -760,14 +974,14 @@
 
 <!-- EXPORT MENU DROPDOWN (DYNAMIC POPUP) -->
 <div id="exportMenu" style="display:none;position:fixed;top:50px;right:16px;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);z-index:150;padding:6px;width:220px">
-  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('pdf')">🖨 Print-Ready PDF</button>
-  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('epub')">📙 EPUB 3 eBook</button>
-  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('html')">🌐 Standalone Web Book</button>
-  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('markdown')">📝 Markdown (.md)</button>
-  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('docx')">📄 Word Document (.docx)</button>
+  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('pdf')"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Print-Ready PDF</button>
+  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('epub')"><svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> EPUB 3 eBook</button>
+  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('html')"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> Standalone Web Book</button>
+  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('markdown')"><svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Markdown (.md)</button>
+  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('docx')"><svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg> Word Document (.docx)</button>
   <div style="border-top:1px solid var(--border);margin:6px 0"></div>
-  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('bookproj')">💾 Save Project (.bookproj)</button>
-  <button class="ghost small" style="width:100%;justify-content:flex-start" onclick="document.getElementById('importProjInput').click()">📂 Import Project…</button>
+  <button class="ghost small" style="width:100%;justify-content:flex-start;margin-bottom:3px" onclick="exportBook('bookproj')"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save Project (.bookproj)</button>
+  <button class="ghost small" style="width:100%;justify-content:flex-start" onclick="document.getElementById('importProjInput').click()"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> Import Project…</button>
   <input type="file" id="importProjInput" accept=".bookproj,.json" style="display:none">
 </div>
 
@@ -776,7 +990,7 @@
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bdTitle">
     <div class="modal-head">
       <h3 id="bdTitle">Book Details & Front Matter</h3>
-      <button class="iconbtn" onclick="closeBookDetails()">✕</button>
+      <button class="iconbtn" onclick="closeBookDetails()"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     </div>
     <div class="modal-body">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
@@ -831,7 +1045,7 @@
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle" style="max-width:560px">
     <div class="modal-head">
       <h3 id="helpTitle">Welcome to the Book Studio</h3>
-      <button class="iconbtn" onclick="closeHelp()">✕</button>
+      <button class="iconbtn" onclick="closeHelp()"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     </div>
     <div class="modal-body" style="font-size:13.5px;color:var(--text2);line-height:1.7">
       <p><strong style="color:var(--text)">How a book is structured</strong> — every professional book flows: front cover → title page → copyright → dedication → table of contents → chapters → appendices/glossary/references → about the author.</p>
@@ -865,6 +1079,7 @@
 <!-- JSZip & PDF.js Lazy Loaders -->
 <script src="/vendor/local-first.js"></script>
 <script src="/app-data.js"></script>
+<script src="/themeLayer.js"></script>
 
 <script>
 'use strict';
@@ -881,6 +1096,7 @@ let ws = {
   bookType: 'textbook',
   design: 'modern',
   pageSize: 'trade_6x9',
+  customSize: null,
   citationStyle: 'APA',
   meta: {},
   sources: [],
@@ -918,7 +1134,7 @@ let currentViewMode = 'paginated'; // 'paginated' | 'continuous'
 function toast(msg, kind = 'ok') {
   const t = document.createElement('div');
   t.className = 'toast ' + kind;
-  t.innerHTML = (kind === 'ok' ? '✓ ' : '⚠️ ') + msg;
+  t.innerHTML = (kind === 'ok' ? '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> ' : '<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> ') + msg;
   $('toasts').appendChild(t);
   setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(10px)'; }, 3800);
   setTimeout(() => t.remove(), 4300);
@@ -989,6 +1205,7 @@ function syncUiAfterStateChange() {
   saveWorkspace();
   renderOutlineTree();
   renderSourcesList();
+  renderKbPanel();
   renderPaginatedCanvas();
 }
 
@@ -1045,12 +1262,13 @@ function switchLeftTab(tabId) {
 }
 
 function switchRightTab(tabId) {
-  ['tabAi', 'tabProvenance', 'tabSearch', 'tabAudit'].forEach((id) => {
+  ['tabAi', 'tabProvenance', 'tabSearch', 'tabAudit', 'tabDesign'].forEach((id) => {
     $(id).style.display = id === tabId ? 'block' : 'none';
   });
   document.querySelectorAll('#rightPanel .tab-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.tab === tabId);
   });
+  if (tabId === 'tabDesign') renderDesignPanel();
 }
 
 /* ---------- Modals ---------- */
@@ -1089,6 +1307,98 @@ function openQaModal() { $('qaModal').style.display = 'flex'; renderQaModal(); }
 function closeQaModal() { $('qaModal').style.display = 'none'; }
 function closeNotesModal() { $('notesModal').style.display = 'none'; }
 
+function renderKm() {
+  const topics = (ws.kb && ws.kb.topics) || [];
+  const conflicts = (ws.kb && ws.kb.conflicts) || [];
+  const dupes = (ws.kb && ws.kb.duplicates) || [];
+  const nav = $('kmTopicNav');
+  const detail = $('kmTopicDetail');
+  if (!nav) return;
+  if (!topics.length) {
+    nav.innerHTML = '<div class="hint" style="color:var(--muted);font-size:12px">No topics yet. Process your sources first.</div>';
+    if (detail) detail.innerHTML = '';
+    return;
+  }
+  nav.innerHTML = '<div style="font-weight:700;color:var(--muted);text-transform:uppercase;font-size:11px;margin-bottom:6px">Topics (' + topics.length + ')</div>' +
+    topics.map((t, i) =>
+      '<div data-topic="' + i + '" style="padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;margin-bottom:3px;border:1px solid var(--border)">' +
+      escHtml(t.name || 'Untitled') + '<div style="font-size:10.5px;color:var(--muted)">' + (t.sources || []).length + ' source(s), ' + (t.chunkCount || 0) + ' chunk(s)</div></div>'
+    ).join('');
+
+  const renderTopicDetail = (i) => {
+    const t = topics[i];
+    if (!t || !detail) return;
+    let h = '<div style="font-weight:700;font-size:14px;margin-bottom:4px">' + escHtml(t.name || 'Untitled') + '</div>';
+    if (t.sources && t.sources.length) h += '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Found in: ' + t.sources.map((s) => escHtml(sourceNameFor(s))).join(', ') + '</div>';
+    if (t.summary) h += '<div style="font-size:12px;color:var(--text2);margin-bottom:8px">' + escHtml(String(t.summary).slice(0, 300)) + '</div>';
+    const related = conflicts.filter((c) => c.topic_id === t.id || c.topic_name === t.name);
+    if (related.length) {
+      h += '<div style="font-weight:700;color:var(--err);text-transform:uppercase;font-size:11px;margin:10px 0 6px">Conflicting claims (' + related.length + ')</div>' + related.map((c) => {
+        return (c.claims || []).map((clm, ci) =>
+          '<div style="display:flex;gap:6px;font-size:12px;color:var(--text2);margin-top:3px"><b>' + (ci === 0 ? 'A' : 'B') + '</b><span>' + escHtml(String(clm.claim || '').slice(0, 160)) + '</span><span style="color:var(--muted);white-space:nowrap">[' + escHtml(sourceNameFor(clm.document_id)) + (clm.page != null ? ' p.' + clm.page : '') + ']</span></div>'
+        ).join('');
+      }).join('');
+    }
+    detail.innerHTML = h || '<div class="hint" style="color:var(--muted)">No detail.</div>';
+  };
+
+  nav.querySelectorAll('[data-topic]').forEach((el) => {
+    el.onclick = () => {
+      nav.querySelectorAll('[data-topic]').forEach((x) => (x.style.borderColor = 'var(--border)'));
+      el.style.borderColor = 'var(--accent)';
+      renderTopicDetail(Number(el.getAttribute('data-topic')));
+    };
+  });
+  const firstNav = nav.querySelector('[data-topic]');
+  if (firstNav) { firstNav.style.borderColor = 'var(--accent)'; renderTopicDetail(0); }
+
+  detail.innerHTML += dupes.length
+    ? '<div style="font-weight:700;color:var(--muted);text-transform:uppercase;font-size:11px;margin:14px 0 6px">Duplicate groups (' + dupes.length + ')</div>' +
+      dupes.map((d) =>
+        '<div style="padding:6px;border:1px solid var(--border);border-radius:6px;margin-bottom:5px;font-size:11.5px;color:var(--text2)">' +
+        (d.sourceIds || []).map((ref) => escHtml(sourceNameFor(ref))).join('  vs  ') +
+        (d.pages && d.pages.length ? ' <span style="color:var(--muted)">(pages ' + d.pages.join(', ') + ')</span>' : '') +
+        ' <span style="color:var(--muted)">score ' + (d.score != null ? d.score.toFixed(2) : '?') + '</span></div>'
+      ).join('')
+    : '';
+  detail.innerHTML += '<div style="margin-top:12px"><button class="ghost small" onclick="rerunKnowledge()">Re-process sources</button></div>';
+}
+
+async function rerunKnowledge() {
+  closeKm();
+  try { await processKnowledge(false); switchLeftTab('tabKnowledge'); }
+  catch (_e) {}
+}
+
+function renderQaModal() {
+  const box = $('qaBody') || document.body;
+  const chaptersCount = (ws.chapters || []).length;
+  const sourcesCount = (ws.sources || []).length;
+  const topicCount = (ws.kb && ws.kb.topics || []).length;
+  const conflictCount = (ws.kb && ws.kb.conflicts || []).length;
+  const savedSettings = (data && data.getState && data.getState().settings) || {};
+  const checks = [
+    { label: 'Sources uploaded', ok: sourcesCount > 0, note: sourcesCount + ' source(s)' },
+    { label: 'Extraction complete', ok: (ws.sources || []).every((s) => String(s.status || '').toLowerCase() === 'ready'), note: 'check Sources tab' },
+    { label: 'Knowledge processed', ok: topicCount > 0, note: topicCount + ' topic(s)' },
+    { label: 'Chapters generated', ok: chaptersCount > 0, note: chaptersCount + ' chapter(s)' },
+    { label: 'Conflicts resolved', ok: conflictCount === 0, note: conflictCount + ' flagged' },
+    { label: 'AI provider configured', ok: Boolean(savedSettings.apiKey), note: savedSettings.provider || 'none' }
+  ];
+
+  const passing = checks.filter((c) => c.ok).length;
+  box.innerHTML =
+    '<div style="margin-bottom:8px">Quality Audit score: <b>' + Math.round((passing / checks.length) * 100) + '/100</b></div>' +
+    checks.map((c) =>
+      '<div style="display:flex;justify-content:space-between;padding:6px 8px;border:1px solid ' + (c.ok ? 'var(--ok)' : 'var(--err)') + ';border-radius:6px;margin-bottom:5px;font-size:12px">' +
+      '<span>' + (c.ok ? 'OK' : 'TODO') + ' - ' + c.label + '</span><span style="color:var(--muted)">' + c.note + '</span></div>'
+    ).join('') +
+    '<div style="margin-top:12px;font-size:11.5px;color:var(--muted)">Run "Write Book" to regenerate from current knowledge.</div>';
+}
+
+let processSourcesRunning = false;
+$('processSourcesBtn').onclick = async () => { if (processSourcesRunning) return; processSourcesRunning = true; try { await processKnowledge(false); } catch (_e) {} finally { processSourcesRunning = false; } };
+
 $('qaScoreBtn').onclick = openQaModal;
 $('exportBtn').onclick = (e) => {
   e.stopPropagation();
@@ -1117,77 +1427,460 @@ function bindWikiLinks(container) {
 }
 
 /* ---------- Paginated Sheet Layout Engine ---------- */
-function renderPaginatedCanvas() {
-  if (currentView === 'continuous') { renderContinuousView(); return; }
-  const canvas = $('canvasScroll');
-  canvas.innerHTML = '';
+/* ---------- Design / Theme layer renderer (data-driven, themeLayer.js) ---------- */
 
-  const pageSizeClass = 'size-' + (ws.pageSize || 'trade_6x9');
-  let pageNumber = 1;
+const TL = (typeof ThemeLayer !== 'undefined') ? ThemeLayer : null;
+let _lastBuild = null;
 
-  // Render chapters and sections
-  (ws.chapters || []).forEach((ch, ci) => {
-    const sheet = document.createElement('div');
-    sheet.className = `book-sheet ${pageSizeClass}`;
-    sheet.style.transform = `scale(${currentZoom / 100})`;
-    sheet.style.transformOrigin = 'top center';
+function tlTheme() {
+  if (TL) return TL.getTheme(ws.design || 'modern');
+  return {
+    id: 'modern', label: 'Modern',
+    fontFamily: '"Inter", sans-serif', headingFont: '"Inter", sans-serif',
+    monoFont: '"JetBrains Mono", monospace',
+    baseFontSize: '14.5px', lineHeight: 1.6,
+    primaryColor: '#6366f1', secondaryColor: '#8b5cf6',
+    backgroundColor: '#ffffff', textColor: '#1e293b', headingColor: '#0f172a',
+    borderColor: '#e2e8f0', accentBackground: '#f8fafc',
+    dropCap: false, headerStyle: 'minimal-line', pageNumberStyle: 'bottom-center',
+    marginsMm: { top: 22, bottom: 24, outer: 18, inner: 16 },
+    paragraphSpacing: 0.6, headingStyle: 'colored', chapterOpener: 'big', bodyAlign: 'justify'
+  };
+}
 
-    const header = document.createElement('div');
-    header.className = 'sheet-header';
-    header.innerHTML = `<span>${ws.title || 'Book'}</span><span>Chapter ${ci + 1}: ${ch.title}</span>`;
-    sheet.appendChild(header);
+function tlSize() {
+  if (!TL) return null;
+  if ((ws.pageSize || 'trade_6x9') === 'custom') return TL.getPageSize('custom', ws.customSize);
+  return TL.getPageSize(ws.pageSize || 'trade_6x9');
+}
 
-    const body = document.createElement('div');
-    const h2Node = document.createElement('div');
-    h2Node.className = 'block-node';
-    h2Node.innerHTML = `<h2 contenteditable="true">${ch.title}</h2>`;
-    h2Node.querySelector('h2').onblur = (e) => { ch.title = e.target.textContent; markDirty(); saveWorkspace(); renderOutlineTree(); };
-    body.appendChild(h2Node);
+function sheetModel() {
+  if (!TL) return { themeId: 'modern', sizeId: 'trade_6x9', w: 576, h: 864, mT: 48, mB: 45, mL: 44, mR: 44, headerH: 26, footerH: 22, textW: 488, textH: 723, baseFont: 14.5, lineHeight: 1.6, mb: 9, sizeLabel: '6 x 9', widthIn: 6, heightIn: 9 };
+  return TL.resolvePageModel(tlTheme(), tlSize(), ws.customSize);
+}
 
-    (ch.sections || []).forEach((sec) => {
-      (sec.blocks || []).forEach((b, bi) => {
-        const node = document.createElement('div');
-        node.className = 'block-node';
-        node.onclick = () => selectBlock(sec.id, bi, b);
+function applyDesignVars(model, theme) {
+  const r = document.documentElement;
+  const set = (k, v) => r.style.setProperty(k, v);
+  set('--doc-font', theme.fontFamily);
+  set('--doc-heading-font', theme.headingFont);
+  set('--doc-mono-font', theme.monoFont);
+  set('--doc-heading-color', theme.headingColor);
+  set('--doc-accent', theme.primaryColor);
+  set('--doc-accent2', theme.secondaryColor);
+  set('--doc-paper', theme.backgroundColor);
+  set('--doc-ink', theme.textColor);
+  set('--doc-border', theme.borderColor);
+  set('--doc-panel', theme.accentBackground);
+  set('--doc-muted', theme.secondaryColor);
+  set('--doc-base-font', model.baseFont + 'px');
+  set('--doc-line-height', String(theme.lineHeight));
+  set('--doc-mb', model.mb + 'px');
+  set('--doc-align', theme.bodyAlign === 'left' ? 'left' : 'justify');
+  set('--doc-mT', model.mT + 'px'); set('--doc-mB', model.mB + 'px');
+  set('--doc-mL', model.mL + 'px'); set('--doc-mR', model.mR + 'px');
+  set('--doc-headerH', model.headerH + 'px'); set('--doc-footerH', model.footerH + 'px');
+}
 
-        let inner = '';
-        if (b.type === 'heading') inner = `<h3>${b.text}</h3>`;
-        else if (b.type === 'definition') inner = `<div class="b-def"><strong>${b.term}:</strong> ${b.definition}</div>`;
-        else if (b.type === 'formula') inner = `<div class="b-formula"><code>${b.expression}</code></div>`;
-        else if (b.type === 'quote') inner = `<blockquote class="b-quote">"${b.text}"</blockquote>`;
-        else if (b.type === 'callout') inner = `<div class="b-callout">${b.text}</div>`;
-        else if (b.type === 'warning') inner = `<div class="b-warning">${b.text}</div>`;
-        else if (b.type === 'summary') inner = `<div class="b-summary"><strong>Summary:</strong> ${b.text}</div>`;
-        else {
-          const cit = b.sourceRef ? ` <span class="cit-badge" onclick="event.stopPropagation();showProvenance('${b.sourceRef.document_id}', ${b.sourceRef.page})">[${b.sourceRef.document_id}, p.${b.sourceRef.page}]</span>` : '';
-          inner = `<p contenteditable="true">${b.text}${cit}</p>`;
+function makeMeasureColumn(model, theme) {
+  const m = document.createElement('div');
+  m.style.cssText = 'position:fixed;top:0;left:-20000px;width:' + model.textW + 'px;z-index:-1;visibility:hidden;pointer-events:none';
+  m.style.fontFamily = theme.fontFamily;
+  m.style.fontSize = model.baseFont + 'px';
+  m.style.lineHeight = String(theme.lineHeight);
+  m.style.color = theme.textColor;
+  return m;
+}
+
+function pushItem(list, measure, key, el, model) {
+  el.style.margin = '0 0 ' + model.mb + 'px';
+  measure.appendChild(el);
+  list.push({ key: key, el: el, h: 0 });
+}
+
+function measureItems(groups) {
+  groups.forEach((g) => g.items.forEach((it) => {
+    it.h = Math.max(16, (it.el.offsetHeight || 16)) + (it.el.style.marginBottom ? parseFloat(it.el.style.marginBottom) : 0);
+  }));
+}
+
+function pagBlockNode(secId, bi, b) {
+  const node = document.createElement('div');
+  node.className = 'block-node';
+  let inner;
+  if (b.type === 'heading') inner = `<h3>${escHtml(b.text)}</h3>`;
+  else if (b.type === 'definition') inner = `<div class="b-def"><strong>${escHtml(b.term)}:</strong> ${escHtml(b.definition)}</div>`;
+  else if (b.type === 'formula') inner = `<div class="b-formula"><code>${escHtml(b.expression)}</code></div>`;
+  else if (b.type === 'quote') inner = `<blockquote class="b-quote">&quot;${escHtml(b.text)}&quot;</blockquote>`;
+  else if (b.type === 'callout') inner = `<div class="b-callout">${escHtml(b.text)}</div>`;
+  else if (b.type === 'warning') inner = `<div class="b-warning">${escHtml(b.text)}</div>`;
+  else if (b.type === 'summary') inner = `<div class="b-summary"><strong>Summary:</strong> ${escHtml(b.text)}</div>`;
+  else { const cit = renderBlockCitations(b); inner = `<p contenteditable="true">${escHtml(b.text)}${cit}</p>`; }
+  node.innerHTML = inner;
+  node.dataset.sec = secId;
+  node.dataset.bi = bi;
+  node.onclick = (ev) => {
+    selectBlock(secId, bi, b);
+    document.querySelectorAll('.block-node').forEach((n) => n.classList.remove('active-block'));
+    node.classList.add('active-block');
+    ev.stopPropagation();
+  };
+  return node;
+}
+
+function buildFrontGroups(measure, model, theme, groups) {
+  (Array.isArray(ws.frontMatter) ? ws.frontMatter : []).forEach((f) => {
+    if (!f || f.enabled === false) return;
+    const g = { kind: 'front', id: f.id, title: f.title, secId: f.id, items: [], isCover: f.type === 'cover', isToc: f.type === 'toc', chapLabel: null };
+    groups.push(g);
+    if (f.type === 'cover') {
+      const titleEl = document.createElement('div');
+      titleEl.innerHTML = `<h1 style="text-align:center">${escHtml(ws.title || 'Book')}</h1>`;
+      pushItem(g.items, measure, g.id + ':title', titleEl, model);
+      if (ws.meta && ws.meta.subtitle) {
+        const sub = document.createElement('p');
+        sub.innerHTML = `<em>${escHtml(ws.meta.subtitle)}</em>`;
+        sub.style.textAlign = 'center';
+        pushItem(g.items, measure, g.id + ':subtitle', sub, model);
+      }
+      if (ws.author) {
+        const by = document.createElement('p');
+        by.innerHTML = `<strong>by ${escHtml(ws.author)}</strong>`;
+        by.style.textAlign = 'center';
+        pushItem(g.items, measure, g.id + ':by', by, model);
+      }
+    } else if (f.type === 'toc') {
+      const h = document.createElement('h2');
+      h.textContent = 'Table of Contents';
+      pushItem(g.items, measure, g.id + ':heading', h, model);
+      liveTocEntries().forEach((en, i) => {
+        const line = document.createElement('div');
+        line.className = 'toc-line toc-' + en.cls;
+        line.dataset.target = en.target;
+        line.textContent = en.label;
+        line.onclick = () => selectSection(en.target);
+        pushItem(g.items, measure, g.id + ':toc' + i, line, model);
+      });
+    } else if (f.type === 'preface') {
+      const h = document.createElement('h2');
+      h.textContent = 'Preface';
+      pushItem(g.items, measure, g.id + ':heading', h, model);
+      const ta = document.createElement('p');
+      ta.className = 'preface-field';
+      ta.contentEditable = 'true';
+      ta.textContent = f.content || '';
+      ta.style.minHeight = '80px';
+      ta.style.outline = '1px dashed ' + theme.borderColor;
+      ta.onblur = () => {
+        const text = ta.textContent || '';
+        if (ta.dataset.last !== text) {
+          ta.dataset.last = text;
+          f.content = text;
+          if (ws.preface !== undefined) ws.preface = text;
+          markDirty(); saveWorkspace(); renderPaginatedCanvas();
         }
+      };
+      pushItem(g.items, measure, g.id + ':preface', ta, model);
+    } else {
+      const h = document.createElement('h3');
+      h.textContent = f.title || '';
+      pushItem(g.items, measure, g.id + ':title', h, model);
+    }
+  });
+}
 
-        node.innerHTML = inner;
-        body.appendChild(node);
+function buildChapterGroups(measure, model, theme, groups) {
+  (ws.chapters || []).forEach((ch, ci) => {
+    const g = { kind: 'chapter', id: ch.id, title: ch.title, chapLabel: 'Chapter ' + (ch.number || (ci + 1)), items: [], isCover: false, isToc: false, secId: null };
+    groups.push(g);
+    const opener = document.createElement('div');
+    opener.className = 'sheet-chop opener-' + (theme.chapterOpener || 'big');
+    const open = TL ? TL.OPENER_STYLES[theme.chapterOpener] : null;
+    opener.style.textAlign = (open && open.align === 'center') ? 'center' : 'left';
+    opener.innerHTML = `<div class="sheet-chop-label">${g.chapLabel}</div><h2 contenteditable="true">${escHtml(ch.title || '')}</h2>`;
+    opener.querySelector('h2').onblur = () => {
+      ch.title = opener.querySelector('h2').textContent;
+      markDirty(); saveWorkspace(); renderOutlineTree(); renderPaginatedCanvas();
+    };
+    pushItem(g.items, measure, g.id + ':title', opener, model);
+    if (ch.purpose) {
+      const p = document.createElement('p');
+      p.className = 'sheet-purpose';
+      p.innerHTML = `<em>${escHtml(ch.purpose)}</em>`;
+      pushItem(g.items, measure, g.id + ':purpose', p, model);
+    }
+    (ch.sections || []).forEach((sec, si) => {
+      const skey = sec.id || (ci + '-' + si);
+      if (!g.secId) g.secId = sec.id || ch.id;
+      if (sec.title) {
+        const st = document.createElement('h3');
+        st.textContent = sec.title;
+        pushItem(g.items, measure, g.id + ':' + skey + ':title', st, model);
+      }
+      (sec.blocks || []).forEach((b, bi) => {
+        pushItem(g.items, measure, g.id + ':' + skey + ':b' + bi, pagBlockNode(sec.id || skey, bi, b), model);
       });
     });
-
-    sheet.appendChild(body);
-
-    const footer = document.createElement('div');
-    footer.className = 'sheet-footer';
-    footer.innerHTML = `<span>${pageNumber++}</span>`;
-    sheet.appendChild(footer);
-
-    canvas.appendChild(sheet);
   });
+}
 
-  $('pageCountLabel').textContent = `Page 1 of ${Math.max(1, pageNumber - 1)}`;
+function buildBackGroups(measure, model, theme, groups) {
+  (Array.isArray(ws.backMatter) ? ws.backMatter : []).forEach((b) => {
+    if (!b || b.enabled === false) return;
+    const g = { kind: 'back', id: b.id, title: b.title, secId: b.id, items: [], isCover: false, isToc: false, chapLabel: null };
+    groups.push(g);
+    const h = document.createElement('h2');
+    h.textContent = b.title || '';
+    pushItem(g.items, measure, g.id + ':heading', h, model);
+    const topics = (ws.kb && ws.kb.topics) || [];
+    if (b.type === 'references') {
+      (topics.length ? topics : [null]).forEach((t, i) => {
+        const li = document.createElement('p');
+        if (t) li.innerHTML = `<strong>${escHtml(t.name)}</strong> <span style="color:var(--doc-muted,#94a3b8)">(${escHtml((t.sources || []).join(', ') || 'source document')})</span>`;
+        else li.textContent = 'References will be generated from your source documents at export time.';
+        pushItem(g.items, measure, g.id + ':ref' + i, li, model);
+      });
+    } else if (b.type === 'glossary') {
+      (topics.length ? topics : [null]).forEach((t, i) => {
+        const d = document.createElement('p');
+        if (t) d.innerHTML = `<strong>${escHtml(t.name)}</strong> - ${escHtml(t.summary || '')}`;
+        else d.textContent = 'Glossary terms are generated from your extracted topics.';
+        pushItem(g.items, measure, g.id + ':gloss' + i, d, model);
+      });
+    } else if (b.type === 'index') {
+      (topics.length ? topics : [null]).forEach((t, i) => {
+        const d = document.createElement('p');
+        d.innerHTML = t ? escHtml(t.name) : 'The index is generated from your book structure.';
+        pushItem(g.items, measure, g.id + ':idx' + i, d, model);
+      });
+    } else {
+      const d = document.createElement('p');
+      d.textContent = b.title || '';
+      pushItem(g.items, measure, g.id + ':body', d, model);
+    }
+  });
+}
+
+function buildPagedBook() {
+  const model = sheetModel();
+  const theme = tlTheme();
+  applyDesignVars(model, theme);
+  const measure = makeMeasureColumn(model, theme);
+  const groups = [];
+  buildFrontGroups(measure, model, theme, groups);
+  buildChapterGroups(measure, model, theme, groups);
+  buildBackGroups(measure, model, theme, groups);
+  measureItems(groups);
+  if (measure.parentNode) measure.parentNode.removeChild(measure);
+  const pages = [];
+  let fmCount = 0, bmCount = 0;
+  groups.forEach((g) => {
+    if (g.kind === 'front') fmCount++;
+    if (g.kind === 'back') bmCount++;
+    let plan;
+    if (TL) plan = TL.paginate(g.items, model);
+    else plan = g.items.map((it) => [it.key]);
+    plan.forEach((keys) => {
+      const page = {
+        group: g,
+        items: g.items.filter((it) => keys.indexOf(it.key) >= 0),
+        cover: g.isCover, toc: g.isToc,
+        secId: g.secId, chapterId: g.kind === 'chapter' ? g.id : null,
+        chapLabel: g.chapLabel || null,
+        headerLabel: (g.kind === 'chapter') ? (g.chapLabel + ': ' + (g.title || '')) : (g.title || '')
+      };
+      pages.push(page);
+    });
+  });
+  return { model: model, theme: theme, pages: pages, fmCount: fmCount, bmCount: bmCount };
+}
+
+function makeSheetHeader(model, theme, page) {
+  const hdr = document.createElement('div');
+  hdr.className = 'sheet-hdr';
+  hdr.style.cssText = 'position:absolute;top:' + Math.round(model.mT * 0.35) + 'px;left:' + model.mL + 'px;right:' + model.mR + 'px;font-size:' + Math.max(9, Math.round(model.baseFont * 0.6)) + 'px;';
+  if (theme.headerStyle === 'colored-band') { hdr.classList.add('banded'); hdr.style.background = theme.primaryColor; hdr.style.color = '#ffffff'; }
+  else if (theme.headerStyle === 'warm-pill') hdr.classList.add('pilled');
+  else if (theme.headerStyle === 'minimal-line' || theme.headerStyle === 'classic-rule') hdr.classList.add('bordered');
+  else if (theme.headerStyle === 'serif-bar' || theme.headerStyle === 'code-header') hdr.classList.add('bordered2');
+  else if (theme.headerStyle === 'gold-ornament') { hdr.classList.add('orn'); hdr.style.justifyContent = 'center'; }
+  if (theme.headerStyle !== 'gold-ornament') {
+    const left = document.createElement('span');
+    left.textContent = ws.title || 'Book';
+    hdr.appendChild(left);
+  }
+  const right = document.createElement('span');
+  right.textContent = page.headerLabel || '';
+  hdr.appendChild(right);
+  return hdr;
+}
+
+function makePageNumber(model, theme, page, num) {
+  const el = document.createElement('div');
+  el.className = 'sheet-num';
+  const st = TL ? TL.PAGE_NUM_STYLES[theme.pageNumberStyle] : null;
+  const align = (st && st.align === 'right') ? 'flex-end' : 'center';
+  const where = (st && st.where === 'header') ? 'header' : 'footer';
+  el.style.cssText = 'position:absolute;left:' + model.mL + 'px;right:' + model.mR + 'px;' + (where === 'header' ? 'top:' + Math.round(model.mT * 0.35) + 'px;' : 'bottom:' + Math.round(model.mB * 0.5) + 'px;') + 'justify-content:' + align + ';font-size:' + Math.max(9, Math.round(model.baseFont * 0.62)) + 'px;';
+  let txt = '';
+  if (st && st.ornament) txt += '&mdash; ';
+  if (st && st.badge) { txt += '&bull; '; }
+  txt += (st && st.prefix ? st.prefix : '') + '<b>' + num + '</b>' + (st && st.suffix ? st.suffix : '');
+  if (st && st.ornament) txt += ' &mdash;';
+  el.innerHTML = txt;
+  return el;
+}
+
+function buildSheetAndMount(model, theme, page, container, num, zoom, cloneMode) {
+  const sheet = document.createElement('div');
+  sheet.className = 'book-sheet';
+  if (page.secId) sheet.setAttribute('data-sec-id', page.secId);
+  if (page.chapterId) sheet.setAttribute('data-chapter-id', page.chapterId);
+  sheet.style.cssText = 'width:' + model.w + 'px;height:' + model.h + 'px;min-height:0px;box-sizing:border-box;transform:scale(' + (zoom / 100) + ');transform-origin:top center;background:' + theme.backgroundColor + ';color:' + theme.textColor + ';padding:' + model.mT + 'px ' + model.mR + 'px ' + (model.mB + model.footerH) + 'px ' + model.mL + 'px;';
+  const ink = document.createElement('div');
+  ink.className = 'sheet-ink';
+  page.items.forEach((it) => ink.appendChild(cloneMode ? it.el.cloneNode(true) : it.el));
+  sheet.appendChild(ink);
+  if (!page.cover && theme.headerStyle !== 'none') sheet.appendChild(makeSheetHeader(model, theme, page));
+  if (!page.cover) sheet.appendChild(makePageNumber(model, theme, page, num));
+  container.appendChild(sheet);
+  return sheet;
+}
+
+function renderPaginatedCanvas() {
+  const model = sheetModel();
+  const theme = tlTheme();
+  applyDesignVars(model, theme);
+  if (currentView === 'continuous') { renderContinuousView(); return; }
+  const build = buildPagedBook();
+  _lastBuild = build;
+  const canvas = $('canvasScroll');
+  canvas.innerHTML = '';
+  let num = 0;
+  build.pages.forEach((pg) => {
+    if (!pg.cover) num++;
+    buildSheetAndMount(model, theme, pg, canvas, num, currentZoom, false);
+  });
+  const total = build.pages.length;
+  const matterCnt = build.fmCount + build.bmCount;
+  $('pageCountLabel').textContent = 'Page 1 of ' + Math.max(1, total) + (matterCnt ? ' (structure + chapters)' : '');
+  renderDesignPreview();
+}
+
+function renderDesignPreview() {
+  const wrap = $('designPreview');
+  if (!wrap) return;
+  const tab = $('tabDesign');
+  if (!tab || tab.style.display === 'none') { wrap.innerHTML = ''; return; }
+  const model = (_lastBuild && _lastBuild.model) || sheetModel();
+  const pw = 340;
+  const scale = pw / model.w;
+  const sheets = document.querySelectorAll('#canvasScroll .book-sheet');
+  wrap.innerHTML = '';
+  sheets.forEach((s) => {
+    const holder = document.createElement('div');
+    holder.className = 'dvp-page';
+    holder.style.width = pw + 'px';
+    holder.style.height = Math.round(model.h * scale) + 'px';
+    const clone = s.cloneNode(true);
+    clone.style.cssText = 'position:absolute;top:0;left:0;transform:scale(' + scale + ');transform-origin:top left;margin:0;min-height:0px;box-shadow:none;width:' + model.w + 'px;height:' + model.h + 'px;';
+    holder.appendChild(clone);
+    wrap.appendChild(holder);
+  });
+}
+
+function renderDesignPanel() {
+  const list = $('designThemeList');
+  if (!list) return;
+  if (!list.dataset.built) {
+    list.dataset.built = '1';
+    if (!TL) {
+      const card = document.createElement('div');
+      card.className = 'theme-card active';
+      card.innerHTML = '<div class="theme-name">Default</div><div class="theme-sample">theme layer not loaded</div>';
+      list.appendChild(card);
+    } else {
+      TL.THEME_IDS.forEach((id) => {
+        const t = TL.THEMES[id];
+        const card = document.createElement('div');
+        card.className = 'theme-card';
+        card.dataset.theme = id;
+        card.innerHTML = '<div class="theme-swatch" style="background:' + t.primaryColor + '"></div><div style="flex:1"><div class="theme-name">' + escHtml(t.label) + '</div><div class="theme-sample" style="font-family:' + t.fontFamily + '">' + escHtml(t.baseFontSize) + ' body, ' + escHtml(String(t.headingFont || t.fontFamily).split(',')[0].replace(/["']/g, '')) + ' headings</div></div>';
+        card.onclick = () => applyDesign(id);
+        list.appendChild(card);
+      });
+      const sizes = $('designSizeChips');
+      if (sizes) {
+        TL.PAGE_SIZE_IDS.forEach((id) => {
+          const ps = TL.PAGE_SIZES[id];
+          const chip = document.createElement('button');
+          chip.className = 'size-chip';
+          chip.dataset.size = id;
+          chip.textContent = ps.label;
+          chip.onclick = () => applyPageSize(id);
+          sizes.appendChild(chip);
+        });
+        const custom = document.createElement('button');
+        custom.className = 'size-chip';
+        custom.dataset.size = 'custom';
+        custom.textContent = 'Custom...';
+        custom.onclick = () => { if ($('customSizeBox')) $('customSizeBox').style.display = 'block'; };
+        sizes.appendChild(custom);
+      }
+    }
+  }
+  syncDesignSelects();
+}
+
+function applyDesign(id) {
+  ws.design = id; markDirty(); saveWorkspace(); syncDesignSelects(); renderPaginatedCanvas();
+}
+
+function applyPageSize(id) {
+  ws.pageSize = id;
+  if ($('customSizeBox')) $('customSizeBox').style.display = (id === 'custom') ? 'block' : 'none';
+  markDirty(); saveWorkspace(); syncDesignSelects(); renderPaginatedCanvas();
+}
+
+function applyCustomSize() {
+  const w = parseFloat($('customWIn').value);
+  const h = parseFloat($('customHIn').value);
+  if (!(w > 0 && h > 0)) { toast('Enter valid width and height', 'warn'); return; }
+  let ps = null;
+  if (TL) ps = TL.createCustomPageSize({ widthIn: w, heightIn: h });
+  else ps = { id: 'custom', label: 'Custom ' + w + ' x ' + h, widthIn: w, heightIn: h };
+  ws.customSize = { widthIn: w, heightIn: h, label: ps.label };
+  ws.pageSize = 'custom';
+  markDirty(); saveWorkspace(); syncDesignSelects(); renderPaginatedCanvas();
+  toast('Custom page size applied: ' + ps.label, 'ok');
+}
+
+function syncDesignSelects() {
+  if ($('selDesign')) $('selDesign').value = ws.design || 'modern';
+  if ($('selPageSize')) $('selPageSize').value = ws.pageSize || 'trade_6x9';
+  if ((ws.pageSize || '') === 'custom' && $('customSizeBox')) $('customSizeBox').style.display = 'block';
+  document.querySelectorAll('#designThemeList .theme-card').forEach((c) => {
+    c.classList.toggle('active', c.dataset.theme === (ws.design || 'modern'));
+  });
+  document.querySelectorAll('#designSizeChips .size-chip').forEach((c) => {
+    c.classList.toggle('active', c.dataset.size === (ws.pageSize || 'trade_6x9'));
+  });
 }
 
 function renderContinuousView() {
   const canvas = $('canvasScroll');
   canvas.innerHTML = '';
+  const model = sheetModel();
+  const theme = tlTheme();
   const roll = document.createElement('div');
   roll.className = 'book-roll size-' + (ws.pageSize || 'trade_6x9');
+  if ((ws.pageSize || '') === 'custom') roll.style.width = model.w + 'px';
   roll.style.transform = 'scale(' + (Math.max(50, currentZoom) / 100) + ')';
   roll.style.transformOrigin = 'top center';
+  roll.style.fontFamily = theme.fontFamily;
+  roll.style.fontSize = model.baseFont + 'px';
+  roll.style.lineHeight = String(theme.lineHeight);
+  roll.style.color = theme.textColor;
   const meta = ws.meta || {};
   let inner = `<div class="roll-title">${escHtml(ws.title || 'Book')}</div>`;
   if (meta.subtitle) inner += `<div class="roll-sub">${escHtml(meta.subtitle)}</div>`;
@@ -1220,35 +1913,257 @@ function selectBlock(secId, bi, b) {
   activeSectionId = secId;
   activeBlockIndex = bi;
   document.querySelectorAll('.block-node').forEach((n) => n.classList.remove('active-block'));
-  if (b.sourceRef) {
-    showProvenance(b.sourceRef.document_id, b.sourceRef.page, b.text);
+  if (b.sourceRef || b.citations) {
+    showProvenance(b);
   }
 }
 
-function showProvenance(docId, page, text) {
-  switchRightTab('tabProvenance');
-  $('provDocTitle').textContent = docId || 'Source Document';
-  $('provExcerpt').textContent = text ? `"${text.slice(0, 240)}..."` : 'Cited factual claim grounded in source evidence.';
+/* ---------- Source Evidence panel (real data from ws.sources / ws.kb / block citations) ---------- */
+function normCitationRef(r) {
+  if (!r) return null;
+  if (r.sourceId || r.source_id) {
+    return { sourceId: r.sourceId || r.source_id, page: r.page || r.pageNumber || null, section: r.section || r.section_label || null };
+  }
+  if (r.document_id) {
+    return { sourceId: r.document_id, page: r.page || null, section: r.section || null };
+  }
+  return null;
 }
 
-/* ---------- Left Outline Tree ---------- */
-function renderOutlineTree() {
-  const container = $('chapterTreeItems');
-  container.innerHTML = '';
-  (ws.chapters || []).forEach((ch, ci) => {
-    const item = document.createElement('div');
-    item.className = 'tree-item';
-    item.innerHTML = `
-      <span style="flex:1">📖 Chapter ${ci + 1}: ${ch.title}</span>
+function citationsFromBlock(b) {
+  if (!b) return [];
+  const list = [];
+  const seen = {};
+  (Array.isArray(b.citations) ? b.citations : []).forEach((c) => {
+    const n = typeof c === 'object' ? normCitationRef(c) : null;
+    if (n && n.sourceId) {
+      const key = n.sourceId + '|' + (n.page || '') + '|' + (n.section || '');
+      if (!seen[key]) { seen[key] = 1; list.push(n); }
+    }
+  });
+  if (!list.length && b.sourceRef) {
+    const n = normCitationRef(b.sourceRef);
+    if (n && n.sourceId) list.push(n);
+  }
+  return list.slice(0, 6);
+}
+
+function sourceNameFor(sourceId) {
+  const s = (ws.sources || []).find((x) => x.id === sourceId);
+  return s ? s.name : String(sourceId || '').replace(/^src_/, 'Source ');
+}
+
+function findCitationSnippet(sourceId, pageNumber, section, blockText) {
+  const src = (ws.sources || []).find((s) => s.id === sourceId);
+  const units = [];
+  if (src && src.pages && src.pages.length) {
+    const pg = (pageNumber != null) ? src.pages[pageNumber - 1] : null;
+    const pool = pg ? (pg.units || []) : [];
+    if (section) {
+      const sectioned = pool.filter((u) => u.section && String(u.section).toLowerCase() === String(section).toLowerCase() && u.text);
+      sectioned.forEach((u) => units.push(u));
+      if (!units.length) pool.filter((u) => u.section && String(u.section).toLowerCase().indexOf(String(section).toLowerCase()) >= 0 && u.text).forEach((u) => units.push(u));
+    }
+    if (!units.length) pool.filter((u) => u.text).forEach((u) => units.push(u));
+  }
+  const text = blockText || '';
+  let best = null;
+  let bestScore = 0;
+  units.forEach((u) => {
+    const t = String(u.text || '');
+    if (!t.trim()) return;
+    let score = 0;
+    if (text && text.length > 24) {
+      const words = text.toLowerCase().match(/[a-z0-9]+/g) || [];
+      const tl = t.toLowerCase();
+      let cover = 0;
+      words.forEach((w) => { if (tl.indexOf(w) >= 0) cover += 1; });
+      score = cover / Math.max(1, words.length);
+    }
+    if (t === text) score = 1;
+    if (score > bestScore) { bestScore = score; best = u; }
+  });
+  const chosen = best || units[0];
+  if (chosen) return String(chosen.text || '').slice(0, 300);
+  if (src && src.pages && src.pages.length) {
+    const pg = (pageNumber != null) ? src.pages[pageNumber - 1] : src.pages[0];
+    if (pg && pg.text) return String(pg.text).slice(0, 300);
+  }
+  return '';
+}
+
+function renderEvidencePanel(b) {
+  const list = citationsFromBlock(b);
+  const empty = $('provEmpty');
+  const items = $('provItems');
+  const label = $('provBlockLabel');
+  if (!list.length) {
+    items.innerHTML = '';
+    label.textContent = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  const seg = b && b.type ? String(b.type) + ': ' + String(b.text || '').slice(0, 60) : '';
+  label.textContent = seg ? 'Evidence behind: ' + seg + '...' : '';
+  items.innerHTML = list.map((c, i) => {
+    const excerpt = findCitationSnippet(c.sourceId, c.page, c.section, b && b.text);
+    const pageLabel = c.page != null ? 'p. ' + c.page : 'page n/a';
+    const secLabel = c.section ? '  |  Section: ' + escHtml(c.section) : '';
+    return `<div style="padding:10px;background:var(--panel);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
+      <div style="font-weight:700;color:var(--text);font-size:12.5px;margin-bottom:2px">${escHtml(sourceNameFor(c.sourceId))}</div>
+      <div style="color:var(--muted);font-size:11.5px;margin-bottom:6px">${pageLabel}${secLabel}</div>
+      ${excerpt ? `<div style="font-style:italic;color:var(--text2);font-size:12px;border-left:3px solid var(--accent);padding:6px 8px;background:var(--panel2);border-radius:4px">&ldquo;${escHtml(excerpt)}${excerpt.length >= 300 ? '&hellip;' : ''}&rdquo;</div>` : ''}
+      <button class="ghost small" style="margin-top:8px;font-size:11px" data-evidence-index="${i}">View Original Context in Source</button>
+    </div>`;
+  }).join('');
+  items.querySelectorAll('button[data-evidence-index]').forEach((btn) => {
+    btn.onclick = () => {
+      const c = list[Number(btn.getAttribute('data-evidence-index'))];
+      if (c) viewSourceContext(c.sourceId, c.page, c.section);
+    };
+  });
+}
+
+function showProvenance(b) {
+  switchRightTab('tabProvenance');
+  renderEvidencePanel(b || null);
+}
+
+function renderBlockCitations(b) {
+  const list = citationsFromBlock(b);
+  if (!list.length) return '';
+  return ' ' + list.map((c) => {
+    const page = c.page != null ? ' p.' + c.page : '';
+    const sec = c.section ? ' ' + escHtml(String(c.section)) : '';
+    return `<span class="cit-badge" title="Grounded in ${escHtml(sourceNameFor(c.sourceId))}${page}${sec}">[${escHtml(sourceNameFor(c.sourceId))}${page}]</span>`;
+  }).join(' ');
+}
+
+function viewSourceContext(sourceId, pageNumber, section) {
+  const src = (ws.sources || []).find((s) => s.id === sourceId);
+  if (!src) { toast('Source document not found in local storage', 'warn'); return; }
+  openReview(sourceId);
+  if (pageNumber != null) {
+    const idx = Math.max(0, Math.min(pageNumber - 1, (src.pages || []).length - 1));
+    reviewCtx.pageIndex = idx;
+    renderReviewPage();
+    if (section) {
+      const pg = src.pages[idx];
+      const u = (pg && pg.units || []).find((x) => x.section && String(x.section).toLowerCase() === String(section).toLowerCase());
+      if (u) {
+        setTimeout(() => {
+          const ta = $('reviewUnits') && $('reviewUnits').querySelector('textarea');
+          if (ta) { ta.focus(); ta.scrollIntoView({ block: 'center' }); }
+        }, 60);
+      }
+    }
+  }
+}
+
+/* ---------- Left Outline Tree & Live TOC ---------- */
+function matterIcon(type) {
+  const icons = { cover: '\u{1F4D8}', preface: '\u{1F4DC}', toc: '\u{1F4D1}', references: '\u{1F4DA}', glossary: '\u{1F4D6}', index: '\u{1F4C7}' };
+  return icons[type] || '\u{1F4D6}';
+}
+
+function chapterRowHtml(ch, ci) {
+  const num = ch.number || (ci + 1);
+  return `
+    <div class="tree-item" data-tree-id="${escHtml(ch.id)}" style="font-weight:700">
+      <span style="flex:1">Chapter ${num}: ${escHtml(ch.title)}</span>
       <span style="display:flex;gap:4px">
         <button class="chapter-xport" title="Export this chapter as Markdown (.md)" onclick="event.stopPropagation();exportChapter(${ci}, 'md')">⬇ MD</button>
         <button class="chapter-xport" title="Export this chapter as HTML" onclick="event.stopPropagation();exportChapter(${ci}, 'html')">⬇ HTML</button>
-      </span>`;
-    item.onclick = () => {
-      renderPaginatedCanvas();
-    };
-    container.appendChild(item);
+      </span>
+    </div>`;
+}
+
+/** Render the outline tree from the approved structure (or chapters-only when legacy). */
+function renderOutlineTree() {
+  const container = $('outlineTree');
+  container.innerHTML = '';
+  const hasMatter = ((ws.frontMatter || []).length > 0) || ((ws.backMatter || []).length > 0);
+
+  if (!hasMatter) {
+    (ws.chapters || []).forEach((ch, ci) => { container.insertAdjacentHTML('beforeend', chapterRowHtml(ch, ci)); });
+  } else {
+    (ws.frontMatter || []).forEach((f) => {
+      if (!f || f.enabled === false) return;
+      const item = document.createElement('div');
+      item.className = 'tree-item';
+      item.setAttribute('data-tree-id', f.id);
+      item.innerHTML = `<span>${matterIcon(f.type)} ${escHtml(f.title)}</span>`;
+      item.onclick = () => selectSection(f.id);
+      container.appendChild(item);
+    });
+    (ws.chapters || []).forEach((ch, ci) => {
+      container.insertAdjacentHTML('beforeend', chapterRowHtml(ch, ci));
+      (ch.sections || []).forEach((s, si) => {
+        if (!s) return;
+        const sub = document.createElement('div');
+        sub.className = 'tree-item tree-section';
+        sub.setAttribute('data-tree-id', s.id);
+        sub.style.paddingLeft = '24px';
+        sub.style.fontSize = '11.5px';
+        sub.innerHTML = `<span>${escHtml(s.title || 'Section ' + (si + 1))}</span>`;
+        sub.onclick = () => selectSection(s.id);
+        container.appendChild(sub);
+      });
+    });
+    (ws.backMatter || []).forEach((b) => {
+      if (!b || b.enabled === false) return;
+      const item = document.createElement('div');
+      item.className = 'tree-item';
+      item.setAttribute('data-tree-id', b.id);
+      item.innerHTML = `<span>${matterIcon(b.type)} ${escHtml(b.title)}</span>`;
+      item.onclick = () => selectSection(b.id);
+      container.appendChild(item);
+    });
+  }
+  container.querySelectorAll('.tree-item[data-tree-id]').forEach((el) => {
+    const id = el.getAttribute('data-tree-id');
+    el.onclick = () => selectSection(id);
   });
+  renderLiveToc();
+}
+
+/** Live table of contents derived from the current ws structure. */
+function liveTocEntries() {
+  const entries = [];
+  (ws.frontMatter || []).forEach((f) => { if (f && f.enabled !== false) entries.push({ label: f.title || 'Front Matter', target: f.id, cls: 'front' }); });
+  (ws.chapters || []).forEach((ch, ci) => {
+    entries.push({ label: 'Chapter ' + (ch.number || (ci + 1)) + ': ' + (ch.title || ''), target: ch.id, cls: 'chapter' });
+    (ch.sections || []).forEach((s) => { if (s && s.title) entries.push({ label: '\u00A0\u00A0' + s.title, target: s.id, cls: 'section' }); });
+  });
+  (ws.backMatter || []).forEach((b) => { if (b && b.enabled !== false) entries.push({ label: b.title || 'Back Matter', target: b.id, cls: 'back' }); });
+  return entries;
+}
+
+function renderLiveToc() {
+  const box = $('liveToc');
+  if (!box) return;
+  const entries = liveTocEntries();
+  if (!entries.length) {
+    box.innerHTML = '<div style="color:var(--muted);font-style:italic">No structure yet - process sources and propose one.</div>';
+    return;
+  }
+  box.innerHTML = entries.map((en) => `<div class="toc-line toc-${en.cls}" data-toc-target="${escHtml(en.target)}">${escHtml(en.label)}</div>`).join('');
+  box.querySelectorAll('[data-toc-target]').forEach((d) => { d.onclick = () => selectSection(d.getAttribute('data-toc-target')); });
+}
+
+/** Select and scroll to a sheet/section rendered on the canvas. */
+function selectSection(id) {
+  const node = document.querySelector('#canvasScroll [data-sec-id="' + id + '"]');
+  if (node) {
+    node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    node.classList.remove('flash-selected');
+    void node.offsetWidth;
+    node.classList.add('flash-selected');
+    setTimeout(() => node.classList.remove('flash-selected'), 1200);
+    return;
+  }
+  if (ws.structureApproved) toast('Structure section is not rendered yet', 'warn');
 }
 
 /* ---------- Source Library & Multi-PDF / DOCX Ingestion ---------- */
@@ -1377,17 +2292,19 @@ $('fileInput').onchange = async (e) => {
   const files = Array.from(e.target.files || []);
   const projectId = data ? data.getState().activeProjectId : null;
   for (const f of files) {
-    let stored = null;
     const src = {
       id: 'src-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       name: f.name,
       size: f.size,
       type: (f.type || '').split('/')[0] || 'file',
       status: 'Pending',
-      pages: []
+      pages: [],
+      errorMessage: null,
+      progressText: null
     };
 
     // Store the raw file blob in IndexedDB first (pending status).
+    let stored = null;
     if (data && projectId) {
       try {
         stored = await data.addSourceFile(projectId, f);
@@ -1399,36 +2316,124 @@ $('fileInput').onchange = async (e) => {
 
     ws.sources.push(src);
     renderSourcesList();
-
-    try {
-      src.status = 'Extracting…';
-      renderSourcesList();
-      if (f.name.endsWith('.pdf')) {
-        src.pages = await extractPdfText(f);
-      } else if (f.name.endsWith('.docx')) {
-        const text = await extractDocxText(f);
-        src.pages = [{ pageNumber: 1, text }];
-      } else {
-        const text = await f.text();
-        src.pages = [{ pageNumber: 1, text }];
-      }
-      src.status = 'Ready';
-      src.pageCount = src.pages.length;
-      src.wordCount = src.pages.reduce((acc, p) => acc + (p.text || '').split(/\s+/).length, 0);
-      toast(`Extracted ${src.name} (${src.pageCount} pages)`, 'ok');
-      if (data && stored) {
-        await data.updateSource(projectId, stored.id, { status: 'ready', pageCount: src.pageCount, wordCount: src.wordCount });
-        await data.storeExtracted(projectId, stored.id, src.pages);
-      }
-    } catch (err) {
-      src.status = 'Error';
-      toast(`Failed to extract ${src.name}: ${err.message}`, 'err');
-      if (data && stored) await data.updateSource(projectId, stored.id, { status: 'error' });
-    }
-    saveWorkspace();
+    src.status = 'Queueing';
     renderSourcesList();
+
+    const lower = f.name.toLowerCase();
+    const kind = lower.endsWith('.pdf') ? 'pdf' : (lower.endsWith('.docx') ? 'docx' : 'text');
+    queueExtractTask({ file: f, kind, src, projectId, storedId: stored ? stored.id : null });
   }
 };
+
+/* ---------- Worker-based extraction pipeline ---------- */
+let extractWorker = null;
+let extractQueue = [];
+let extractBusy = false;
+let extractCurrentJob = null;
+const EXTRACT_TIMEOUT_MS = 10 * 60 * 1000;
+
+function ensureExtractWorker() {
+  if (extractWorker) return extractWorker;
+  try {
+    extractWorker = new Worker('/extract.worker.js');
+  } catch (err) {
+    toast('Web Worker unavailable: ' + err.message, 'err');
+    return null;
+  }
+  extractWorker.onmessage = (e) => onExtractWorkerMessage(e.data);
+  extractWorker.onerror = (e) => {
+    const job = extractCurrentJob;
+    if (job) failExtractTask(job, 'Worker crashed: ' + (e.message || 'unknown error'));
+  };
+  return extractWorker;
+}
+
+function queueExtractTask(task) {
+  extractQueue.push(task);
+  pumpExtractQueue();
+}
+
+function pumpExtractQueue() {
+  if (extractBusy) return;
+  const task = extractQueue.shift();
+  if (!task) return;
+  const worker = ensureExtractWorker();
+  if (!worker) { failExtractTask(task, 'Worker unavailable'); return; }
+  extractBusy = true;
+  extractCurrentJob = task;
+  task.jobId = task.jobId || ('job-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+  task.timeoutId = setTimeout(() => failExtractTask(task, 'Timed out while extracting (10 min)'), EXTRACT_TIMEOUT_MS);
+  task.file.arrayBuffer().then((buffer) => {
+    worker.postMessage(
+      { id: task.jobId, type: task.kind, filename: task.src.name, buffer },
+      [buffer]
+    );
+  }).catch((err) => {
+    failExtractTask(task, 'Failed to read file: ' + err.message);
+  });
+}
+
+function onExtractWorkerMessage(msg) {
+  const job = extractCurrentJob;
+  if (!job || !msg || msg.id !== job.jobId) return;
+  if (msg.event === 'progress') {
+    job.src.status = 'Extracting…';
+    job.src.progressText = 'page ' + msg.page + ' of ' + msg.total;
+    updateSourceCardProgress(job.src.id);
+  } else if (msg.event === 'done') {
+    finishExtractTask(job, msg);
+  } else if (msg.event === 'error') {
+    failExtractTask(job, msg.message || 'Extraction failed');
+  }
+}
+
+function updateSourceCardProgress(sourceId) {
+  const el = $('srcProg-' + sourceId);
+  if (el && extractCurrentJob && extractCurrentJob.src.id === sourceId) {
+    el.textContent = extractCurrentJob.src.progressText || '';
+  }
+}
+
+async function finishExtractTask(task, msg) {
+  if (task.timeoutId) clearTimeout(task.timeoutId);
+  const src = task.src;
+  src.pages = Array.isArray(msg.pages) ? msg.pages : [];
+  src.pageCount = src.pages.length;
+  src.wordCount = src.pages.reduce((acc, p) => acc + (p.wordCount || (p.text || '').split(/\s+/).length), 0);
+  src.status = 'Ready';
+  src.progressText = null;
+  if (data && task.storedId) {
+    try {
+      await data.updateSource(task.projectId, task.storedId, { status: 'ready', pageCount: src.pageCount, wordCount: src.wordCount });
+      await data.storeExtracted(task.projectId, task.storedId, src.pages);
+    } catch (err) {
+      toast('Persist failed: ' + err.message, 'err');
+    }
+  }
+  saveWorkspace();
+  renderSourcesList();
+  toast('Extracted ' + src.name + ' (' + src.pageCount + ' page' + (src.pageCount === 1 ? '' : 's') + ')', 'ok');
+  extractBusy = false;
+  extractCurrentJob = null;
+  pumpExtractQueue();
+}
+
+async function failExtractTask(task, message) {
+  if (task.timeoutId) clearTimeout(task.timeoutId);
+  const src = task.src;
+  src.status = 'Error';
+  src.errorMessage = message;
+  src.progressText = null;
+  if (data && task.storedId) {
+    try { await data.updateSource(task.projectId, task.storedId, { status: 'error' }); } catch (_e) { /* noop */ }
+  }
+  saveWorkspace();
+  renderSourcesList();
+  toast('Failed to extract ' + src.name + ': ' + message, 'err');
+  extractBusy = false;
+  extractCurrentJob = null;
+  pumpExtractQueue();
+}
 
 function renderSourcesList() {
   const container = $('sourcesList');
@@ -1446,17 +2451,23 @@ function renderSourcesList() {
   ws.sources.forEach((s) => {
     const card = document.createElement('div');
     card.className = 'source-card';
+    card.setAttribute('data-src-id', s.id);
+    const reviewBtn = s.status === 'Ready' && s.pages && s.pages.length
+      ? '<div class="src-actions"><button class="src-review" onclick="openReview(\'' + s.id + '\')">Review pages</button></div>'
+      : '';
     card.innerHTML = `
       <div class="src-head">
-        <span>📄 ${s.name}</span>
-        <span style="font-size:11px;color:${statusColor(s.status)}">${s.status || 'Pending'}</span>
+        <span>${s.name}</span>
+        <span style="font-size:11px;color:${statusColor(s.status)}">${s.status || 'Pending'}<span class="src-prog" id="srcProg-${s.id}">${s.progressText ? ' · ' + s.progressText : ''}</span></span>
       </div>
+      ${s.errorMessage ? `<div class="src-err">⚠ ${s.errorMessage}</div>` : ''}
       <div class="src-meta">
         <span>${s.pageCount || 0} pages</span>
         <span>·</span>
         <span>~${(s.wordCount || 0).toLocaleString()} words</span>
         ${s.size ? `<span>·</span><span>${formatBytes(s.size)}</span>` : ''}
       </div>
+      ${reviewBtn}
     `;
     container.appendChild(card);
   });
@@ -1479,7 +2490,7 @@ $('doSearchBtn').onclick = async () => {
   try {
     const res = await fetch('/api/sources/search', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: Object.assign({ 'Content-Type': 'application/json' }, { 'x-ai-config': JSON.stringify(aiConfigHeaders()) }),
       body: JSON.stringify({ query, sources: ws.sources })
     });
     const data = await res.json();
@@ -1501,62 +2512,500 @@ $('doSearchBtn').onclick = async () => {
   }
 };
 
-/* ---------- Book Generation Pipeline ---------- */
+/* ---------- Book Generation Pipeline (structure-first) ---------- */
 $('generateBookBtn').onclick = async () => {
   if (!ws.sources.length) {
     toast('Please upload at least one PDF or source document first', 'warn');
     switchLeftTab('tabSources');
     return;
   }
-  toast('Building knowledge graph and structuring chapters…', 'ok');
-  // Plan and write
   try {
-    const digest = (ws.kb.topics || []).length ? ws.kb.topics : [{ name: 'Core Foundations', summary: 'Foundational principles from sources.' }];
-    const planRes = await fetch('/api/book/plan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: ws.title, digest, presetId: ws.bookType })
-    });
-    const planData = await planRes.json();
-    if (planData.plan && planData.plan.chapters) {
-      ws.chapters = planData.plan.chapters.map((ch) => ({
-        id: 'ch-' + Date.now().toString(36),
-        title: ch.title,
-        purpose: ch.purpose,
-        sections: [{ id: 'sec-' + Date.now().toString(36), title: 'Introduction', blocks: [{ type: 'paragraph', text: ch.purpose || 'Section content.' }] }]
-      }));
-      saveWorkspace();
-      renderOutlineTree();
-      renderPaginatedCanvas();
-      toast('Book chapters generated successfully!', 'ok');
+    if (!(ws.kb && ws.kb.topics && ws.kb.topics.length)) {
+      toast('Building knowledge from sources...', 'ok');
+      await processKnowledge(true);
     }
+    if (!(ws.structureApproved && Array.isArray(ws.chapters) && ws.chapters.length)) {
+      toast('Proposing a structure for your review...', 'ok');
+      await proposeStructureFlow();
+      return;
+    }
+    await writeFromApprovedStructure();
   } catch (err) {
     toast('Generation error: ' + err.message, 'err');
   }
 };
 
-/* ---------- Section AI Actions ---------- */
-async function runSectionAction(action) {
-  toast(`Running AI ${action} on active section…`, 'ok');
+/* ---------- Book Structure Engine: propose, review, approve, write ---------- */
+let structureDraft = null;
+
+function clientUid(prefix) {
+  return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+}
+
+function cloneStruct(o) {
+  return JSON.parse(JSON.stringify(o));
+}
+
+function topicDigestForStructure() {
+  return (ws.kb && Array.isArray(ws.kb.topics) ? ws.kb.topics : []).map((t) => ({
+    id: t.id, name: t.name, keywords: t.keywords || [], chunkIds: t.chunkIds || [],
+    sources: t.sources || [], chunkCount: t.chunkCount || 0, summary: t.summary || ''
+  }));
+}
+
+/** POST /api/book/structure, then open the review editor (no prose written). */
+async function proposeStructureFlow(openModal = true) {
+  const topics = topicDigestForStructure();
+  if (!topics.length) { toast('Process sources into topics first', 'warn'); return null; }
+  const res = await fetch('/api/book/structure', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title: ws.title, subtitle: (ws.meta && ws.meta.subtitle) || '', bookType: ws.bookType, topics })
+  });
+  const out = await res.json();
+  if (!res.ok) throw new Error(out.error || 'structure propose failed');
+  const fresh = cloneStruct(out);
+  // preserve written prose: match proposed chapters to existing ones by topic set
+  const setKey = (arr) => (arr || []).slice().sort().join('|');
+  const exByKey = new Map((ws.chapters || []).map((c) => [setKey(c.topicIds), c]));
+  fresh.chapters = (fresh.chapters || []).map((c) => {
+    const ex = exByKey.get(setKey(c.topicIds));
+    if (!ex) return c;
+    const exSecs = new Map((ex.sections || []).map((s) => [s.topicId || s.id, s]));
+    return Object.assign({}, c, { id: ex.id, sections: (c.sections || []).map((s) => {
+      const es = exSecs.get(s.topicId || s.id);
+      return es ? Object.assign({}, s, { id: es.id, blocks: es.blocks || [] }) : s;
+    }) });
+  });
+  structureDraft = fresh;
+  if (openModal) openStructureModal();
+  return fresh;
+}
+
+function openStructureModal() {
+  if (!structureDraft) {
+    if (ws.structureApproved) {
+      structureDraft = { title: ws.title, bookType: ws.bookType, frontMatter: cloneStruct(ws.frontMatter || []), chapters: cloneStruct(ws.chapters || []), backMatter: cloneStruct(ws.backMatter || []) };
+    } else {
+      toast('Propose a structure first (or process your sources)', 'warn');
+      return;
+    }
+  }
+  renderStructureEditor();
+  $('structureModal').style.display = 'flex';
+}
+
+function closeStructureModal() { $('structureModal').style.display = 'none'; }
+
+function renderStructureEditor() {
+  const d = structureDraft;
+  if (!d) return;
+  const body = $('structureBody');
+  const ch = d.chapters || [];
+  const fm = d.frontMatter || [];
+  const bm = d.backMatter || [];
+
+  const fmHtml = fm.map((f, i) => `<div class="struct-matter-row">
+      <input type="checkbox" data-fm-i="${i}" ${f.enabled !== false ? 'checked' : ''} title="Toggle this front matter section">
+      <span style="flex:1">${matterIcon(f.type)} ${escHtml(f.title)}</span>
+      ${f.type === 'preface' ? `<button class="ghost small" onclick="event.stopPropagation();$('fmContent-${i}').style.display=$('fmContent-${i}').style.display==='none'?'block':'none'">✎</button>` : ''}
+      <button class="ghost small" onclick="moveMatter('front',${i},-1)">↑</button>
+      <button class="ghost small" onclick="moveMatter('front',${i},1)">↓</button>
+    </div>
+    ${f.type === 'preface' ? `<div id="fmContent-${i}" style="display:${f.enabled !== false ? 'block' : 'none'};margin:-4px 0 8px 26px"><textarea rows="3" onchange="editMatter('front',${i},this.value)" placeholder="Write a short preface...">${escHtml(f.content || '')}</textarea></div>` : ''}`).join('');
+
+  const chCards = ch.map((c, ci) => `
+    <div class="struct-chapter" draggable="true" ondragstart="dragStruct(event,'ch',${ci})" ondragover="event.preventDefault();event.dataTransfer.dropEffect='move'" ondrop="dropStruct(event,'ch',${ci})">
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+        <span title="Drag to reorder" style="cursor:grab;color:var(--muted)">⠿</span>
+        <strong style="font-size:11px;color:var(--accent)">CHAPTER ${c.number || (ci + 1)}</strong>
+        <input class="dlg-inp" style="flex:1" value="${escHtml(c.title || '')}" data-ch-title="${ci}" placeholder="Chapter title" onchange="editChapter(${ci},'title',this.value)">
+        <button class="ghost small" onclick="moveChapter(${ci},-1)">↑</button>
+        <button class="ghost small" onclick="moveChapter(${ci},1)">↓</button>
+        <button class="ghost small" onclick="removeChapter(${ci})" title="Remove chapter"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+      </div>
+      <input class="dlg-inp" style="width:100%;margin-bottom:8px;font-size:12px" value="${escHtml(c.purpose || '')}" data-ch-purpose="${ci}" placeholder="Chapter purpose (optional)" onchange="editChapter(${ci},'purpose',this.value)">
+      <div class="struct-sections">
+        ${(c.sections || []).map((s, si) => `<div class="struct-section" draggable="true" ondragstart="dragStruct(event,'sec',${ci},${si})" ondragover="event.preventDefault();event.dataTransfer.dropEffect='move'" ondrop="dropStruct(event,'sec',${ci},${si})">
+          <span title="Drag to reorder" style="cursor:grab;color:var(--muted);font-size:11px">⠿</span>
+          <input class="dlg-inp" style="flex:1;font-size:12px" value="${escHtml(s.title || '')}" data-sec-title="${ci}-${si}" placeholder="Section title" onchange="editSection(${ci},${si},'title',this.value)">
+          ${s.topicId ? '<span style="font-size:10px;color:var(--muted)">topic</span>' : ''}
+          <button class="ghost small" onclick="moveSection(${ci},${si},-1)">↑</button>
+          <button class="ghost small" onclick="moveSection(${ci},${si},1)">↓</button>
+          <button class="ghost small" onclick="removeSection(${ci},${si})"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>`).join('')}
+      </div>
+      <div style="margin-top:6px">
+        <button class="ghost small" onclick="addSection(${ci})">+ Section</button>
+      </div>
+    </div>`).join('');
+
+  const bmHtml = bm.map((b, i) => `<div class="struct-matter-row">
+      <input type="checkbox" data-bm-i="${i}" ${b.enabled !== false ? 'checked' : ''} title="Toggle this back matter section">
+      <span style="flex:1">${matterIcon(b.type)} ${escHtml(b.title)}</span>
+      <button class="ghost small" onclick="moveMatter('back',${i},-1)">↑</button>
+      <button class="ghost small" onclick="moveMatter('back',${i},1)">↓</button>
+    </div>`).join('');
+
+  body.innerHTML = `
+    <div style="margin-bottom:4px">
+      <span style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase">Front Matter</span>
+    </div>
+    ${fmHtml || '<div style="color:var(--muted);font-size:11.5px">None</div>'}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 6px">
+      <span style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase">Chapters</span>
+      <button class="ghost small" onclick="addChapterDraft()">+ Chapter</button>
+    </div>
+    ${chCards || '<div style="color:var(--muted);font-size:11.5px">No chapters proposed yet.</div>'}
+    <div style="margin:16px 0 6px">
+      <span style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase">Back Matter</span>
+    </div>
+    ${bmHtml || '<div style="color:var(--muted);font-size:11.5px">None</div>'}
+    <div style="margin:14px 0 4px">
+      <span style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase">Preview Table of Contents</span>
+    </div>
+    <div id="draftToc" style="font-size:12px;line-height:1.55;background:var(--panel);border:1px solid var(--border);padding:8px;border-radius:8px"></div>`;
+
+  attachDraftToc();
+  body.querySelectorAll('input[data-fm-i]').forEach((el) => { el.onchange = () => { const i = Number(el.getAttribute('data-fm-i')); structureDraft.frontMatter[i].enabled = el.checked; attachDraftToc(); }; });
+  body.querySelectorAll('input[data-bm-i]').forEach((el) => { el.onchange = () => { const i = Number(el.getAttribute('data-bm-i')); structureDraft.backMatter[i].enabled = el.checked; attachDraftToc(); }; });
+}
+
+function attachDraftToc() {
+  const box = $('draftToc');
+  if (!box) return;
+  const d = structureDraft;
+  const lines = [];
+  (d.frontMatter || []).forEach((f) => { if (f.enabled !== false) lines.push(`<div>${escHtml(f.title || '')}</div>`); });
+  (d.chapters || []).forEach((c, ci) => {
+    lines.push(`<div style="font-weight:700">Chapter ${c.number || (ci + 1)}: ${escHtml(c.title || '')}</div>`);
+    (c.sections || []).forEach((s) => { if (s && s.title) lines.push(`<div>&nbsp;&nbsp;${escHtml(s.title)}</div>`); });
+  });
+  (d.backMatter || []).forEach((b) => { if (b.enabled !== false) lines.push(`<div>${escHtml(b.title || '')}</div>`); });
+  box.innerHTML = lines.join('') || '<div style="color:var(--muted)">Empty structure</div>';
+}
+
+/* --- structure draft editing actions (operate on structureDraft) --- */
+function editMatter(which, i, value) {
+  const list = which === 'front' ? structureDraft.frontMatter : structureDraft.backMatter;
+  if (list && list[i]) { list[i].content = value; }
+}
+
+function moveMatter(which, i, dir) {
+  const list = which === 'front' ? structureDraft.frontMatter : structureDraft.backMatter;
+  const j = i + dir;
+  if (!list || j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  renderStructureEditor();
+}
+
+function addChapterDraft() {
+  structureDraft.chapters = structureDraft.chapters || [];
+  structureDraft.chapters.push({ id: clientUid('ch'), number: structureDraft.chapters.length + 1, title: 'Chapter ' + (structureDraft.chapters.length + 1), purpose: '', topicIds: [], count: 0, sections: [{ id: clientUid('sec'), title: 'Introduction', topicId: '', purpose: '', blocks: [] }] });
+  renderStructureEditor();
+}
+
+function removeChapter(ci) {
+  structureDraft.chapters.splice(ci, 1);
+  structureDraft.chapters.forEach((c, i) => { c.number = i + 1; });
+  renderStructureEditor();
+}
+
+function moveChapter(ci, dir) {
+  const j = ci + dir;
+  if (j < 0 || j >= structureDraft.chapters.length) return;
+  [structureDraft.chapters[ci], structureDraft.chapters[j]] = [structureDraft.chapters[j], structureDraft.chapters[ci]];
+  structureDraft.chapters.forEach((c, i) => { c.number = i + 1; });
+  renderStructureEditor();
+}
+
+function editChapter(ci, field, value) {
+  if (structureDraft.chapters && structureDraft.chapters[ci]) structureDraft.chapters[ci][field] = value;
+  attachDraftToc();
+}
+
+function addSection(ci) {
+  const c = structureDraft.chapters && structureDraft.chapters[ci];
+  if (!c) return;
+  c.sections = c.sections || [];
+  c.sections.push({ id: clientUid('sec'), title: 'Section ' + (c.sections.length + 1), topicId: '', purpose: '', blocks: [] });
+  renderStructureEditor();
+}
+
+function removeSection(ci, si) {
+  const c = structureDraft.chapters && structureDraft.chapters[ci];
+  if (!c) return;
+  c.sections.splice(si, 1);
+  renderStructureEditor();
+}
+
+function moveSection(ci, si, dir) {
+  const c = structureDraft.chapters && structureDraft.chapters[ci];
+  if (!c) return;
+  const sj = si + dir;
+  if (sj < 0 || sj >= (c.sections || []).length) return;
+  [c.sections[si], c.sections[sj]] = [c.sections[sj], c.sections[si]];
+  renderStructureEditor();
+}
+
+function editSection(ci, si, field, value) {
+  const c = structureDraft.chapters && structureDraft.chapters[ci];
+  if (c && c.sections && c.sections[si]) c.sections[si][field] = value;
+  attachDraftToc();
+}
+
+let dragPayload = null;
+function dragStruct(_ev, kind, ci, si) {
+  dragPayload = { kind, ci: Number(ci), si: Number(si != null ? si : -1) };
+}
+function dropStruct(ev, kind, toCi, toSi) {
+  ev.preventDefault();
+  if (!dragPayload) return;
+  const { kind: fromKind, ci: fromCi, si: fromSi } = dragPayload;
+  dragPayload = null;
+  if (fromKind !== kind) return;
+  if (kind === 'ch') {
+    if (fromCi === toCi) return;
+    const [c] = structureDraft.chapters.splice(fromCi, 1);
+    structureDraft.chapters.splice(toCi, 0, c);
+    structureDraft.chapters.forEach((x, i) => { x.number = i + 1; });
+    renderStructureEditor();
+  } else {
+    const fromC = structureDraft.chapters[fromCi];
+    const toC = structureDraft.chapters[toCi];
+    if (!fromC || !toC || fromCi === toCi && fromSi === toSi) return;
+    const [s] = (fromC.sections || []).splice(fromSi, 1);
+    if (fromCi === toCi) {
+      toC.sections.splice(toSi > fromSi ? toSi - 1 : toSi, 0, s);
+    } else {
+      (toC.sections || (toC.sections = [])).splice(Math.min(toSi, (toC.sections || []).length), 0, s);
+    }
+    renderStructureEditor();
+  }
+}
+
+function setEq(a, b) {
+  const sa = (a || []).slice().sort().join('|');
+  const sb = (b || []).slice().sort().join('|');
+  return sa !== '' && sa === sb;
+}
+
+/** Keep previously written prose when structural edits re-map chapters/sections. */
+function mergeWrittenBlocks(draftChapter, existingChapters) {
+  const srcCh = existingChapters.find((e) => e.id === draftChapter.id) ||
+    existingChapters.find((e) => setEq(e.topicIds, draftChapter.topicIds)) ||
+    existingChapters.find((e) => draftChapter.title && e.title && e.title.trim().toLowerCase() === draftChapter.title.trim().toLowerCase());
+  if (!srcCh) return;
+  if (srcCh.summary && !draftChapter.summary) draftChapter.summary = srcCh.summary;
+  if (srcCh.mode && !draftChapter.mode) draftChapter.mode = srcCh.mode;
+  const srcById = new Map((srcCh.sections || []).map((s) => [s.id, s]));
+  const srcByTopic = new Map((srcCh.sections || []).filter((s) => s.topicId).map((s) => [s.topicId, s]));
+  const srcByTitle = new Map((srcCh.sections || []).map((s) => [String(s.title || '').trim().toLowerCase(), s]));
+  for (const sec of draftChapter.sections || []) {
+    const src = srcById.get(sec.id) || srcByTopic.get(sec.topicId) || srcByTitle.get(String(sec.title || '').trim().toLowerCase());
+    if (src && Array.isArray(src.blocks) && src.blocks.length) sec.blocks = src.blocks;
+  }
+}
+
+/** Commit the reviewed structure into ws, then optionally write prose from it. */
+function commitStructure(writeNow) {
+  if (!structureDraft) { closeStructureModal(); return; }
+  historyPush();
+  const existingChapters = Array.isArray(ws.chapters) ? ws.chapters : [];
+  const newChapters = cloneStruct(structureDraft.chapters || []);
+  newChapters.forEach((c) => mergeWrittenBlocks(c, existingChapters));
+  ws.frontMatter = cloneStruct(structureDraft.frontMatter || []);
+  ws.backMatter = cloneStruct(structureDraft.backMatter || []);
+  ws.chapters = newChapters;
+  ws.structureApproved = true;
+  const preface = (ws.frontMatter || []).find((e) => e && e.type === 'preface');
+  if (preface) ws.preface = preface.content || '';
+  markDirty();
+  saveWorkspace();
+  closeStructureModal();
+  renderOutlineTree();
+  renderPaginatedCanvas();
+  renderLiveToc();
+  toast('Structure approved and committed to the book', 'ok');
+  if (writeNow) writeFromApprovedStructure();
+}
+
+/** Write chapter prose from the committed structure skeleton (does NOT replace it). */
+async function writeFromApprovedStructure() {
+  const digest = topicDigestForStructure();
+  if (!digest.length) { toast('No extracted topics to write from', 'warn'); return; }
+  const chapters = ws.chapters || [];
+  if (!chapters.length) { toast('No approved chapters - propose a structure first', 'warn'); return; }
+  toast('Writing chapters from approved structure...', 'ok');
+  const kbSlice = kbSliceForWrite();
+  const body = { title: ws.title, presetId: ws.bookType, kbSlice: kbSlice.length ? kbSlice : digest, sources: sourcesForApi() };
+  let wroteAny = false;
+  const written = [];
+  for (let i = 0; i < chapters.length; i += 1) {
+    const ch = chapters[i];
+    const topicIds = (ch.sections || []).map((s) => s && s.topicId).filter(Boolean);
+    const chap = { title: ch.title, purpose: ch.purpose || '', topicIds: topicIds.length ? topicIds : (ch.topicIds || []) };
+    try {
+      const wr = await fetch('/api/book/write', {
+        method: 'POST',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, { 'x-ai-config': JSON.stringify(aiConfigHeaders()) }),
+        body: JSON.stringify(Object.assign({}, body, { chapter: chap, recentSummaries: written.slice(-3) }))
+      });
+      const wd = await wr.json();
+      if (wd.sections && wd.sections.length) {
+        const prev = ch.sections || [];
+        const mapped = (wd.sections || []).map((s, si) => {
+          const p = prev[si] || {};
+          const topicId = p.topicId || s.topicId || null;
+          const merged = Object.assign({}, p, { title: p.title || s.title, blocks: s.blocks || [] });
+          if (topicId) merged.topicId = topicId;
+          return merged;
+        });
+        ch.sections = mapped;
+        ch.summary = wd.summary;
+        ch.mode = wd.mode || '';
+        if (wd.summary) written.push(String(wd.summary).slice(0, 200));
+        wroteAny = true;
+        continue;
+      }
+    } catch (_e) { /* keep skeleton sections untouched */ }
+  }
+  ws.latestMode = wroteAny ? 'ai' : 'plan';
+  markDirty();
+  saveWorkspace();
+  renderOutlineTree();
+  renderPaginatedCanvas();
+  renderLiveToc();
+  toast(wroteAny ? 'Book written from approved structure with citations from sources' : 'No chapters were written (enable an AI provider in Settings, then try again)', wroteAny ? 'ok' : 'warn');
+}
+
+$('proposeStructureBtn').onclick = () => proposeStructureFlow();
+$('reviewStructureBtn').onclick = () => openStructureModal();
+$('structureModal').onclick = (e) => { if (e.target === $('structureModal')) closeStructureModal(); };
+
+function sourcesForApi() {
+  return (ws.sources || []).filter((s) => s.pages && s.pages.length).map((s) => ({ id: s.id, name: s.name, pages: s.pages }));
+}
+
+function aiConfigHeaders() {
+  let s = ws.settings || {};
+  if (!s.provider && data && data.getState) s = data.getState().settings || {};
+  return { provider: s.provider || 'zen', apiKey: s.apiKey || '', model: s.model || undefined };
+}
+
+function kbSliceForWrite() {
+  const out = [];
+  (ws.kb && ws.kb.topics || []).slice(0, 24).forEach((t) => {
+    const facts = [];
+    (t.chunkIds || []).slice(0, 5).forEach((cid) => {
+      const chunk = (ws.pipeline && ws.pipeline.chunks || []).find((c) => c.id === cid);
+      if (chunk && chunk.content) facts.push({ text: String(chunk.content).slice(0, 900), source_ref: { document_id: chunk.sourceId, page: chunk.pageNumber, section: chunk.section || null } });
+    });
+    out.push({ id: t.id, name: t.name, canonical_name: t.name, summary: t.summary || '', source_ref: t.sourceRef || { document_id: (t.sources || [])[0] || null, page: null }, facts, chunkIds: t.chunkIds || [] });
+  });
+  return out;
+}
+
+async function processKnowledge(silent) {
+  const ready = sourcesForApi();
+  if (!ready.length) {
+    if (!silent) toast('No extracted sources to process', 'warn');
+    return null;
+  }
+  $('processStatus').textContent = 'Processing ' + ready.length + ' source(s)...';
   try {
+    const res = await fetch('/api/knowledge/process', {
+      method: 'POST',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, { 'x-ai-config': JSON.stringify(aiConfigHeaders()) }),
+      body: JSON.stringify({ sources: ready })
+    });
+    const out = await res.json();
+    if (!res.ok) throw new Error(out.error || 'process failed');
+    ws.pipeline = { chunks: out.chunks || [], outline: out.outline || null, embedMode: out.embedMode, stats: out.stats || {} };
+    ws.kb = ws.kb || {};
+    ws.kb.topics = out.topics || [];
+    ws.kb.duplicates = out.duplicates || [];
+    ws.kb.conflicts = (out.conflicts || []).map((c) => ({
+      id: c.id,
+      topic_id: c.topicId,
+      topic_name: c.topic,
+      claims: c.claims || [{ claim: c.claimA, document_id: c.sourceA, page: c.pageA, section: c.sectionA }, { claim: c.claimB, document_id: c.sourceB, page: c.pageB, section: c.sectionB }],
+      status: 'unresolved',
+      flagged: true
+    }));
+    ws.evidence = out.evidence || [];
+    saveWorkspace();
+    renderKbPanel();
+    $('processStatus').textContent = 'Processed ' + out.topics.length + ' topics, ' + (out.conflicts || []).length + ' conflicts flagged, ' + (out.duplicates || []).length + ' duplicate group(s).';
+    if (!silent) toast('Knowledge processed: ' + out.topics.length + ' topics', 'ok');
+    return out;
+  } catch (err) {
+    $('processStatus').textContent = 'Processing failed: ' + err.message;
+    if (!silent) toast('Knowledge processing failed: ' + err.message, 'err');
+    throw err;
+  }
+}
+
+function renderKbPanel() {
+  const topics = (ws.kb && ws.kb.topics) || [];
+  const conflicts = (ws.kb && ws.kb.conflicts) || [];
+  const tl = $('kbTopicsList');
+  tl.innerHTML = topics.length ? topics.map((t) =>
+    `<div style="padding:8px;background:var(--panel);border:1px solid var(--border);border-radius:8px;margin-bottom:6px">
+      <div style="font-weight:700;font-size:12.5px;color:var(--text)">${escHtml(t.name || 'Untitled topic')}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">${(t.sources || []).length} source(s), ${t.chunkCount || 0} chunk(s)${t.sections && t.sections.length ? ', sections: ' + escHtml(t.sections.slice(0, 3).join(', ')) : ''}</div>
+    </div>`).join('')
+    : '<div class="hint" style="color:var(--muted);font-size:12px">No topics yet. Run "Process sources" in the Sources tab.</div>';
+  const cl = $('kbConflictsList');
+  cl.innerHTML = conflicts.length ? conflicts.map((c) =>
+    `<div style="padding:8px;background:rgba(231,111,81,.06);border:1px solid var(--err);border-radius:8px;margin-bottom:6px">
+      <div style="font-weight:700;font-size:12px;color:var(--err)">Conflict: ${escHtml(c.topic_name || 'topic')}</div>
+      ${(c.claims || []).map((clm, i) => `<div style="font-size:11.5px;color:var(--text2);margin-top:3px"><b>${i === 0 ? 'A' : 'B'}</b> ${escHtml(String(clm.claim || '').slice(0, 140))} <span style="color:var(--muted)">[${escHtml(sourceNameFor(clm.document_id))}${clm.page != null ? ' p.' + clm.page : ''}]</span></div>`).join('')}
+    </div>`).join('')
+    : '<div class="hint" style="color:var(--muted);font-size:12px">No conflicting claims detected.</div>';
+  if ($('srcCountBadge')) $('srcCountBadge').textContent = (ws.sources || []).length;
+}
+
+/* ---------- Section AI Actions ---------- */
+function findActiveSection() {
+  const chapters = ws.chapters || [];
+  if (activeSectionId) {
+    for (const ch of chapters) {
+      const idx = (ch.sections || []).findIndex((s) => s.id === activeSectionId);
+      if (idx >= 0) return { chapter: ch, section: ch.sections[idx], index: idx };
+    }
+  }
+  const ch0 = chapters[0];
+  if (ch0 && ch0.sections && ch0.sections.length) return { chapter: ch0, section: ch0.sections[0], index: 0 };
+  return null;
+}
+
+async function runSectionAction(action) {
+  const target = findActiveSection();
+  if (!target) { toast('Select a section in the editor first', 'warn'); return; }
+  toast('Running AI ' + action + ' on active section...', 'ok');
+  try {
+    const kbSlice = kbSliceForWrite();
     const res = await fetch('/api/book/section/rewrite', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: Object.assign({ 'Content-Type': 'application/json' }, { 'x-ai-config': JSON.stringify(aiConfigHeaders()) }),
       body: JSON.stringify({
-        section: ws.chapters[0]?.sections[0] || { title: 'Section', blocks: [] },
+        section: target.section,
         action,
         customInstruction: $('aiDirective').value,
-        presetId: ws.bookType
+        presetId: ws.bookType,
+        kbSlice,
+        sources: sourcesForApi()
       })
     });
     const data = await res.json();
     if (data.section) {
-      if (ws.chapters[0] && ws.chapters[0].sections[0]) {
-        ws.chapters[0].sections[0] = data.section;
-        saveWorkspace();
-        renderPaginatedCanvas();
-        toast('Section updated with AI!', 'ok');
-      }
+      target.chapter.sections[target.index] = data.section;
+      saveWorkspace();
+      renderPaginatedCanvas();
+      toast('Section updated with AI', 'ok');
+    } else if (data.error) {
+      toast('AI action failed: ' + data.error, 'err');
     }
   } catch (err) {
     toast('AI action failed: ' + err.message, 'err');
@@ -1668,18 +3117,7 @@ async function exportChapter(ci, fmt) {
 }
 
 /* --- EPUB 3 builder (client-side via JSZip) --- */
-const DESIGN_INFO = {
-  modern: { font: 'Georgia, "Times New Roman", serif', heading: 'Georgia, serif', accent: '#6366f1' },
-  academic: { font: '"Times New Roman", serif', heading: '"Times New Roman", serif', accent: '#1e4d8c' },
-  editorial: { font: 'Georgia, serif', heading: 'Georgia, serif', accent: '#111111' },
-  luxury: { font: 'Georgia, serif', heading: 'Georgia, serif', accent: '#9c6b2c' },
-  textbook: { font: 'Georgia, serif', heading: 'Georgia, serif', accent: '#0f766e' },
-  technical: { font: 'Verdana, Arial, sans-serif', heading: 'Verdana, Arial, sans-serif', accent: '#0369a1' },
-  classic: { font: '"Palatino Linotype", Georgia, serif', heading: '"Palatino Linotype", serif', accent: '#7a1f1f' },
-  minimal: { font: 'Helvetica, Arial, sans-serif', heading: 'Helvetica, Arial, sans-serif', accent: '#111111' },
-  selfhelp: { font: 'Georgia, serif', heading: 'Georgia, serif', accent: '#c2410c' },
-  research: { font: 'Georgia, serif', heading: 'Georgia, serif', accent: '#4c1d95' }
-};
+/* Design tokens come from the shared theme layer (themeLayer.js). */
 
 function epubBlock(b) {
   if (!b) return '';
@@ -1715,9 +3153,10 @@ async function buildEpubBlob() {
   const meta = ws.meta || {};
   const title = ws.title || 'Book';
   const author = ws.author || meta.author || 'Unknown Author';
-  const design = DESIGN_INFO[ws.design || 'modern'] || DESIGN_INFO.modern;
+  const design = tlTheme();
   const chapters = ws.chapters || [];
   const base = slugifyClient(title);
+  const basePx = TL ? TL.parseSizePx(design.baseFontSize) : 14.5;
 
   zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
   zip.folder('META-INF').file('container.xml', `<?xml version="1.0" encoding="UTF-8"?>
@@ -1726,23 +3165,23 @@ async function buildEpubBlob() {
 </container>`);
 
   const css = `
-body{font-family:${design.font};line-height:1.8;color:#1a1a1a;font-size:1em;margin:0 5%}
-h1{font-family:${design.heading};font-size:1.7em;color:${design.accent};border-bottom:1px solid #cbd5e1;padding-bottom:.4em}
-h2{font-family:${design.heading};font-size:1.35em;color:#334155;margin-top:1.4em}
-h3{font-family:${design.heading};color:#334155}
-p{text-align:justify;margin:1em 0}
-p.purpose{font-style:italic;color:#64748b}
-blockquote{border-left:3px solid ${design.accent};margin:1em 0;padding:0 1em;color:#475569;font-style:italic}
-.callout,.warning{background:#f1f5f9;border-radius:6px;padding:0.8em 1em;margin:1em 0}
-.definition,.summary,.example{background:#f8fafc;border-radius:6px;padding:0.6em 1em;margin:1em 0}
-code{font-family:'Courier New',monospace;background:#eef2f7;padding:0.1em 0.4em;border-radius:3px}
+body{font-family:${design.fontFamily};line-height:1.8;color:${design.textColor};font-size:${basePx}px;margin:0 5%}
+h1{font-family:${design.headingFont};font-size:1.7em;color:${design.primaryColor};border-bottom:1px solid ${design.borderColor};padding-bottom:.4em}
+h2{font-family:${design.headingFont};font-size:1.35em;color:${design.headingColor};margin-top:1.4em}
+h3{font-family:${design.headingFont};color:${design.headingColor}}
+p{text-align:${design.bodyAlign === 'left' ? 'left' : 'justify'};margin:1em 0}
+p.purpose{font-style:italic;color:${design.secondaryColor}}
+blockquote{border-left:3px solid ${design.primaryColor};margin:1em 0;padding:0 1em;color:${design.secondaryColor};font-style:italic}
+.callout,.warning{background:${design.accentBackground};border-radius:6px;padding:0.8em 1em;margin:1em 0}
+.definition,.summary,.example{background:${design.accentBackground};border-radius:6px;padding:0.6em 1em;margin:1em 0}
+code{font-family:${design.monoFont};background:${design.accentBackground};padding:0.1em 0.4em;border-radius:3px}
 .title-page{text-align:center;margin:30% 0}
 .title-main{font-size:2em;font-weight:bold;line-height:1.2}
-.title-sub{font-size:1.2em;color:#334155;font-style:italic;margin-top:0.6em}
-.title-by{color:#64748b;margin-top:3em}
-.copyright{text-align:center;color:#64748b;margin:38% 0;font-size:0.85em}
+.title-sub{font-size:1.2em;color:${design.headingColor};font-style:italic;margin-top:0.6em}
+.title-by{color:${design.secondaryColor};margin-top:3em}
+.copyright{text-align:center;color:${design.secondaryColor};margin:38% 0;font-size:0.85em}
 .dedication{font-style:italic;text-align:center;margin:38% 0;font-size:1em}
-.epigraph{font-style:italic;color:#475569;text-align:center;margin:38% 0;font-size:1.05em}
+.epigraph{font-style:italic;color:${design.secondaryColor};text-align:center;margin:38% 0;font-size:1.05em}
 h1.chap{page-break-before:always}
 .bio{margin-top:30%}
 `;
@@ -1763,16 +3202,28 @@ h1.chap{page-break-before:always}
   if (meta.epigraph) front += `<section class="epigraph">&ldquo;${escHtml(meta.epigraph)}&rdquo;</section>`;
   zip.folder('OEBPS').file('front.xhtml', epubDoc(front));
 
-  // Chapters
+  // Structure-driven preface
   const manifest = [];
   const spine = [];
-  let chapterItems = '';
-  let chapterRefs = '';
   const tocItems = [];
   manifest.push('<item id="css" href="stylesheet.css" media-type="text/css"/>');
   manifest.push('<item id="front" href="front.xhtml" media-type="application/xhtml+xml"/>');
   spine.push('<itemref idref="front"/>');
   tocItems.push(`<li><a href="front.xhtml">Title Page</a></li>`);
+  const fmList = (ws.frontMatter || []).filter((f) => f && f.enabled !== false);
+  const bmList = (ws.backMatter || []).filter((b) => b && b.enabled !== false);
+  const prefEntry = fmList.find((f) => f.type === 'preface');
+  const prefaceText = (prefEntry && String(prefEntry.content || '').trim()) || ws.preface || '';
+  if (prefaceText) {
+    zip.folder('OEBPS').file('preface.xhtml', epubDoc(`<h1 class="chap">Preface</h1><p>${escHtml(prefaceText).replace(/\n+/g, '</p><p>')}</p>`));
+    manifest.push('<item id="preface" href="preface.xhtml" media-type="application/xhtml+xml"/>');
+    spine.push('<itemref idref="preface"/>');
+    tocItems.push('<li><a href="preface.xhtml">Preface</a></li>');
+  }
+
+  // Chapters
+  let chapterItems = '';
+  let chapterRefs = '';
   chapters.forEach((ch, ci) => {
     const fid = 'ch' + (ci + 1);
     const fname = `chapter-${ci + 1}.xhtml`;
@@ -1787,6 +3238,36 @@ h1.chap{page-break-before:always}
     spine.push(`<itemref idref="${fid}"/>`);
     tocItems.push(`<li><a href="${fname}">Chapter ${ci + 1}: ${escHtml(ch && ch.title ? ch.title : '')}</a></li>`);
   });
+
+  // Structure-driven back matter (references / glossary / index)
+  const topics = (ws.kb && ws.kb.topics) || [];
+  if (bmList.some((b) => b.type === 'references')) {
+    const items = topics.length
+      ? topics.map((t) => `<li>${escHtml(t.name)} (${escHtml((t.sources || []).join(', ') || 'source document')})</li>`).join('')
+      : '<li>Generated from your source documents.</li>';
+    zip.folder('OEBPS').file('references.xhtml', epubDoc(`<h1 class="chap">References</h1><ol>${items}</ol>`));
+    manifest.push('<item id="references" href="references.xhtml" media-type="application/xhtml+xml"/>');
+    spine.push('<itemref idref="references"/>');
+    tocItems.push('<li><a href="references.xhtml">References</a></li>');
+  }
+  if (bmList.some((b) => b.type === 'glossary')) {
+    const items = topics.length
+      ? topics.map((t) => `<dt>${escHtml(t.name)}</dt><dd>${escHtml(t.summary || '')}</dd>`).join('')
+      : '<p>Generated from your extracted topics.</p>';
+    zip.folder('OEBPS').file('glossary.xhtml', epubDoc(`<h1 class="chap">Glossary</h1><dl>${items}</dl>`));
+    manifest.push('<item id="glossary" href="glossary.xhtml" media-type="application/xhtml+xml"/>');
+    spine.push('<itemref idref="glossary"/>');
+    tocItems.push('<li><a href="glossary.xhtml">Glossary</a></li>');
+  }
+  if (bmList.some((b) => b.type === 'index')) {
+    const items = topics.length
+      ? topics.map((t) => `<li>${escHtml(t.name)}</li>`).join('')
+      : '<li>Generated from your book structure.</li>';
+    zip.folder('OEBPS').file('index.xhtml', epubDoc(`<h1 class="chap">Index</h1><ul>${items}</ul>`));
+    manifest.push('<item id="index" href="index.xhtml" media-type="application/xhtml+xml"/>');
+    spine.push('<itemref idref="index"/>');
+    tocItems.push('<li><a href="index.xhtml">Index</a></li>');
+  }
 
   // About the author (back matter)
   let bioNote = '';
@@ -1867,12 +3348,12 @@ function renderProjectGrid() {
     const updated = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : '';
     const active = data.getState().activeProjectId === p.id;
     card.innerHTML = `
-      <div class="proj-thumb">📕</div>
+      <div class="proj-thumb"><svg class="ui-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>
       <div class="proj-title">${p.title}</div>
       <div class="proj-date">created ${created}</div>
       <div class="proj-date">updated ${updated}</div>
       ${active ? '<div class="proj-active">● open</div>' : ''}
-      <button class="proj-del" title="Delete project">✕</button>
+      <button class="proj-del" title="Delete project"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
     `;
     card.onclick = async () => {
       const { workspace } = await openProjectById(p.id);
@@ -1926,6 +3407,185 @@ if (DB_READY) {
     }
   };
 }
+
+/* ---------- Page Review UI (original page vs. extracted units) ---------- */
+const reviewCtx = { sourceId: null, pageIndex: 0 };
+let reviewRenderToken = 0;
+const unitLabels = { heading: 'H', paragraph: 'P', table: 'TABLE', image: 'IMAGE', caption: 'CAPTION' };
+
+function openReview(sourceId) {
+  const src = (ws.sources || []).find((s) => s.id === sourceId);
+  if (!src || !src.pages || !src.pages.length) { toast('No extracted content to review', 'err'); return; }
+  reviewCtx.sourceId = sourceId;
+  reviewCtx.pageIndex = 0;
+  populateReviewSourceSelect();
+  renderReviewPage();
+  $('reviewModal').style.display = 'flex';
+}
+
+function closeReview() {
+  $('reviewModal').style.display = 'none';
+  reviewRenderToken += 1;
+}
+
+function getReviewSource() {
+  return (ws.sources || []).find((s) => s.id === reviewCtx.sourceId);
+}
+
+function populateReviewSourceSelect() {
+  const sel = $('reviewSourceSel');
+  sel.innerHTML = '';
+  (ws.sources || []).forEach((s) => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.name + (s.pageCount ? ' (' + s.pageCount + ' p)' : '');
+    sel.appendChild(opt);
+  });
+  sel.value = reviewCtx.sourceId;
+}
+
+$('reviewSourceSel').onchange = (e) => {
+  reviewCtx.sourceId = e.target.value;
+  reviewCtx.pageIndex = 0;
+  renderReviewPage();
+};
+
+function reviewNav(delta) {
+  const src = getReviewSource();
+  if (!src || !src.pages || !src.pages.length) return;
+  const last = src.pages.length - 1;
+  reviewCtx.pageIndex = Math.max(0, Math.min(last, reviewCtx.pageIndex + delta));
+  renderReviewPage();
+}
+
+function renderReviewPage() {
+  const src = getReviewSource();
+  if (!src || !src.pages || !src.pages.length) return;
+  const idx = Math.max(0, Math.min(reviewCtx.pageIndex, src.pages.length - 1));
+  reviewCtx.pageIndex = idx;
+  const page = src.pages[idx];
+  $('reviewTitle').textContent = 'Page Review - ' + src.name;
+  $('reviewPageLabel').textContent = 'Page ' + (idx + 1) + ' of ' + src.pages.length;
+  renderReviewFlags(page);
+  renderReviewUnits(page);
+  renderReviewImage(src, idx + 1);
+}
+
+function renderReviewFlags(page) {
+  const box = $('reviewFlags');
+  box.innerHTML = '';
+  const chips = [];
+  if (page) {
+    if (page.flags && page.flags.ocr) chips.push('<span class="flag-chip warn">may need OCR</span>');
+    if (page.flags && page.flags.table) chips.push('<span class="flag-chip warn">table detected - needs manual review</span>');
+    if (page.ocrApplied) chips.push('<span class="flag-chip ocr-done">OCR fallback applied</span>');
+    if (page.imageCount) chips.push('<span class="flag-chip">' + page.imageCount + ' embedded image(s)</span>');
+  }
+  box.innerHTML = chips.length
+    ? chips.join('')
+    : '<span class="hint" style="font-size:11px;color:var(--muted)">No flags</span>';
+}
+
+function renderReviewUnits(page) {
+  const list = $('reviewUnits');
+  list.innerHTML = '';
+  let units = page && page.units;
+  if (!units || !units.length) {
+    units = page && page.text ? [{ type: 'paragraph', text: page.text }] : [];
+  }
+  if (!units.length) {
+    list.innerHTML = '<div class="hint" style="color:var(--muted)">No text extracted for this page.</div>';
+    return;
+  }
+  units.forEach((u) => {
+    const row = document.createElement('div');
+    row.className = 'unit-row unit-' + (u.type || 'paragraph');
+    const chip = document.createElement('span');
+    chip.className = 'unit-chip';
+    chip.textContent = u.type === 'heading'
+      ? 'H' + (u.headingLevel || 2)
+      : (unitLabels[u.type] || (u.type || 'P').toUpperCase());
+    const ta = document.createElement('textarea');
+    ta.className = 'unit-text';
+    ta.spellcheck = false;
+    ta.value = u.text || '';
+    const glyphs = (u.text || '').length;
+    ta.rows = Math.max(1, Math.ceil(glyphs / 110));
+    if (u.type === 'image') {
+      ta.readOnly = !u.text;
+      ta.placeholder = u.dataUrl ? 'embedded image' : 'embedded image ' + (u.width || '?') + 'x' + (u.height || '?') + ' (not renderable)';
+    }
+    ta.addEventListener('input', () => {
+      if (u.type === 'image') return;
+      const changed = u.text !== ta.value;
+      u.text = ta.value;
+      if (changed) {
+        page.text = recomputePageText(page);
+        page.wordCount = countClientWords(page.text);
+        markDirty();
+        saveWorkspace();
+      }
+    });
+    row.appendChild(chip);
+    row.appendChild(ta);
+    list.appendChild(row);
+  });
+}
+
+function recomputePageText(page) {
+  return (page.units || []).map((u) => {
+    if (u.type === 'heading' && u.text) return '## ' + u.text;
+    if (u.type === 'image') return '[image]';
+    if (u.type === 'table') return '[table] ' + u.text;
+    return (u.text || '');
+  }).filter((t) => t !== '').join('\n');
+}
+
+function countClientWords(text) {
+  return (String(text || '').match(/\S+/g) || []).length;
+}
+
+function renderReviewImage(src, pageNumber) {
+  const token = ++reviewRenderToken;
+  const box = $('reviewImgBox');
+  box.innerHTML = '<span class="hint">Rendering page ' + pageNumber + '...</span>';
+  if (!src.name.toLowerCase().endsWith('.pdf')) {
+    box.innerHTML = '<span class="hint" style="color:var(--muted)">No page image is available for this file type. Extracted text is shown at right.</span>';
+    return;
+  }
+  (async () => {
+    try {
+      const raw = data && data.db ? await data.db.sources.get(src.id) : null;
+      const blob = (raw && raw.blob) || null;
+      if (!blob) {
+        if (token === reviewRenderToken) box.innerHTML = '<span class="hint" style="color:var(--warn)">Original file is not available in local storage.</span>';
+        return;
+      }
+      const pdfjsLib = await loadPdfJs();
+      const arrayBuffer = await blob.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const page = await pdf.getPage(pageNumber);
+      if (token !== reviewRenderToken) return;
+      const baseVp = page.getViewport({ scale: 1 });
+      const scale = Math.min(2.2, 760 / Math.max(1, baseVp.width));
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(viewport.width);
+      canvas.height = Math.round(viewport.height);
+      canvas.style.maxWidth = '100%';
+      const ctx = canvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      if (token !== reviewRenderToken) return;
+      box.innerHTML = '';
+      box.appendChild(canvas);
+      if (page.cleanup) page.cleanup();
+    } catch (err) {
+      if (token === reviewRenderToken) box.innerHTML = '<span class="hint" style="color:var(--err)">Could not render page: ' + err.message + '</span>';
+    }
+  })();
+}
+
+$('reviewModal').onclick = (e) => { if (e.target === $('reviewModal')) closeReview(); };
 
 async function exportBook(fmt) {
   if (fmt === 'pdf') {
@@ -2099,8 +3759,9 @@ window.onload = async () => {
   $('bookTitle').oninput = (e) => { ws.title = e.target.value; markDirty(); };
   $('bookTitle').onchange = (e) => { historyPush(); saveWorkspace(); };
   $('selBookType').onchange = (e) => { ws.bookType = e.target.value; markDirty(); saveWorkspace(); };
-  $('selDesign').onchange = (e) => { ws.design = e.target.value; markDirty(); saveWorkspace(); renderPaginatedCanvas(); };
-  $('selPageSize').onchange = (e) => { ws.pageSize = e.target.value; markDirty(); saveWorkspace(); renderPaginatedCanvas(); };
+  $('selDesign').onchange = (e) => { ws.design = e.target.value; markDirty(); saveWorkspace(); syncDesignSelects(); renderPaginatedCanvas(); };
+  $('selPageSize').onchange = (e) => { ws.pageSize = e.target.value; if ($('customSizeBox')) $('customSizeBox').style.display = (e.target.value === 'custom') ? 'block' : 'none'; markDirty(); saveWorkspace(); syncDesignSelects(); renderPaginatedCanvas(); };
+  $('applyCustomSizeBtn').onclick = applyCustomSize;
 
   renderOutlineTree();
   renderSourcesList();

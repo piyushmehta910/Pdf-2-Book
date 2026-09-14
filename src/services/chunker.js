@@ -97,4 +97,90 @@ function chunkDocument(sourceId, pages) {
   return all;
 }
 
-module.exports = { chunkPage, chunkDocument, splitParagraphs, splitLongText };
+/** Render one typed extracted unit to chunk text. */
+function unitText(unit) {
+  if (!unit) return '';
+  const type = unit.type || 'paragraph';
+  if (type === 'table') {
+    return String(unit.text || '')
+      .split('\n')
+      .map((row) => row.replace(/\s*\|\s*/g, ' | '))
+      .join('\n');
+  }
+  if (type === 'image') return unit.dataUrl ? '[[embedded image]]' : (unit.text || '[[embedded image]]');
+  return String(unit.text || unit.term || unit.definition || '');
+}
+
+/**
+ * Chunk typed extracted units (from PDF/DOCX/page review) into topic-sized
+ * knowledge units. Each chunk keeps { sourceId, pageNumber, section } plus
+ * the unit ids it was built from so evidence stays resolvable.
+ */
+function chunkUnits(units, { sourceId, pageNumber, maxChars } = {}) {
+  maxChars = maxChars || config.chunk.maxChars;
+  const input = Array.isArray(units) ? units : [];
+  const chunks = [];
+  let buffer = '';
+  let bufferUnitIds = [];
+  let section = 'Body';
+  let bufferIsHeading = false;
+
+  const push = (chunk) => chunks.push(chunk);
+
+  const flush = () => {
+    const content = buffer.trim();
+    if (!content) { buffer = ''; bufferUnitIds = []; return; }
+    push({
+      id: id('chk'),
+      sourceId,
+      pageNumber,
+      section,
+      content,
+      type: bufferIsHeading ? 'heading' : 'paragraph',
+      unitIds: bufferUnitIds
+    });
+    buffer = '';
+    bufferUnitIds = [];
+    bufferIsHeading = false;
+  };
+
+  for (const u of input) {
+    if (!u || typeof u !== 'object') continue;
+    const type = u.type || 'paragraph';
+    const text = unitText(u);
+
+    if (type === 'heading') {
+      if (text) {
+        flush();
+        section = text;
+        push({ id: id('chk'), sourceId, pageNumber, section, content: text, type: 'heading', unitIds: [u.id] });
+      }
+      continue;
+    }
+
+    if (type === 'table' || type === 'image') {
+      if (text) {
+        flush();
+        push({ id: id('chk'), sourceId, pageNumber, section, content: text, type, unitIds: [u.id] });
+      }
+      continue;
+    }
+
+    // paragraph / caption / definition / quote … accumulate
+    if (text.length > maxChars) {
+      flush();
+      for (const piece of splitLongText(text, maxChars)) {
+        push({ id: id('chk'), sourceId, pageNumber, section, content: piece, type: 'paragraph', unitIds: [u.id] });
+      }
+      continue;
+    }
+    if (!buffer) buffer = text;
+    else buffer += '\n\n' + text;
+    bufferUnitIds.push(u.id);
+    if (buffer.length >= maxChars) flush();
+  }
+  flush();
+  return chunks;
+}
+
+module.exports = { chunkPage, chunkDocument, chunkUnits, splitParagraphs, splitLongText, unitText };

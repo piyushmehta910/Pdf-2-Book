@@ -24,7 +24,7 @@ describe('GET /api/presets', () => {
     const res = await request(app).get('/api/presets');
     expect(res.status).toBe(200);
     expect(res.body.presets).toHaveLength(16);
-    expect(res.body.designs).toHaveLength(10);
+    expect(res.body.designs).toHaveLength(9);
     expect(res.body.pageSizes).toHaveLength(5);
     expect(res.body.defaultPreset).toBe('textbook');
     expect(res.body.presets[0]).toHaveProperty('include');
@@ -247,6 +247,28 @@ describe('POST /api/export/:format', () => {
     expect(res.text).toContain('<table>');
   });
 
+  test('html export body text is identical across every theme and page size', async () => {
+    const tl = require('../public/themeLayer');
+    const norm = (html) => html
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;|&amp;|&quot;|&#x27;/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    let baseline = null;
+    for (const tid of tl.THEME_IDS) {
+      for (const sid of tl.PAGE_SIZE_IDS) {
+        const res = await request(app).post('/api/export/html').send({ book, design: tid, pageSize: sid });
+        expect(res.status).toBe(200);
+        const text = norm(res.text);
+        if (baseline === null) baseline = text;
+        else expect(text).toBe(baseline);
+      }
+    }
+    expect(baseline).toContain('Export Me');
+  });
+
   test('json export embeds the knowledge base', async () => {
     const res = await request(app).post('/api/export/json').send({ book, kb: sampleKb() });
     expect(res.status).toBe(200);
@@ -260,6 +282,72 @@ describe('POST /api/export/:format', () => {
     expect(res.status).toBe(400);
     res = await request(app).post('/api/export/markdown').send({ book: {} });
     expect(res.status).toBe(400);
+  });
+});
+
+describe('POST /api/book/structure', () => {
+  test('proposes a book-type-aware structure from topics', async () => {
+    const topics = [
+      { id: 't1', name: 'Foundations', keywords: ['math'], chunkIds: ['c1'], sources: ['s1'], chunkCount: 5, summary: 'Base concepts.' },
+      { id: 't2', name: 'Limitations', keywords: ['risk'], chunkIds: ['c2'], sources: ['s2'], chunkCount: 3, summary: 'Edge cases.' }
+    ];
+    const res = await request(app).post('/api/book/structure').send({ title: 'Deep Learning', topics, bookType: 'textbook' });
+    expect(res.status).toBe(200);
+    expect(res.body.frontMatter.some((f) => f.type === 'cover')).toBe(true);
+    expect(res.body.chapters.length).toBeGreaterThan(0);
+    expect(res.body.backMatter.some((b) => b.type === 'glossary')).toBe(true);
+    expect(Array.isArray(res.body.toc)).toBe(true);
+    expect(res.body.chapters[0].sections[0].topicId).toBe('t1');
+  });
+
+  test('rejects missing topics', async () => {
+    const res = await request(app).post('/api/book/structure').send({ bookType: 'novel' });
+    expect(res.status).toBe(400);
+  });
+
+  test('novel book type omits glossary/index back matter', async () => {
+    const res = await request(app).post('/api/book/structure').send({ title: 'Story', topics: [{ id: 't1', name: 'A' }], bookType: 'novel' });
+    expect(res.status).toBe(200);
+    const types = res.body.backMatter.map((b) => b.type);
+    expect(types).not.toContain('glossary');
+    expect(types).not.toContain('index');
+  });
+});
+
+describe('POST /api/export/:format (structure-driven)', () => {
+  const structuredBook = {
+    title: 'Structured Export',
+    frontMatter: [
+      { id: 'fm1', type: 'cover', title: 'Cover Page', enabled: true },
+      { id: 'fm2', type: 'preface', title: 'Preface', enabled: true, content: 'A short preface.' },
+      { id: 'fm3', type: 'toc', title: 'Table of Contents', enabled: true }
+    ],
+    chapters: [{ title: 'Alpha', sections: [{ title: 'One' }, { title: 'Two' }] }],
+    backMatter: [
+      { id: 'bm1', type: 'references', title: 'References', enabled: true },
+      { id: 'bm2', type: 'index', title: 'Index', enabled: false }
+    ],
+    references: ['R1'],
+    index: [{ term: 'X', pages: [1] }],
+    glossary: [{ term: 'T', definition: 'D' }]
+  };
+
+  test('enabled front/back matter renders; disabled is skipped', async () => {
+    const md = await request(app).post('/api/export/markdown').send({ book: structuredBook });
+    expect(md.status).toBe(200);
+    expect(md.text).toContain('## Preface\n\nA short preface.');
+    expect(md.text).toContain('## References');
+    expect(md.text).not.toContain('## Index');
+    expect(md.text).not.toContain('## Glossary');
+  });
+
+  test('html export emits toc sections and back matter anchors', async () => {
+    const html = await request(app).post('/api/export/html').send({ book: structuredBook, design: 'modern', pageSize: 'trade_6x9' });
+    expect(html.status).toBe(200);
+    expect(html.text).toContain('toc-sections');
+    expect(html.text).toContain('id="preface"');
+    expect(html.text).toContain('id="references"');
+    expect(html.text).not.toContain('id="index"');
   });
 });
 
