@@ -468,16 +468,17 @@
   .ps-cf-swap { align-self: flex-end; }
   .ps-cf-preview {
     background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
-    padding: 10px 8px; display: flex; align-items: center; gap: 10px;
+    padding: 12px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    text-align: center;
   }
-  .ps-cf-sheet-stage { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ps-cf-sheet-stage { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .ps-cf-sheet {
     background: #fff; border: 1px solid rgba(0,0,0,.18); border-radius: 2px;
     box-shadow: 0 2px 8px rgba(0,0,0,.14); position: relative; overflow: hidden;
     transition: width .12s, height .12s;
   }
   .ps-cf-sheet .mini-spine { position: absolute; left:0; top:0; bottom:0; width:3px; background: linear-gradient(to right,rgba(0,0,0,.18),transparent); }
-  .ps-cf-dims { flex: 1; }
+  .ps-cf-dims { text-align: center; width: 100%; }
   .ps-cf-metric { font-size: 13px; font-weight: 700; color: var(--text); }
   .ps-cf-imperial { font-size: 11.5px; font-weight: 600; color: var(--accent); margin-top: 2px; }
   .ps-cf-error { font-size: 11.5px; color: var(--err); background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25); border-radius: 5px; padding: 5px 8px; }
@@ -822,6 +823,56 @@
   .struct-matter-row input[type=text] { flex:1; background:var(--input-bg); border:1px solid var(--border); border-radius:5px; color:var(--text); font-size:12px; padding:3px 7px; height:26px; }
   .fm-content-area { display:none; margin:-2px 0 8px 26px; }
   .fm-content-area textarea { width:100%; min-height:56px; resize:vertical; }
+
+  /* Print / Export to PDF - Strict portrait orientation & book page isolation */
+  @page {
+    size: portrait;
+    margin: 10mm;
+  }
+  @media print {
+    html, body {
+      background: #ffffff !important;
+      color: #000000 !important;
+      overflow: visible !important;
+      width: 100% !important;
+      height: auto !important;
+    }
+    header.studio-bar,
+    aside.panel-sidebar,
+    .canvas-toolbar,
+    #toasts,
+    .modal-backdrop,
+    #focusExitBtn,
+    .block-ctrls,
+    .ps-popover,
+    .dropdown-popover {
+      display: none !important;
+    }
+    .studio-body,
+    .studio-canvas-wrap,
+    .canvas-scroll-area {
+      display: block !important;
+      position: static !important;
+      overflow: visible !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+    }
+    .book-sheet {
+      margin: 0 auto 20mm !important;
+      box-shadow: none !important;
+      border: 1px solid #cbd5e1 !important;
+      page-break-after: always !important;
+      break-after: page !important;
+      transform: none !important;
+      max-width: 100% !important;
+    }
+    .book-sheet:last-child {
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+    }
+  }
 
 </style>
 </head>
@@ -5231,11 +5282,11 @@ function initPageSizePopover() {
     metric.textContent   = res.widthMm + ' × ' + res.heightMm + ' mm';
     imperial.textContent = res.widthIn + ' × ' + res.heightIn + ' in';
 
-    var maxSide = 48;
+    var maxSide = 54;
     var ratio = (res.widthMm || 1) / (res.heightMm || 1);
     var sw, sh;
-    if (ratio >= 1) { sw = maxSide; sh = Math.max(16, Math.round(maxSide / ratio)); }
-    else            { sh = maxSide; sw = Math.max(16, Math.round(maxSide * ratio)); }
+    if (ratio >= 1) { sw = maxSide; sh = Math.max(18, Math.round(maxSide / ratio)); }
+    else            { sh = maxSide; sw = Math.max(18, Math.round(maxSide * ratio)); }
     sheet.style.width  = sw + 'px';
     sheet.style.height = sh + 'px';
   }
