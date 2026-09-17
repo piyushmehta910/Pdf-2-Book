@@ -201,6 +201,7 @@
     bookType: 'textbook',
     design: 'modern',
     pageSize: 'trade_6x9',
+    dimensions: { widthMm: 152.4, heightMm: 228.6, widthIn: 6.0, heightIn: 9.0, unit: 'inches', label: '6 × 9 in' },
     customSize: null,
     citationStyle: 'APA',
     meta: {},

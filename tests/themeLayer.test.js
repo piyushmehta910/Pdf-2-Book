@@ -39,8 +39,8 @@ describe('themeLayer', () => {
     expect(t.textColor).toBeTruthy();
   });
 
-  test('exposes 5 page size presets plus a custom factory', () => {
-    expect(tl.PAGE_SIZE_IDS).toEqual(['a4', 'a5', 'letter', 'trade_6x9', 'digest_55x85']);
+  test('exposes 6 page size presets plus a custom factory', () => {
+    expect(tl.PAGE_SIZE_IDS).toEqual(['a5', 'a4', 'size_5x8', 'digest_55x85', 'trade_6x9', 'size_8x10']);
     for (const id of tl.PAGE_SIZE_IDS) {
       const ps = tl.getPageSize(id);
       expect(ps.id).toBe(id);

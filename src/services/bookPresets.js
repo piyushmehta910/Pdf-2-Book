@@ -251,8 +251,8 @@ function getDesign(id) {
   return DESIGN_SYSTEMS[id] || DESIGN_SYSTEMS[DEFAULT_DESIGN_ID];
 }
 
-function getPageSize(id) {
-  return PAGE_SIZES[id] || PAGE_SIZES[DEFAULT_PAGE_SIZE_ID];
+function getPageSize(id, custom) {
+  return themeLayer.getPageSize(id, custom);
 }
 
 function presetExists(id) {
@@ -295,7 +295,7 @@ function describeDesigns() {
 }
 
 function describePageSizes() {
-  return Object.values(PAGE_SIZES);
+  return themeLayer.PAGE_SIZE_IDS.map((id) => themeLayer.PAGE_SIZES[id]);
 }
 
 module.exports = {

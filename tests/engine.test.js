@@ -25,7 +25,7 @@ describe('GET /api/presets', () => {
     expect(res.status).toBe(200);
     expect(res.body.presets).toHaveLength(16);
     expect(res.body.designs).toHaveLength(9);
-    expect(res.body.pageSizes).toHaveLength(5);
+    expect(res.body.pageSizes).toHaveLength(6);
     expect(res.body.defaultPreset).toBe('textbook');
     expect(res.body.presets[0]).toHaveProperty('include');
   });

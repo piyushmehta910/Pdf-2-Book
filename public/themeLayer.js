@@ -172,32 +172,140 @@
   };
 
   /* ------------------------------------------------------------------ *
-   *  PAGE SIZE PRESETS (physical dimensions; typography auto-scales)
+   *  PAGE SIZE PRESETS (6 exact presets + custom, spec §32)
    * ------------------------------------------------------------------ */
   var PAGE_SIZES = {
-    a4: { id: 'a4', label: 'A4 (210 x 297 mm)', widthMm: 210, heightMm: 297, widthIn: 8.27, heightIn: 11.69, cssSize: 'A4' },
-    a5: { id: 'a5', label: 'A5 (148 x 210 mm)', widthMm: 148, heightMm: 210, widthIn: 5.83, heightIn: 8.27, cssSize: 'A5' },
-    letter: { id: 'letter', label: 'US Letter (8.5 x 11 in)', widthMm: 215.9, heightMm: 279.4, widthIn: 8.5, heightIn: 11.0, cssSize: 'letter' },
-    trade_6x9: { id: 'trade_6x9', label: 'Trade 6 x 9 in (Digest)', widthMm: 152.4, heightMm: 228.6, widthIn: 6.0, heightIn: 9.0, cssSize: '6in 9in' },
-    digest_55x85: { id: 'digest_55x85', label: 'Digest 5.5 x 8.5 in', widthMm: 139.7, heightMm: 215.9, widthIn: 5.5, heightIn: 8.5, cssSize: '5.5in 8.5in' }
+    a5: { id: 'a5', label: 'A5 — 148 × 210 mm', widthMm: 148, heightMm: 210, widthIn: 5.83, heightIn: 8.27, cssSize: 'A5' },
+    a4: { id: 'a4', label: 'A4 — 210 × 297 mm', widthMm: 210, heightMm: 297, widthIn: 8.27, heightIn: 11.69, cssSize: 'A4' },
+    size_5x8: { id: 'size_5x8', label: '5 × 8 in', widthMm: 127, heightMm: 203.2, widthIn: 5.0, heightIn: 8.0, cssSize: '5in 8in' },
+    digest_55x85: { id: 'digest_55x85', label: '5.5 × 8.5 in', widthMm: 139.7, heightMm: 215.9, widthIn: 5.5, heightIn: 8.5, cssSize: '5.5in 8.5in' },
+    trade_6x9: { id: 'trade_6x9', label: '6 × 9 in', widthMm: 152.4, heightMm: 228.6, widthIn: 6.0, heightIn: 9.0, cssSize: '6in 9in' },
+    size_8x10: { id: 'size_8x10', label: '8 × 10 in', widthMm: 203.2, heightMm: 254, widthIn: 8.0, heightIn: 10.0, cssSize: '8in 10in' }
   };
+
+  var FALLBACK_SIZES = {
+    letter: { id: 'letter', label: 'US Letter (8.5 × 11 in)', widthMm: 215.9, heightMm: 279.4, widthIn: 8.5, heightIn: 11.0, cssSize: 'letter' }
+  };
+
+  var UNITS = ['mm', 'cm', 'inches'];
 
   var REFERENCE_WIDTH_IN = PAGE_SIZES.trade_6x9.widthIn; // 6
   var REFERENCE_HEIGHT_IN = PAGE_SIZES.trade_6x9.heightIn; // 9
 
-  function createCustomPageSize(input) {
-    var w = Number(input && input.widthIn);
-    var h = Number(input && input.heightIn);
-    if (!(w > 0 && h > 0)) { w = 6; h = 9; }
-    w = Math.min(22, Math.max(3, w));
-    h = Math.min(30, Math.max(4, h));
-    var label = (input && typeof input.label === 'string' && input.label.trim()) ? input.label.trim().slice(0, 40) : ('Custom ' + w + ' x ' + h + ' in');
+  function roundTo(num, decimals) {
+    if (typeof num !== 'number' || isNaN(num)) return 0;
+    var factor = Math.pow(10, decimals);
+    return Math.round((num + Number.EPSILON) * factor) / factor;
+  }
+
+  function cleanNum(num, decimals) {
+    var rounded = roundTo(num, decimals);
+    return Number(rounded.toFixed(decimals));
+  }
+
+  function toMm(val, unit) {
+    var n = parseFloat(val);
+    if (isNaN(n)) return 0;
+    if (unit === 'inches' || unit === 'in') return n * 25.4;
+    if (unit === 'cm') return n * 10;
+    return n; // mm
+  }
+
+  function fromMm(mmVal, targetUnit) {
+    var n = parseFloat(mmVal);
+    if (isNaN(n)) return 0;
+    if (targetUnit === 'inches' || targetUnit === 'in') return n / 25.4;
+    if (targetUnit === 'cm') return n / 10;
+    return n; // mm
+  }
+
+  function convertUnit(val, fromUnit, toUnit) {
+    if (fromUnit === toUnit) return roundTo(parseFloat(val) || 0, 3);
+    var mm = toMm(val, fromUnit);
+    var res = fromMm(mm, toUnit);
+    if (toUnit === 'inches' || toUnit === 'in') return cleanNum(res, 2);
+    if (toUnit === 'cm') return cleanNum(res, 2);
+    return cleanNum(res, 1); // mm
+  }
+
+  function validateDimensions(w, h, unit) {
+    var width = parseFloat(w);
+    var height = parseFloat(h);
+    if (isNaN(width) || isNaN(height)) {
+      return { valid: false, error: 'Width and height must be valid numbers.' };
+    }
+    if (width <= 0 || height <= 0) {
+      return { valid: false, error: 'Width and height must be greater than 0.' };
+    }
+    var u = (unit === 'in' || unit === 'inches') ? 'inches' : (unit === 'cm' ? 'cm' : 'mm');
+    var wMm = toMm(width, u);
+    var hMm = toMm(height, u);
+    if (wMm > 1000 || hMm > 1000) {
+      return { valid: false, error: 'Dimensions exceed maximum allowed limit of 1000 mm (100 cm / 39.4 in).' };
+    }
+    if (wMm < 20 || hMm < 20) {
+      return { valid: false, error: 'Dimensions must be at least 20 mm (2 cm / 0.8 in).' };
+    }
+    var wIn = cleanNum(wMm / 25.4, 2);
+    var hIn = cleanNum(hMm / 25.4, 2);
+    var wCm = cleanNum(wMm / 10, 2);
+    var hCm = cleanNum(hMm / 10, 2);
+    var wMmClean = cleanNum(wMm, 1);
+    var hMmClean = cleanNum(hMm, 1);
+
     return {
-      id: 'custom', label: label,
-      widthMm: Math.round((w / IN_PER_MM) * 10) / 10,
-      heightMm: Math.round((h / IN_PER_MM) * 10) / 10,
-      widthIn: w, heightIn: h,
-      cssSize: w + 'in ' + h + 'in',
+      valid: true,
+      width: width,
+      height: height,
+      unit: u,
+      widthMm: wMmClean,
+      heightMm: hMmClean,
+      widthCm: wCm,
+      heightCm: hCm,
+      widthIn: wIn,
+      heightIn: hIn
+    };
+  }
+
+  function formatDualDimensions(w, h, unit) {
+    var val = validateDimensions(w, h, unit);
+    if (!val.valid) return { metric: '', imperial: '', label: '' };
+    var metric = val.widthMm + ' × ' + val.heightMm + ' mm';
+    var imperial = val.widthIn + ' × ' + val.heightIn + ' in';
+    return {
+      metric: metric,
+      imperial: imperial,
+      label: metric + ' (' + imperial + ')'
+    };
+  }
+
+  function createCustomPageSize(input) {
+    var u = (input && input.unit) ? input.unit : 'inches';
+    var w = input ? (input.width != null ? input.width : input.widthIn) : 6;
+    var h = input ? (input.height != null ? input.height : input.heightIn) : 9;
+    if (input && (input.widthIn != null || input.heightIn != null) && !input.unit) {
+      u = 'inches';
+      w = input.widthIn;
+      h = input.heightIn;
+    }
+    var val = validateDimensions(w, h, u);
+    if (!val.valid) {
+      val = validateDimensions(6, 9, 'inches');
+    }
+    var label = (input && typeof input.label === 'string' && input.label.trim())
+      ? input.label.trim().slice(0, 50)
+      : ('Custom ' + val.widthIn + ' × ' + val.heightIn + ' in');
+    return {
+      id: 'custom',
+      label: label,
+      widthMm: val.widthMm,
+      heightMm: val.heightMm,
+      widthCm: val.widthCm,
+      heightCm: val.heightCm,
+      widthIn: val.widthIn,
+      heightIn: val.heightIn,
+      unit: val.unit,
+      cssSize: val.widthIn + 'in ' + val.heightIn + 'in',
       isCustom: true
     };
   }
@@ -254,8 +362,9 @@
   }
 
   function getPageSize(id, custom) {
-    if ((id === 'custom' || !id) && custom && custom.widthIn) return createCustomPageSize(custom);
+    if ((id === 'custom' || !id) && custom) return createCustomPageSize(custom);
     if (id && PAGE_SIZES[id]) return PAGE_SIZES[id];
+    if (id && FALLBACK_SIZES[id]) return FALLBACK_SIZES[id];
     return PAGE_SIZES[DEFAULT_PAGE_SIZE_ID];
   }
 
@@ -377,6 +486,7 @@
     PAGE_SIZES: PAGE_SIZES,
     PAGE_SIZE_IDS: Object.keys(PAGE_SIZES),
     DEFAULT_PAGE_SIZE_ID: DEFAULT_PAGE_SIZE_ID,
+    UNITS: UNITS,
     REFERENCE_WIDTH_IN: REFERENCE_WIDTH_IN,
     REFERENCE_HEIGHT_IN: REFERENCE_HEIGHT_IN,
     HEADER_STYLES: HEADER_STYLES,
@@ -386,6 +496,13 @@
     getTheme: getTheme,
     getPageSize: getPageSize,
     createCustomPageSize: createCustomPageSize,
+    convertUnit: convertUnit,
+    validateDimensions: validateDimensions,
+    formatDualDimensions: formatDualDimensions,
+    toMm: toMm,
+    fromMm: fromMm,
+    roundTo: roundTo,
+    cleanNum: cleanNum,
     parseSizePx: parseSizePx,
     baseFontPx: baseFontPx,
     autoMarginsMm: autoMarginsMm,

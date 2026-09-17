@@ -17,11 +17,11 @@ describe('bookPresets', () => {
     }
   });
 
-  test('exposes 9 design systems and 5 page sizes', () => {
+  test('exposes 9 design systems and 6 page sizes', () => {
     const designs = bookPresets.describeDesigns();
     expect(designs).toHaveLength(9);
     const pageSizes = bookPresets.describePageSizes();
-    expect(pageSizes).toHaveLength(5);
+    expect(pageSizes).toHaveLength(6);
   });
 
   test('getPreset falls back to textbook for unknown ids', () => {
