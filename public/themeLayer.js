@@ -417,6 +417,10 @@
     var size = getPageSize((sizeOrId && sizeOrId.id) ? sizeOrId.id : sizeOrId, customSize);
     var w = Math.round(size.widthIn * PX_PER_IN);
     var h = Math.round(size.heightIn * PX_PER_IN);
+    // Presets are always vertical book pages (width <= height, portrait orientation)
+    if (!size.isCustom && w > h) {
+      var tmpW = w; w = h; h = tmpW;
+    }
     var mm = autoMarginsMm(theme, size.widthIn, size.heightIn);
     var mT = mmToPx(mm.top), mB = mmToPx(mm.bottom);
     var mL = mmToPx(mm.inner), mR = mmToPx(mm.outer);

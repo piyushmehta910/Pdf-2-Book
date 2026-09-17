@@ -359,6 +359,9 @@
     box-sizing: border-box;
     transition: transform .2s, box-shadow .2s;
     font-family: var(--doc-font, 'Inter', sans-serif);
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    flex: none !important;
     min-height: 580px;
   }
   .book-sheet:hover { box-shadow: 0 24px 60px rgba(0,0,0,.35), 0 0 0 1px var(--accent); }
@@ -497,6 +500,9 @@
     border-radius: 4px; padding: 56px 64px; margin: 0 auto; min-height: 70vh;
     box-sizing: border-box; font-family: Georgia, 'Times New Roman', serif;
     line-height: 1.85; font-size: 15px; transition: transform .2s;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    flex: none !important;
   }
   .roll-title { font-size: 34px; font-weight: 700; margin-bottom: 4px; }
   .roll-sub { font-size: 18px; color: #64748b; font-style: italic; margin-bottom: 10px; }
@@ -1955,7 +1961,12 @@ function tlSize() {
 
 function sheetModel() {
   if (!TL) return { themeId: 'modern', sizeId: 'trade_6x9', w: 576, h: 864, mT: 48, mB: 45, mL: 44, mR: 44, headerH: 26, footerH: 22, textW: 488, textH: 723, baseFont: 14.5, lineHeight: 1.6, mb: 9, sizeLabel: '6 x 9', widthIn: 6, heightIn: 9 };
-  return TL.resolvePageModel(tlTheme(), tlSize(), ws.customSize);
+  const m = TL.resolvePageModel(tlTheme(), tlSize(), ws.customSize);
+  // Guarantee vertical portrait orientation for presets (width <= height)
+  if (ws.pageSize !== 'custom' && m.w > m.h) {
+    const tmp = m.w; m.w = m.h; m.h = tmp;
+  }
+  return m;
 }
 
 function applyDesignVars(model, theme) {
@@ -2461,7 +2472,9 @@ function buildSheetAndMount(model, theme, page, container, num, zoom, cloneMode)
   sheet.className = 'book-sheet';
   if (page.secId) sheet.setAttribute('data-sec-id', page.secId);
   if (page.chapterId) sheet.setAttribute('data-chapter-id', page.chapterId);
-  sheet.style.cssText = 'width:' + model.w + 'px;height:' + model.h + 'px;min-height:0px;box-sizing:border-box;transform:scale(' + (zoom / 100) + ');transform-origin:top center;background:' + theme.backgroundColor + ';color:' + theme.textColor + ';padding:' + model.mT + 'px ' + model.mR + 'px ' + (model.mB + model.footerH) + 'px ' + model.mL + 'px;';
+  const scale = zoom / 100;
+  const mbComp = (scale < 1) ? Math.round(model.h * (scale - 1)) + 'px' : '0px';
+  sheet.style.cssText = 'width:' + model.w + 'px;height:' + model.h + 'px;min-height:' + model.h + 'px;max-height:' + model.h + 'px;flex-shrink:0;box-sizing:border-box;transform:scale(' + scale + ');transform-origin:top center;margin-bottom:' + mbComp + ';background:' + theme.backgroundColor + ';color:' + theme.textColor + ';padding:' + model.mT + 'px ' + model.mR + 'px ' + (model.mB + model.footerH) + 'px ' + model.mL + 'px;';
   const ink = document.createElement('div');
   ink.className = 'sheet-ink';
   page.items.forEach((it) => ink.appendChild(cloneMode ? it.el.cloneNode(true) : it.el));
@@ -2802,11 +2815,12 @@ function applyPageSize(id) {
   }
   const ps = TL.getPageSize(id);
   ws.pageSize = id;
+  ws.customSize = null;
   ws.dimensions = {
-    widthMm: ps.widthMm,
-    heightMm: ps.heightMm,
-    widthIn: ps.widthIn,
-    heightIn: ps.heightIn,
+    widthMm: Math.min(ps.widthMm, ps.heightMm),
+    heightMm: Math.max(ps.widthMm, ps.heightMm),
+    widthIn: Math.min(ps.widthIn, ps.heightIn),
+    heightIn: Math.max(ps.widthIn, ps.heightIn),
     unit: id.startsWith('a') ? 'mm' : 'inches',
     label: ps.label
   };
