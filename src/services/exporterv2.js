@@ -307,7 +307,7 @@ function generatePrintCss(design, pageSize) {
 
   return `
 @page {
-  size: ${ps.cssSize || 'A4'};
+  size: ${ps.cssSize ? (ps.cssSize.includes('portrait') ? ps.cssSize : ps.cssSize + ' portrait') : 'A4 portrait'};
   margin: ${mm(model.mT)}mm ${mm(model.mR)}mm ${mm(model.mB)}mm ${mm(model.mL)}mm;
   ${numBox} {
     content: ${pageNumContent};

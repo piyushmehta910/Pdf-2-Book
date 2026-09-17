@@ -339,7 +339,7 @@
   .tree-badge-btn.danger:hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
   .canvas-scroll-area {
     flex: 1;
-    overflow-y: auto;
+    overflow: auto;
     padding: 30px 20px 90px;
     display: flex;
     flex-direction: column;
@@ -824,10 +824,10 @@
   .fm-content-area { display:none; margin:-2px 0 8px 26px; }
   .fm-content-area textarea { width:100%; min-height:56px; resize:vertical; }
 
-  /* Print / Export to PDF - Strict portrait orientation & book page isolation */
+  /* Print / Export to PDF - Strict A4 portrait orientation & book page isolation */
   @page {
-    size: portrait;
-    margin: 10mm;
+    size: 210mm 297mm portrait;
+    margin: 0;
   }
   @media print {
     html, body {
@@ -836,6 +836,8 @@
       overflow: visible !important;
       width: 100% !important;
       height: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
     header.studio-bar,
     aside.panel-sidebar,
@@ -860,17 +862,20 @@
       height: auto !important;
     }
     .book-sheet {
-      margin: 0 auto 20mm !important;
+      margin: 0 auto !important;
       box-shadow: none !important;
-      border: 1px solid #cbd5e1 !important;
+      border: none !important;
       page-break-after: always !important;
       break-after: page !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
       transform: none !important;
+      box-sizing: border-box !important;
       max-width: 100% !important;
     }
     .book-sheet:last-child {
-      page-break-after: avoid !important;
-      break-after: avoid !important;
+      page-break-after: auto !important;
+      break-after: auto !important;
     }
   }
 
@@ -4941,6 +4946,54 @@ $('reviewModal').onclick = (e) => { if (e.target === $('reviewModal')) closeRevi
 
 async function exportBook(fmt) {
   if (fmt === 'pdf') {
+    const curSize = (typeof tlSize === 'function' && tlSize()) || { widthMm: 210, heightMm: 297 };
+    const wMm = Math.min(curSize.widthMm || 210, curSize.heightMm || 297);
+    const hMm = Math.max(curSize.widthMm || 210, curSize.heightMm || 297);
+    let printStyle = $('dynamicPrintStyle');
+    if (!printStyle) {
+      printStyle = document.createElement('style');
+      printStyle.id = 'dynamicPrintStyle';
+      document.head.appendChild(printStyle);
+    }
+    printStyle.textContent = `
+      @page {
+        size: ${wMm}mm ${hMm}mm portrait !important;
+        margin: 0 !important;
+      }
+      @media print {
+        html, body {
+          width: ${wMm}mm !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: #fff !important;
+        }
+        .canvas-scroll-area {
+          width: ${wMm}mm !important;
+          margin: 0 auto !important;
+          padding: 0 !important;
+        }
+        .book-sheet {
+          width: ${wMm}mm !important;
+          height: ${hMm}mm !important;
+          min-height: ${hMm}mm !important;
+          max-width: ${wMm}mm !important;
+          max-height: ${hMm}mm !important;
+          box-sizing: border-box !important;
+          margin: 0 auto !important;
+          border: none !important;
+          box-shadow: none !important;
+          transform: none !important;
+          page-break-after: always !important;
+          break-after: page !important;
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+        }
+        .book-sheet:last-child {
+          page-break-after: auto !important;
+          break-after: auto !important;
+        }
+      }
+    `;
     window.print();
     return;
   }

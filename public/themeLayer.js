@@ -175,8 +175,8 @@
    *  PAGE SIZE PRESETS (6 exact presets + custom, spec §32)
    * ------------------------------------------------------------------ */
   var PAGE_SIZES = {
-    a5: { id: 'a5', label: 'A5 — 148 × 210 mm', widthMm: 148, heightMm: 210, widthIn: 5.83, heightIn: 8.27, cssSize: 'A5' },
-    a4: { id: 'a4', label: 'A4 — 210 × 297 mm', widthMm: 210, heightMm: 297, widthIn: 8.27, heightIn: 11.69, cssSize: 'A4' },
+    a5: { id: 'a5', label: 'A5 — 148 × 210 mm', widthMm: 148, heightMm: 210, widthIn: 5.83, heightIn: 8.27, cssSize: 'A5 portrait' },
+    a4: { id: 'a4', label: 'A4 — 210 × 297 mm', widthMm: 210, heightMm: 297, widthIn: 8.27, heightIn: 11.69, cssSize: 'A4 portrait' },
     size_5x8: { id: 'size_5x8', label: '5 × 8 in', widthMm: 127, heightMm: 203.2, widthIn: 5.0, heightIn: 8.0, cssSize: '5in 8in' },
     digest_55x85: { id: 'digest_55x85', label: '5.5 × 8.5 in', widthMm: 139.7, heightMm: 215.9, widthIn: 5.5, heightIn: 8.5, cssSize: '5.5in 8.5in' },
     trade_6x9: { id: 'trade_6x9', label: '6 × 9 in', widthMm: 152.4, heightMm: 228.6, widthIn: 6.0, heightIn: 9.0, cssSize: '6in 9in' },
